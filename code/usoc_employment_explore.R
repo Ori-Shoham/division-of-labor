@@ -1363,12 +1363,13 @@ p <- df_sample %>%
   summarize(workoutside = mean(workoutside, na.rm = T))%>% 
   ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
                          labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
-                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside, color = group_industry_based)) +
+                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside,
+              color = group_industry_based, shape = group_industry_based)) +
   geom_point()+
   theme_minimal()+
   scale_y_continuous(labels = percent_format()) +
   
-  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
+  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside", shape = NULL) +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("workoutside_overtime_groups.png",p, path = fig_path, width = 12, height = 8 ) 
@@ -1381,12 +1382,13 @@ p <- df_sample %>%
   summarize(workoutside = mean(workoutside, na.rm = T))%>% 
   ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
                          labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
-                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside, color = group_industry_based_detailed)) +
+                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside,
+              color = group_industry_based_detailed, shape = group_industry_based_detailed)) +
   geom_point()+
   theme_minimal()+
   scale_y_continuous(labels = percent_format()) +
   
-  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
+  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside", sahpe = NULL) +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("workoutside_overtime_detailed_groups.png",p, path = fig_path, width = 12, height = 8 ) 
@@ -1408,3 +1410,6 @@ lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_
 
 lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 2)) %>% 
   summary()
+
+
+cxc
