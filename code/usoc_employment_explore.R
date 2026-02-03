@@ -13,7 +13,7 @@ fig_path <- "figures/"
 SOC <- read.csv("policies/SOC.csv")
 SIC <- read.csv("policies/SIC.csv")
 
-key_workers <- readxl::read_excel("C:/Users/USER/Dropbox/WFH_covid/UK project/policies/keyworkersreferencetableupdated2.xlsx", sheet = 4)
+key_workers <- readxl::read_excel("C:/Users/USER/Dropbox/WFH_covid/UK project/division-of-labor/policies/keyworkersreferencetableupdated2.xlsx", sheet = 4)
 sics <- tibble(SIC_4 = colnames(key_workers)[4:599], industry = unlist(key_workers[1,4:599]))
 key_workers <- key_workers %>% filter(!is.na(Group)) %>% 
   pivot_longer(!c(Group, `SOC10M / INDC07M`, `SOC_label / SIC_label`), names_to = "SIC_4", values_to = "key") %>% 
@@ -30,8 +30,8 @@ key_inds <- key_workers %>%
 
 
 # 1. DEFINE PATHS (Edit these!)
-path_main  <- "understanding society uk all data/UKDA-6614-stata/stata/stata13_se/ukhls"  # SN 6614
-path_covid <- "understanding society uk all data/UKDA-8644-stata/stata/stata13_se/"  # SN 8644
+path_main  <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata13_se/ukhls"  # SN 6614
+path_covid <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-8644-stata/stata/stata13_se/"  # SN 8644
 
 # =========================================================================
 # STEP 1: BUILD COMPOSITE BASELINE (Pre-March 2020)
@@ -47,13 +47,14 @@ clean_baseline <- function(file_path, prefix) {
     paste0(prefix, "_sex"),              # Gender
     paste0(prefix, "_age_dv"),           # Age
     paste0(prefix, "_gor_dv"),           # Region
+    paste0(prefix, "_isced11_dv"),       # Education
     
     # --- EMPLOYMENT ---
-    paste0(prefix, "_jbstat"),        # Status
+    paste0(prefix, "_jbstat"),           # Status
     paste0(prefix, "_jbsic07_cc"),       # Industry (SIC)
     paste0(prefix, "_jbsoc10_cc"),       # Occupation (SOC)
     paste0(prefix, "_jbft_dv"),          # Full-time/Part-time
-    paste0(prefix, "_jbhrs_dv"),         # Hours
+    paste0(prefix, "_jbhrs"),            # Hours
     paste0(prefix, "_jbsect"),           # Public/Private
     paste0(prefix, "_jbterm1"),          # Perm/Temp
     
@@ -90,7 +91,9 @@ df_j_clean <- df_j %>%
 
 # 4. Combine
 df_baseline <- bind_rows(df_k_clean, df_j_clean) %>%
-  rename_with(~ paste0("base_", .), -pidp) # Prefix everything with 'base_'
+  rename_with(~ paste0("base_", .), -pidp) %>%  # Prefix everything with 'base_'
+  mutate(base_base_isced11_dv = if_else(base_isced11_dv == 8,7,base_isced11_dv),
+         base_base_isced11_dv = if_else(base_isced11_dv <0 ,NA,base_isced11_dv)) # merge PhD with MA and merge the NAs
 
 print(paste("Baseline Built. N =", nrow(df_baseline)))
 
@@ -116,6 +119,8 @@ load_covid_wave <- function(wave_prefix) {
                     paste0(wave_prefix, "_ff_furlough"),   # Furlough Status
                     
                     paste0(wave_prefix, "_hours"),      # hours worked last week
+                    paste0(wave_prefix, "_blwork"),     # baseline worked in Jan-Feb 2020
+                    
                     paste0(wave_prefix, "_blhours"),    # baseline hours - weekly hours in Jan-Feb 2020
                     paste0(wave_prefix, "_blwah"),      # Baseline: worked at home
                     paste0(wave_prefix, "_sempderived"),# employed (1 - employed, 2 - self-employed, 3 - both, 4 - no)
@@ -157,6 +162,12 @@ print("COVID Waves Merged.")
 # =========================================================================
 print("--- Step 4: Creating Individual Panel ---")
 
+first_valid <- function(x) {
+  x2 <- x[!is.na(x) & x != -8]
+  if (length(x2) == 0) NA else x2[1]
+}
+
+
 df_ind_panel <- df_baseline %>%
   left_join(df_covid_all, by = "pidp") %>%
   # left_join(df_l, by = "pidp") %>%
@@ -196,13 +207,37 @@ df_sample <- df_ind_panel %>%
   filter(rowSums(!is.na(across(starts_with("c")))) > 0)  %>% 
   pivot_longer(starts_with("c"), names_sep = "_", names_to = c("wave", "var"), values_to = "val") %>% 
   pivot_wider(names_from = var, values_from = val)%>% 
-  mutate(group = case_when(shutdown_sec == 1 ~ "shutdown sector",
+  mutate(group_self_report = case_when(shutdown_sec == 1 ~ "shutdown sector",
                            keyworker == 1 | keyworksector %in% 1:8 ~ "key worker",
                            T ~ "other"),
-         group_my_def = case_when(shutdown_sec == 1 ~ "shutdown sector",
+         group_industry_based = case_when(shutdown_sec == 1 ~ "shutdown sector",
                                   keyworker_my_def == 1 ~ "key worker",
-                                  T ~ "other"))
+                                  T ~ "other"),
+         group_industry_based_detailed = case_when(shutdown_sec == 1 ~ "shutdown sector",
+                                                   keyworker_health_social == 1 ~ "key worker - health and social services",
+                                                   keyworker_education == 1 ~ "key worker - education",
+                                                   keyworker_public_safety == 1 ~ "key worker - public safety",
+                                                   T ~ "other"))
 
+df_sample <- df_sample %>% 
+  arrange(pidp, wave) %>% 
+  group_by(pidp) %>% 
+  mutate(across(starts_with("bl"), first_valid)) %>% 
+  ungroup()
+df_precovid <- df_sample %>% 
+  group_by(pidp) %>% 
+  slice_head(n=1) %>% 
+  mutate(wave = "baseline",sempderived = blwork , hours = blhours, wah = blwah) %>% 
+  ungroup()
+df_2019 <- df_sample %>% 
+  group_by(pidp) %>% 
+  slice_head(n=1) %>% 
+  mutate(wave = "2019",sempderived = base_jbstat , hours = base_jbhrs) %>% 
+  ungroup()
+
+df_sample <- bind_rows(df_2019, df_precovid, df_sample) %>% 
+  mutate(hours = if_else(sempderived == 4 & is.na(hours), -8, hours),
+         wah = if_else(sempderived == 4 & is.na(wah), -8, wah))
 # plot - working any hour last week, april 2020, by industry ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0) %>%
@@ -526,8 +561,8 @@ ggsave("wfh_may20_ind_perc.png",p,path = fig_path,width = 12, height = 8)
 # plot - working any hour last week, april 2020, by group  ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
-  ggplot(aes(x = fct_infreq(group_my_def), fill = factor(hours>0, levels = c(T,F), labels = c("Yes", "No") ))) +
+  add_count(group_industry_based) %>%
+  ggplot(aes(x = fct_infreq(group_industry_based), fill = factor(hours>0, levels = c(T,F), labels = c("Yes", "No") ))) +
   geom_bar() +
   coord_flip()+scale_x_discrete(limits = rev)+labs(fill = "Worked at all last week", x = element_blank(), title = "Worked last week, April 2020")+
   theme(legend.position = "bottom")
@@ -538,12 +573,12 @@ ggsave("worked_at_all_april20_groups.png",p,path = fig_path,width = 12, height =
 # in percentages
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
-  group_by(group_my_def) %>%
+  add_count(group_industry_based) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_yes = mean(hours > 0),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")")
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")")
   ) %>%
   ungroup() %>%
   ggplot(aes(
@@ -557,11 +592,45 @@ p <- df_sample %>%
 p
 ggsave("worked_at_all_april20_groups_perc.png",p,path = fig_path,width = 12, height = 8)
 
+# plot - working any hour last week, april 2020, by  detailed group  ----
+p <- df_sample %>%
+  filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
+  add_count(group_industry_based_detailed) %>%
+  ggplot(aes(x = fct_infreq(group_industry_based_detailed), fill = factor(hours>0, levels = c(T,F), labels = c("Yes", "No") ))) +
+  geom_bar() +
+  coord_flip()+scale_x_discrete(limits = rev)+labs(fill = "Worked at all last week", x = element_blank(), title = "Worked last week, April 2020")+
+  theme(legend.position = "bottom")
+p
+
+ggsave("worked_at_all_april20_groups_detailed.png",p,path = fig_path,width = 12, height = 8)
+
+# in percentages
+p <- df_sample %>%
+  filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
+  add_count(group_industry_based_detailed) %>%
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_yes = mean(hours > 0),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")")
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(
+    x = fct_reorder(industry_lab, share_yes, .desc = TRUE),
+    fill = factor(hours > 0, levels = c(TRUE, FALSE), labels = c("Yes", "No"))
+  )) +
+  geom_bar(position = "fill") +
+  coord_flip() +   scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Worked at all last week", x = NULL,y= NULL, title = "Worked last week, April 2020") +
+  theme(legend.position = "bottom")
+p
+ggsave("worked_at_all_april20_groups_detailed_perc.png",p,path = fig_path,width = 12, height = 8)
+
 # plot - work status, april 2020, by group ----
 
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(sempderived) & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(industry = if_else(n<25,"other",industry),
          status = case_when(sempderived <0 ~ "Missing",
                             sempderived == 1 ~ "Employed",
@@ -578,7 +647,7 @@ p <- df_sample %>%
              "Missing"
            )
          )) %>% 
-  ggplot(aes(x = fct_infreq(group_my_def), fill =status)) +
+  ggplot(aes(x = fct_infreq(group_industry_based), fill =status)) +
   geom_bar(position= position_stack(reverse = TRUE)) +
   coord_flip()+scale_x_discrete(limits = rev)+labs(fill = "Work status", x = element_blank(), title = "Work status, April 2020")+
   theme(legend.position = "bottom")
@@ -588,7 +657,7 @@ ggsave("work_status_april20_groups.png",p,path = fig_path,width = 14, height = 8
 # in percentages
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(sempderived)& base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(
     industry = if_else(n < 25, "other", industry),
     status = case_when(
@@ -599,11 +668,11 @@ p <- df_sample %>%
       TRUE ~ "Not employed"
     )
   ) %>%
-  group_by(group_my_def) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_not = mean(status == "Not employed"),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")"),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
     status = factor(
       status,
       levels = c(
@@ -632,18 +701,18 @@ ggsave("work_status_april20_groups_perc.png",p,path = fig_path,width = 14, heigh
 # plot - furloughed, april 2020, by group status ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(sempderived) & sempderived > 0 & base_jbsic07_cc >=0 ) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(
          furlough = case_when(sempderived %in% c(2,4) ~ "Self- or not employed",
                               furlough == 1 ~ "Yes",
                               furlough == 2 ~ "No",
                               T ~ NA)) %>%
   filter(!is.na(furlough)) %>% 
-  group_by(group_my_def) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_fur = mean(furlough == "Yes", na.rm = T),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")"),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
     furlough = factor(
       furlough,
       levels = c(
@@ -665,10 +734,46 @@ p <- df_sample %>%
 p
 ggsave("furlough_april20_groups_perc.png",p,path = fig_path,width = 12, height = 8)
 
+# plot - furloughed, april 2020, by detailed group status ----
+p <- df_sample %>%
+  filter(wave == "ca" & !is.na(sempderived) & sempderived > 0 & base_jbsic07_cc >=0 ) %>%
+  add_count(group_industry_based_detailed) %>%
+  mutate(
+    furlough = case_when(sempderived %in% c(2,4) ~ "Self- or not employed",
+                         furlough == 1 ~ "Yes",
+                         furlough == 2 ~ "No",
+                         T ~ NA)) %>%
+  filter(!is.na(furlough)) %>% 
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_fur = mean(furlough == "Yes", na.rm = T),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")"),
+    furlough = factor(
+      furlough,
+      levels = c(
+        "Yes",
+        "No",
+        "Self- or not employed"
+      )
+    )
+  ) %>% ungroup() %>%
+  ggplot(aes(
+    x = fct_reorder(industry_lab, share_fur, .desc = TRUE),
+    fill = furlough
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Furloughed", x = NULL, y = NULL, title = "Furlough, April 2020") +
+  theme(legend.position = "bottom")
+p
+ggsave("furlough_april20_groups_detailed_perc.png",p,path = fig_path,width = 12, height = 8)
+
 # plot - WFH, april 2020, by group ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(industry = if_else(n<25,"other",industry),
          WFH = case_when(sempderived %in% c(4) ~ "Not employed",
                               wah == 1 ~ "Always",
@@ -677,11 +782,11 @@ p <- df_sample %>%
                          wah == 4 ~ "Never",
                               T ~ NA)) %>%
   filter(!is.na(WFH)) %>% 
-  group_by(group_my_def) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_always = mean(WFH == "Always", na.rm = T),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")"),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
     WFH = factor(
       WFH,
       levels = c(
@@ -700,11 +805,46 @@ p <- df_sample %>%
 p
 ggsave("wfh_april20_groups_perc.png",p,path = fig_path,width = 12, height = 8)
 
+# plot - WFH, april 2020, by detailed group ----
+p <- df_sample %>%
+  filter(wave == "ca" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
+  add_count(group_industry_based_detailed) %>%
+  mutate(industry = if_else(n<25,"other",industry),
+         WFH = case_when(sempderived %in% c(4) ~ "Not employed",
+                         wah == 1 ~ "Always",
+                         wah == 2 ~ "Often",
+                         wah == 3 ~ "Sometimes",
+                         wah == 4 ~ "Never",
+                         T ~ NA)) %>%
+  filter(!is.na(WFH)) %>% 
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_always = mean(WFH == "Always", na.rm = T),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")"),
+    WFH = factor(
+      WFH,
+      levels = c(
+        "Always", "Often", "Sometimes","Never", "Not employed"  )
+    )
+  ) %>% ungroup() %>%
+  ggplot(aes(
+    x = fct_reorder(industry_lab, share_always, .desc = F),
+    fill = WFH
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Work from home", x = NULL, y = NULL, title = "Work from home, April 2020") +
+  theme(legend.position = "bottom")
+p
+ggsave("wfh_april20_detailed_groups_perc.png",p,path = fig_path,width = 12, height = 8)
+
 # plot - working any hour last week, may 2020, by group  ----
 p <- df_sample %>%
   filter(wave == "cb" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
-  ggplot(aes(x = fct_infreq(group_my_def), fill = factor(hours>0, levels = c(T,F), labels = c("Yes", "No") ))) +
+  add_count(group_industry_based) %>%
+  ggplot(aes(x = fct_infreq(group_industry_based), fill = factor(hours>0, levels = c(T,F), labels = c("Yes", "No") ))) +
   geom_bar() +
   coord_flip()+scale_x_discrete(limits = rev)+labs(fill = "Worked at all last week", x = element_blank(), title = "Worked last week, May 2020")+
   theme(legend.position = "bottom")
@@ -715,12 +855,12 @@ ggsave("worked_at_all_may20_groups.png",p,path = fig_path,width = 12, height = 8
 # in percentages
 p <- df_sample %>%
   filter(wave == "cb" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
-  group_by(group_my_def) %>%
+  add_count(group_industry_based) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_yes = mean(hours > 0),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")")
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")")
   ) %>%
   ungroup() %>%
   ggplot(aes(
@@ -734,11 +874,34 @@ p <- df_sample %>%
 p
 ggsave("worked_at_all_may20_groups_perc.png",p,path = fig_path,width = 12, height = 8)
 
+# by detialed group
+
+p <- df_sample %>%
+  filter(wave == "cb" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
+  add_count(group_industry_based_detailed) %>%
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_yes = mean(hours > 0),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")")
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(
+    x = fct_reorder(industry_lab, share_yes, .desc = TRUE),
+    fill = factor(hours > 0, levels = c(TRUE, FALSE), labels = c("Yes", "No"))
+  )) +
+  geom_bar(position = "fill") +
+  coord_flip() +   scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Worked at all last week", x = NULL,y= NULL, title = "Worked last week, May 2020") +
+  theme(legend.position = "bottom")
+p
+ggsave("worked_at_all_may20_detailed_groups_perc.png",p,path = fig_path,width = 12, height = 8)
+
 # plot - work status, may 2020, by group ----
 
 p <- df_sample %>%
   filter(wave == "cb" & !is.na(sempderived) & base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(industry = if_else(n<25,"other",industry),
          status = case_when(sempderived <0 ~ "Missing",
                             sempderived == 1 ~ "Employed",
@@ -755,7 +918,7 @@ p <- df_sample %>%
              "Missing"
            )
          )) %>% 
-  ggplot(aes(x = fct_infreq(group_my_def), fill =status)) +
+  ggplot(aes(x = fct_infreq(group_industry_based), fill =status)) +
   geom_bar(position= position_stack(reverse = TRUE)) +
   coord_flip()+scale_x_discrete(limits = rev)+labs(fill = "Work status", x = element_blank(), title = "Work status, May 2020")+
   theme(legend.position = "bottom")
@@ -765,7 +928,7 @@ ggsave("work_status_may20_groups.png",p,path = fig_path,width = 14, height = 8)
 # in percentages
 p <- df_sample %>%
   filter(wave == "cb" & !is.na(sempderived)& base_jbsic07_cc >=0) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(
     industry = if_else(n < 25, "other", industry),
     status = case_when(
@@ -776,11 +939,11 @@ p <- df_sample %>%
       TRUE ~ "Not employed"
     )
   ) %>%
-  group_by(group_my_def) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_not = mean(status == "Not employed"),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")"),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
     status = factor(
       status,
       levels = c(
@@ -809,7 +972,7 @@ ggsave("work_status_may20_groups_perc.png",p,path = fig_path,width = 14, height 
 # plot - WFH, May 2020, by group ----
 p <- df_sample %>%
   filter(wave == "cb" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
-  add_count(group_my_def) %>%
+  add_count(group_industry_based) %>%
   mutate(industry = if_else(n<25,"other",industry),
          WFH = case_when(sempderived %in% c(4) ~ "Not employed",
                          wah == 1 ~ "Always",
@@ -818,11 +981,11 @@ p <- df_sample %>%
                          wah == 4 ~ "Never",
                          T ~ NA)) %>%
   filter(!is.na(WFH)) %>% 
-  group_by(group_my_def) %>%
+  group_by(group_industry_based) %>%
   mutate(
     n_ind = n(),
     share_always = mean(WFH == "Always", na.rm = T),
-    industry_lab = paste0(group_my_def, " (n=", n_ind, ")"),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
     WFH = factor(
       WFH,
       levels = c(
@@ -841,35 +1004,330 @@ p <- df_sample %>%
 p
 ggsave("wfh_may20_groups_perc.png",p,path = fig_path,width = 12, height = 8)
 
+# by detailed group
+p <- df_sample %>%
+  filter(wave == "cb" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
+add_count(group_industry_based_detailed) %>%
+  mutate(industry = if_else(n<25,"other",industry),
+         WFH = case_when(sempderived %in% c(4) ~ "Not employed",
+                         wah == 1 ~ "Always",
+                         wah == 2 ~ "Often",
+                         wah == 3 ~ "Sometimes",
+                         wah == 4 ~ "Never",
+                         T ~ NA)) %>%
+  filter(!is.na(WFH)) %>% 
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_always = mean(WFH == "Always", na.rm = T),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")"),
+    WFH = factor(
+      WFH,
+      levels = c(
+        "Always", "Often", "Sometimes","Never", "Not employed"  )
+    )
+  ) %>% ungroup() %>%
+  ggplot(aes(
+    x = fct_reorder(industry_lab, share_always, .desc = F),
+    fill = WFH
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Work from home", x = NULL, y = NULL, title = "Work from home, May 2020") +
+  theme(legend.position = "bottom")
+p
+ggsave("wfh_may20_detailed_groups_perc.png",p,path = fig_path,width = 12, height = 8)
+
 # plot work at all over time by group ----
 
 p <- df_sample %>%
   filter(!is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
-  group_by(group_my_def, wave) %>% 
+  group_by(group_industry_based, wave) %>% 
   summarize(work = mean(hours > 0)) %>% 
-  ggplot(aes(x = wave, y = work, color = group_my_def)) +
+  ggplot(aes(x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                        labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                   "Jan 21", "Mar 21", "Sep 21")), y = work, color = group_industry_based)) +
   geom_point()+
   theme_minimal()+
   scale_y_continuous(labels = percent_format()) +
-  scale_x_discrete(labels = c("Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
-                              "Jan 21", "Mar 21", "Sep 21")) + 
   labs(color = NULL, x = NULL, y = "Worked at all last week", title = "Worked last week") +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("worked_at_all_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
 
+# by detailed group
+p <- df_sample %>%
+  filter(!is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
+  group_by(group_industry_based_detailed, wave) %>% 
+  summarize(work = mean(hours > 0)) %>% 
+  ggplot(aes(x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                        labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                   "Jan 21", "Mar 21", "Sep 21")), y = work, color = group_industry_based_detailed, shape = group_industry_based_detailed)) +
+  geom_point()+
+  theme_minimal()+
+  scale_y_continuous(labels = percent_format()) +
+  labs(color = NULL, x = NULL,shape = NULL, y = "Worked at all last week", title = "Worked last week") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
+p
+ggsave("worked_at_all_detailed_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
 
+# plot working hours over time by group ----
 p <- df_sample %>%
   filter(!is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
   mutate(hours = if_else(hours== -8, 0 ,hours)) %>% 
-  group_by(group_my_def, wave) %>% 
+  group_by(group_industry_based, wave) %>% 
   summarize(work_hours = mean(hours)) %>% 
-  ggplot(aes(x = wave, y = work_hours, color = group_my_def)) +
+  ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                            labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                       "Jan 21", "Mar 21", "Sep 21")),, y = work_hours, color = group_industry_based)) +
   geom_point()+
   theme_minimal()+
-  scale_x_discrete(labels = c("Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
-                              "Jan 21", "Mar 21", "Sep 21")) + 
+  
   labs(color = NULL, x = NULL, y = "Hours worked last week", title = "Hours worked last week") +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("hours_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
+# by detailed groups
+p <- df_sample %>%
+  filter(!is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0 & base_jbsic07_cc >=0) %>%
+  mutate(hours = if_else(hours== -8, 0 ,hours)) %>% 
+  group_by(group_industry_based_detailed, wave) %>% 
+  summarize(work_hours = mean(hours)) %>% 
+  ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                         labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                    "Jan 21", "Mar 21", "Sep 21")),, y = work_hours,
+              color = group_industry_based_detailed, shape = group_industry_based_detailed)) +
+  geom_point()+
+  theme_minimal()+
+  
+  labs(color = NULL, x = NULL,shape = NULL, y = "Hours worked last week", title = "Hours worked last week") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
+p
+ggsave("hours_detialed_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
+# plot - WFH, over time, by group ----
+p <- df_sample %>%
+  filter(wave != "2019" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
+  add_count(group_industry_based) %>%
+  mutate(industry = if_else(n<25,"other",industry),
+         WFH = case_when(sempderived %in% c(4) ~ "Not employed",
+                         wah == 1 ~ "Always",
+                         wah == 2 ~ "Often",
+                         wah == 3 ~ "Sometimes",
+                         wah == 4 ~ "Never",
+                         T ~ NA)) %>%
+  filter(!is.na(WFH)) %>% 
+  group_by(group_industry_based) %>%
+  mutate(
+    n_ind = n(),
+    share_always = mean(WFH == "Always", na.rm = T),
+    industry_lab = paste0(group_industry_based, " (n=", n_ind, ")"),
+    WFH = factor(
+      WFH,
+      levels = c(
+        "Always", "Often", "Sometimes","Never", "Not employed"  )
+    )
+  ) %>% ungroup() %>%
+  ggplot(aes(
+    x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                           "Jan 21", "Mar 21", "Sep 21")),
+    fill = WFH
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  facet_grid(~group_industry_based) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Work from home", x = NULL, y = NULL, title = "Work from home") +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+p
+ggsave("wfh_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
+
+# detailed groups
+
+p <- df_sample %>%
+  filter(wave != "2019" & !is.na(sempderived) & sempderived > 0  & base_jbsic07_cc >=0 ) %>%
+  add_count(group_industry_based_detailed) %>%
+  mutate(industry = if_else(n<25,"other",industry),
+         WFH = case_when(sempderived %in% c(4) ~ "Not employed",
+                         wah == 1 ~ "Always",
+                         wah == 2 ~ "Often",
+                         wah == 3 ~ "Sometimes",
+                         wah == 4 ~ "Never",
+                         T ~ NA)) %>%
+  filter(!is.na(WFH)) %>% 
+  group_by(group_industry_based_detailed) %>%
+  mutate(
+    n_ind = n(),
+    share_always = mean(WFH == "Always", na.rm = T),
+    industry_lab = paste0(group_industry_based_detailed, " (n=", n_ind, ")"),
+    WFH = factor(
+      WFH,
+      levels = c(
+        "Always", "Often", "Sometimes","Never", "Not employed"  )
+    )
+  ) %>% ungroup() %>%
+  ggplot(aes(
+    x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+               labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                          "Jan 21", "Mar 21", "Sep 21")),
+    fill = WFH
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  facet_grid(~group_industry_based_detailed) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Work from home", x = NULL, y = NULL, title = "Work from home") +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+p
+ggsave("wfh_detialed_groups_overtime.png",p,path = fig_path,width = 12, height = 8)
+
+
+# explore working last week and wfh ----
+
+p <- df_sample %>% 
+  filter(wave == "ca" & sempderived >0) %>% 
+  mutate(WFH = case_when(sempderived %in% c(4) ~ "Not employed",
+                         wah == 1 ~ "Always",
+                         wah == 2 ~ "Often",
+                         wah == 3 ~ "Sometimes",
+                         wah == 4 ~ "Never",
+                         T ~ NA),
+         worked_last_week = if_else(hours>0,T,F),
+         WFH = factor(
+           WFH,
+           levels = c(
+             "Always", "Often", "Sometimes","Never", "Not employed"  ))) %>% 
+  add_count(worked_last_week) %>% 
+  mutate(worked_last_week = if_else(worked_last_week,paste0("Worked last week", " (n=", n, ")" ),paste0("Didn't work last week", " (n=", n, ")" )) ) %>% 
+  ggplot(aes(
+    x = worked_last_week,
+    fill = WFH
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Work from home", x = NULL, y = NULL, title = "WFH by hours worked, April 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+  
+ggsave("worked_at_all_wfh_april20.png",p, path = fig_path, width = 12, height = 8 )           
+
+
+# explore keyworker definitions ----
+
+
+p <- df_sample %>% 
+  filter(wave == "ca" & sempderived >0) %>% 
+  mutate(keyworker_slf = case_when(keyworker == 1 ~ "Yes",
+                                   keyworker == 2 ~ "No",
+                                   sempderived == 4 ~ "Not employed",
+                                   T ~ "Missing"),
+         keyworker_slf = factor(keyworker_slf, levels = c("Yes", "No", "Not employed", "Missing"))) %>% 
+  
+  ggplot(aes(
+    x = group_industry_based,
+    fill = keyworker_slf
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Self reported key worker status", x = NULL, y = NULL,
+       title = "Industry based groups and keyworker status, April 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+p
+ggsave("keyworker_def_explore_groups_april20.png",p, path = fig_path, width = 12, height = 8 )           
+
+p <- df_sample %>% 
+  filter(wave == "ca" & sempderived >0) %>% 
+  mutate(keyworker_slf = case_when(keyworker == 1 ~ "Yes",
+                                   keyworker == 2 ~ "No",
+                                   sempderived == 4 ~ "Not employed",
+                                   T ~ "Missing"),
+         keyworker_slf = factor(keyworker_slf, levels = c("Yes", "No", "Not employed", "Missing"))) %>% 
+  
+  ggplot(aes(
+    x = group_industry_based_detailed,
+    fill = keyworker_slf
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Self reported key worker status", x = NULL, y = NULL,
+       title = "Industry based groups and keyworker status, April 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+p
+ggsave("keyworker_def_explore_detailed_groups_april20.png",p, path = fig_path, width = 12, height = 8 )           
+
+
+p <- df_sample %>% 
+  filter(wave == "cb" & sempderived >0) %>% 
+  mutate(keyworker_slf = case_when(keyworksector %in% 1:8 ~ "Yes",
+                                   keyworksector == 9 ~ "No",
+                                   sempderived == 4 ~ "Not employed",
+                                   T ~ "Missing"),
+         keyworker_slf = factor(keyworker_slf, levels = c("Yes", "No", "Not employed", "Missing"))) %>% 
+  
+  ggplot(aes(
+    x = group_industry_based,
+    fill = keyworker_slf
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Self reported key worker status", x = NULL, y = NULL,
+       title = "Industry based groups and keyworker status, May 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+p
+ggsave("keyworker_def_explore_groups_may20.png",p, path = fig_path, width = 12, height = 8 )           
+
+p <- df_sample %>% 
+  filter(wave == "cb" & sempderived >0) %>% 
+  mutate(keyworker_slf = case_when(keyworksector %in% 1:8 ~ "Yes",
+                                   keyworksector == 9 ~ "No",
+                                   sempderived == 4 ~ "Not employed",
+                                   T ~ "Missing"),
+         keyworker_slf = factor(keyworker_slf, levels = c("Yes", "No", "Not employed", "Missing"))) %>% 
+  
+  ggplot(aes(
+    x = group_industry_based_detailed,
+    fill = keyworker_slf
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Self reported key worker status", x = NULL, y = NULL,
+       title = "Industry based groups and keyworker status, May 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+p
+ggsave("keyworker_def_explore_detailed_groups_may20.png",p, path = fig_path, width = 12, height = 8 ) 
+
+p <- df_sample %>% 
+  filter(wave == "cb" & sempderived >0) %>% 
+  mutate(keyworker_slf = case_when(keyworksector == 1 ~ "Health and social care",
+                                   keyworksector == 2 ~ "Education and childcare",
+                                   keyworksector == 3 ~ "Key public services",
+                                   keyworksector == 4 ~ "Local and national government",
+                                   keyworksector == 5 ~ "Food and other necessary goods",
+                                   keyworksector == 6 ~ "Public safety and national security",
+                                   keyworksector == 7 ~ "Transport",
+                                   keyworksector == 8 ~ "Utilities, communications and financial services",
+                                   keyworksector == 9 ~ "Not key worker",
+                                   sempderived == 4 ~ "Not employed",
+                                   T ~ "Missing"),
+         keyworker_slf = factor(keyworker_slf, levels = c("Health and social care", "Education and childcare", "Key public services",
+                                                          "Local and national government", "Food and other necessary goods", "Public safety and national security",
+                                                          "Transport","Utilities, communications and financial services","Not key worker",
+                                                          "Not employed", "Missing"))) %>% 
+  
+  ggplot(aes(
+    x = group_industry_based_detailed,
+    fill = keyworker_slf
+  )) +
+  geom_bar(position = position_fill(reverse = TRUE)) +
+  scale_y_continuous(labels = percent_format()) +
+  labs(fill = "Self reported key keywork sector", x = NULL, y = NULL,
+       title = "Industry based groups and keywork sector, May 2020") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+p
+ggsave("keywork_sector_def_explore_detailed_groups_may20.png",p, path = fig_path, width = 12, height = 8 ) 
