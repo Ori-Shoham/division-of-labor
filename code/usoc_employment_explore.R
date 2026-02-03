@@ -92,8 +92,8 @@ df_j_clean <- df_j %>%
 # 4. Combine
 df_baseline <- bind_rows(df_k_clean, df_j_clean) %>%
   rename_with(~ paste0("base_", .), -pidp) %>%  # Prefix everything with 'base_'
-  mutate(base_base_isced11_dv = if_else(base_isced11_dv == 8,7,base_isced11_dv),
-         base_base_isced11_dv = if_else(base_isced11_dv <0 ,NA,base_isced11_dv)) # merge PhD with MA and merge the NAs
+  mutate(base_isced11_dv = if_else(base_isced11_dv == 8,7,base_isced11_dv),
+         base_isced11_dv = if_else(base_isced11_dv <0 ,NA,base_isced11_dv)) # merge PhD with MA and merge the NAs
 
 print(paste("Baseline Built. N =", nrow(df_baseline)))
 
@@ -237,7 +237,12 @@ df_2019 <- df_sample %>%
 
 df_sample <- bind_rows(df_2019, df_precovid, df_sample) %>% 
   mutate(hours = if_else(sempderived == 4 & is.na(hours), -8, hours),
-         wah = if_else(sempderived == 4 & is.na(wah), -8, wah))
+         wah = if_else(sempderived == 4 & is.na(wah), -8, wah),
+         workoutside = case_when(sempderived < 0 ~ NA,
+                                 hours <= 0 ~ 0,
+                                 wah == 1 ~ 0,
+                                 wah %in% 2:4 ~ 1, 
+                                 T ~NA))
 # plot - working any hour last week, april 2020, by industry ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0) %>%
@@ -1331,3 +1336,75 @@ p <- df_sample %>%
   theme(legend.position = "bottom")
 p
 ggsave("keywork_sector_def_explore_detailed_groups_may20.png",p, path = fig_path, width = 12, height = 8 ) 
+
+# Plot workoutside ----
+
+p <- df_sample %>% 
+  filter(wave != "2019") %>% 
+  group_by(wave) %>% 
+  summarize(workoutside = mean(workoutside, na.rm = T))%>% 
+  ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                         labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside)) +
+  geom_point()+
+  theme_minimal()+
+  scale_y_continuous(labels = percent_format()) +
+  
+  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
+p
+ggsave("workoutside_overtime.png",p, path = fig_path, width = 12, height = 8 ) 
+
+# by group
+
+p <- df_sample %>% 
+  filter(wave != "2019") %>% 
+  group_by(wave, group_industry_based) %>% 
+  summarize(workoutside = mean(workoutside, na.rm = T))%>% 
+  ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                         labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside, color = group_industry_based)) +
+  geom_point()+
+  theme_minimal()+
+  scale_y_continuous(labels = percent_format()) +
+  
+  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
+p
+ggsave("workoutside_overtime_groups.png",p, path = fig_path, width = 12, height = 8 ) 
+
+# by detailed group
+
+p <- df_sample %>% 
+  filter(wave != "2019") %>% 
+  group_by(wave, group_industry_based_detailed) %>% 
+  summarize(workoutside = mean(workoutside, na.rm = T))%>% 
+  ggplot(aes( x = factor(wave, levels = c("2019", "baseline", "ca", "cb", "cc", "cd", "ce", "cf", "cg","ch", "ci"),
+                         labels = c("2019","Jan-Feb 20","Apr 20", "May 20", "Jun 20", "Jul 20", "Sep 20", "Nov 20",
+                                    "Jan 21", "Mar 21", "Sep 21")), y = workoutside, color = group_industry_based_detailed)) +
+  geom_point()+
+  theme_minimal()+
+  scale_y_continuous(labels = percent_format()) +
+  
+  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
+p
+ggsave("workoutside_overtime_detailed_groups.png",p, path = fig_path, width = 12, height = 8 ) 
+
+df_sample <- df_sample %>% 
+  mutate(group_industry_based_detailed = relevel(factor(group_industry_based_detailed), ref = "other"))
+
+lm(workoutside ~ factor(base_jbsic07_cc) + factor(base_jbsoc10_cc), data = df_sample %>% filter(wave == "ca")) %>% 
+  summary()
+
+lm(workoutside ~ factor(group_industry_based_detailed) , data = df_sample %>% filter(wave == "ca")) %>% 
+  summary()
+
+lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca")) %>% 
+  summary()
+
+lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 1)) %>% 
+  summary()
+
+lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 2)) %>% 
+  summary()
