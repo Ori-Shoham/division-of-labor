@@ -1404,7 +1404,11 @@ mod_c <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(
 mod_d <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 1)) 
 
 mod_e <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 2)) 
-
+summary(mod_a)
+summary(mod_b)
+summary(mod_c)
+summary(mod_d)
+summary(mod_e)
 library(modelsummary)
 models <- list(
   "A" = mod_a,

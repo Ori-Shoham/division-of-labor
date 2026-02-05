@@ -1396,20 +1396,58 @@ ggsave("workoutside_overtime_detailed_groups.png",p, path = fig_path, width = 12
 df_sample <- df_sample %>% 
   mutate(group_industry_based_detailed = relevel(factor(group_industry_based_detailed), ref = "other"))
 
-lm(workoutside ~ factor(base_jbsic07_cc) + factor(base_jbsoc10_cc), data = df_sample %>% filter(wave == "ca")) %>% 
-  summary()
+mod_a <- lm(workoutside ~ factor(base_jbsic07_cc) + factor(base_jbsoc10_cc), data = df_sample %>% filter(wave == "ca")) 
 
-lm(workoutside ~ factor(group_industry_based_detailed) , data = df_sample %>% filter(wave == "ca")) %>% 
-  summary()
+mod_b <- lm(workoutside ~ factor(group_industry_based_detailed) , data = df_sample %>% filter(wave == "ca")) 
 
-lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca")) %>% 
-  summary()
+mod_c <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca")) 
+mod_d <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 1)) 
 
-lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 1)) %>% 
-  summary()
+mod_e <- lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 2)) 
+summary(mod_a)
+summary(mod_b)
+summary(mod_c)
+summary(mod_d)
+summary(mod_e)
+library(modelsummary)
+models <- list(
+  "A" = mod_a,
+  "B" = mod_b,
+  "C" = mod_c,
+  "D" = mod_d,
+  "E" = mod_e
+)
 
-lm(workoutside ~ factor(group_industry_based_detailed)+base_age_dv + I(base_age_dv^2)+ I(base_age_dv^3) + factor(base_isced11_dv ) , data = df_sample %>% filter(wave == "ca" & base_sex == 2)) %>% 
-  summary()
+coef_map <- c(
+  "(Intercept)" = "Intercept",
+  "factor(group_industry_based_detailed)key worker - education" = "Key – education",
+  "factor(group_industry_based_detailed)key worker - health and social services" = "Key – health",
+  "factor(group_industry_based_detailed)key worker - public safety" = "Key – public safety",
+  "factor(group_industry_based_detailed)shutdown sector" = "Shutdown sector"
+)
 
-
-cxc
+add_rows <- tibble::tibble(
+  term = c(
+    "Industry FE",
+    "Occupation FE",
+    "Age controls",
+    "Education controls",
+    "Sample"
+  ),
+  A = c("✓", "✓", "", "", "All"),
+  B = c("", "", "", "", "All"),
+  C = c("", "", "✓", "✓", "All"),
+  D = c("", "", "✓", "✓", "Males"),
+  E = c("", "", "✓", "✓", "Females")
+)
+modelsummary(
+  models,
+  coef_map = coef_map,
+  statistic = "std.error",
+  stars = TRUE,
+  gof_map = c("nobs", "r.squared"),
+  add_rows = add_rows,
+  output = "tables/workoutside_industry_comparison.tex",
+  title = "Work Outside by Industry Group",
+  notes = "Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01"
+)
