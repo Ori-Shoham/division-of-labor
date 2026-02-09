@@ -1456,13 +1456,12 @@ modelsummary(
   gof_map = c("nobs", "r.squared"),
   add_rows = add_rows,
   escape = FALSE,
-  title = "Outcome: \\textit{Workoutside} in April 2020",
+  title = "\\textit{Workoutside} in April 2020",
   notes = c(
     "Robust standard errors (HC1) in parentheses.",
-    "* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01."
+    "* p < 0.1, ** p < 0.05, *** p < 0.01."
   ),
   output = "tables/workoutside_industry_comparison.tex"
 )
 
-library(lmtest)
-coeftest(mod_b, vcov = vcovHC(mod_b, "HC1"))
+
