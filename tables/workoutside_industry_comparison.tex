@@ -1,35 +1,31 @@
 \begin{table}
 \centering
-\begin{talltblr}[         %% tabularray outer open
-caption={Work Outside by Industry Group},
-note{}={+ p \num{< 0.1}, * p \num{< 0.05}, ** p \num{< 0.01}, *** p \num{< 0.001}},
-note{ }={Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01},
-]                     %% tabularray outer close
-{                     %% tabularray inner open
-colspec={Q[]Q[]Q[]Q[]Q[]Q[]},
-column{2,3,4,5,6}={}{halign=c,},
-column{1}={}{halign=l,},
-hline{12}={1,2,3,4,5,6}{solid, black, 0.05em},
-}                     %% tabularray inner close
+\caption{Work Outside by Industry Group}
+\centering
+\begin{tabular}[t]{lccccc}
 \toprule
-& A & B & C & D & E \\ \midrule %% TinyTableHeader
-Intercept & \num{0.359}*** & \num{0.321}*** & \num{0.283}* & \num{0.246} & \num{0.341}* \\
-& (\num{0.028}) & (\num{0.006}) & (\num{0.138}) & (\num{0.244}) & (\num{0.168}) \\
-Key – education &  & \num{-0.031}* & \num{-0.008} & \num{-0.010} & \num{0.012} \\
-&  & (\num{0.014}) & (\num{0.014}) & (\num{0.027}) & (\num{0.016}) \\
-Key – health &  & \num{0.344}*** & \num{0.358}*** & \num{0.400}*** & \num{0.370}*** \\
-&  & (\num{0.014}) & (\num{0.014}) & (\num{0.032}) & (\num{0.016}) \\
-Key – public safety &  & \num{0.379}*** & \num{0.374}*** & \num{0.397}*** & \num{0.311}*** \\
-&  & (\num{0.052}) & (\num{0.051}) & (\num{0.065}) & (\num{0.085}) \\
-Shutdown sector &  & \num{-0.151}*** & \num{-0.153}*** & \num{-0.109}** & \num{-0.151}*** \\
-&  & (\num{0.019}) & (\num{0.019}) & (\num{0.034}) & (\num{0.023}) \\
-Num.Obs. & \num{9793} & \num{9793} & \num{9717} & \num{4152} & \num{5565} \\
-R2 & \num{0.165} & \num{0.076} & \num{0.095} & \num{0.077} & \num{0.120} \\
-Industry FE & \checkmark &  &  &  &  \\
-Occupation FE & \checkmark &  &  &  &  \\
-Age controls &  &  & \checkmark & \checkmark & \checkmark \\
-Education controls &  &  & \checkmark & \checkmark & \checkmark \\
-Sample & All & All & All & Males & Females \\
+  & A & B & C & D & E\\
+\midrule
+Intercept & \num{0.359}*** & \num{0.321}*** & \num{0.283}* & \num{0.246} & \num{0.341}*\\
+ & (\num{0.028}) & (\num{0.006}) & (\num{0.138}) & (\num{0.244}) & (\num{0.168})\\
+Key – education &  & \num{-0.031}* & \num{-0.008} & \num{-0.010} & \num{0.012}\\
+ &  & (\num{0.014}) & (\num{0.014}) & (\num{0.027}) & (\num{0.016})\\
+Key – health &  & \num{0.344}*** & \num{0.358}*** & \num{0.400}*** & \num{0.370}***\\
+ &  & (\num{0.014}) & (\num{0.014}) & (\num{0.032}) & (\num{0.016})\\
+Key – public safety &  & \num{0.379}*** & \num{0.374}*** & \num{0.397}*** & \num{0.311}***\\
+ &  & (\num{0.052}) & (\num{0.051}) & (\num{0.065}) & (\num{0.085})\\
+Shutdown sector &  & \num{-0.151}*** & \num{-0.153}*** & \num{-0.109}** & \num{-0.151}***\\
+ &  & (\num{0.019}) & (\num{0.019}) & (\num{0.034}) & (\num{0.023})\\
+\midrule
+Num.Obs. & \num{9793} & \num{9793} & \num{9717} & \num{4152} & \num{5565}\\
+R2 & \num{0.165} & \num{0.076} & \num{0.095} & \num{0.077} & \num{0.120}\\
+Industry FE & \checkmark &  &  &  & \\
+Occupation FE & \checkmark &  &  &  & \\
+Age controls &  &  & \checkmark & \checkmark & \checkmark\\
+Education controls &  &  & \checkmark & \checkmark & \checkmark\\
+Sample & All & All & All & Males & Females\\
 \bottomrule
-\end{talltblr}
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01}\\
+\end{tabular}
 \end{table}

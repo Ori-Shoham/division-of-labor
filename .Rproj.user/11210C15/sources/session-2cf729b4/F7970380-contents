@@ -1444,6 +1444,8 @@ add_rows <- tibble(
 
 # then run modelsummary(..., escape = FALSE)
 
+options(modelsummary_factory_latex = "kableExtra")
+
 modelsummary(
   models,
   coef_map = coef_map,
@@ -1451,10 +1453,8 @@ modelsummary(
   stars = TRUE,
   gof_map = c("nobs", "r.squared"),
   add_rows = add_rows,
+  output = "tables/workoutside_industry_comparison.tex",
   title = "Work Outside by Industry Group",
   notes = "Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01",
-  output = "tables/workoutside_industry_comparison.tex",
-  fmt = 3,
-  escape = FALSE,
-  latex_tabular = "tabular"   # <- key line: avoid talltblr/tabularray
+  escape = FALSE
 )
