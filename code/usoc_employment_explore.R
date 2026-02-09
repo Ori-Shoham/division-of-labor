@@ -1388,7 +1388,7 @@ p <- df_sample %>%
   theme_minimal()+
   scale_y_continuous(labels = percent_format()) +
   
-  labs(color = NULL, x = NULL, y = "% Work outside last week", title = "Work outside", sahpe = NULL) +
+  labs(color = NULL, shape = NULL, x = NULL, y = "% Work outside last week", title = "Work outside") +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("workoutside_overtime_detailed_groups.png",p, path = fig_path, width = 12, height = 8 ) 
@@ -1426,7 +1426,7 @@ coef_map <- c(
   "factor(group_industry_based_detailed)shutdown sector" = "Shutdown sector"
 )
 
-add_rows <- tibble::tibble(
+add_rows <- tibble(
   term = c(
     "Industry FE",
     "Occupation FE",
@@ -1439,7 +1439,11 @@ add_rows <- tibble::tibble(
   C = c("", "", "✓", "✓", "All"),
   D = c("", "", "✓", "✓", "Males"),
   E = c("", "", "✓", "✓", "Females")
-)
+) %>% 
+  mutate(across(A:E, \(x) ifelse(x == "✓", "\\checkmark", x)))
+
+# then run modelsummary(..., escape = FALSE)
+
 modelsummary(
   models,
   coef_map = coef_map,
@@ -1447,7 +1451,10 @@ modelsummary(
   stars = TRUE,
   gof_map = c("nobs", "r.squared"),
   add_rows = add_rows,
-  output = "tables/workoutside_industry_comparison.tex",
   title = "Work Outside by Industry Group",
-  notes = "Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01"
+  notes = "Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01",
+  output = "tables/workoutside_industry_comparison.tex",
+  fmt = 3,
+  escape = FALSE,
+  latex_tabular = "tabular"   # <- key line: avoid talltblr/tabularray
 )
