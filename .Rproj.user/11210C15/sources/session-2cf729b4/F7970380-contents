@@ -1440,7 +1440,7 @@ add_rows <- tibble(
   D = c("", "", "✓", "✓", "Males"),
   E = c("", "", "✓", "✓", "Females")
 ) %>% 
-  mutate(across(A:E, \(x) ifelse(x == "✓", "\\checkmark", x)))
+  mutate(across(A:E, \(x) ifelse(x == "✓", "$\\checkmark$", x)))
 
 # then run modelsummary(..., escape = FALSE)
 
@@ -1448,13 +1448,21 @@ options(modelsummary_factory_latex = "kableExtra")
 
 modelsummary(
   models,
-  vcov = "HC1",                      # <- robust SEs
+  vcov = "HC1",
   coef_map = coef_map,
-  estimate  = "{estimate}",
+  estimate  = "{estimate}{stars}",
   statistic = "({std.error})",
   stars = c("*" = .10, "**" = .05, "***" = .01),
   gof_map = c("nobs", "r.squared"),
   add_rows = add_rows,
+  escape = FALSE,
+  title = "Outcome: \\textit{Workoutside} in April 2020",
+  notes = c(
+    "Robust standard errors (HC1) in parentheses.",
+    "* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01."
+  ),
   output = "tables/workoutside_industry_comparison.tex"
 )
 
+library(lmtest)
+coeftest(mod_b, vcov = vcovHC(mod_b, "HC1"))
