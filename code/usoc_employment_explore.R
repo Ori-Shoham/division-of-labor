@@ -57,6 +57,8 @@ clean_baseline <- function(file_path, prefix) {
     paste0(prefix, "_jbhrs"),            # Hours
     paste0(prefix, "_jbsect"),           # Public/Private
     paste0(prefix, "_jbterm1"),          # Perm/Temp
+    paste0(prefix, "_basrate"),          # base hourly salary
+    
     
     # --- TIME USE ---
     paste0(prefix, "_howlng"),           # Housework Hours
@@ -130,7 +132,12 @@ load_covid_wave <- function(wave_prefix) {
                     paste0(wave_prefix, "_keyworker"),     # key worker
                     paste0(wave_prefix, "_keyworksector"),     # key worker
                     
-                    paste0(wave_prefix, "timechcare")   # Childcare snd homeschooling Hours (Continuous!)
+                    paste0(wave_prefix, "_timechcare"),   # Childcare and homeschooling Hours (Continuous!)
+                    paste0(wave_prefix, "_husits_cv"),    # Who is responsible for childcare, couples
+                    paste0(wave_prefix, "_workchsch"),    # Work pattern change due to homeschooling
+                    paste0(wave_prefix, "_workchsch2"),   # Work pattern change due to homeschooling
+                    
+                    
 )   
   
   existing_vars <- intersect(vars_to_keep, names(data))
@@ -150,12 +157,57 @@ print("COVID Waves Merged.")
 # # =========================================================================
 # # STEP 3: POST-COVID OUTCOMES (Recovery)
 # # =========================================================================
-# print("--- Step 3: Adding Recovery Waves ---")
-# 
-# df_l <- read_dta(file.path(path_main, "l_indresp.dta")) %>%
-#   select(pidp, l_jbstat_dv, l_howlng)
-# df_m <- read_dta(file.path(path_main, "m_indresp.dta")) %>%
-#   select(pidp, m_jbstat_dv, m_howlng, m_mastat_dv)
+print("--- Step 3: Adding Recovery Waves ---")
+
+# Function to load and clean baseline waves with RICH variables
+clean_recovery <- function(file_path, prefix) {
+  
+  # Define variables to keep (Employment, Time Use, Income, Job Context)
+  cols_to_keep <- c(
+    "pidp", "j_hidp", # ID and Household ID
+    paste0(prefix, "_sex"),              # Gender
+    paste0(prefix, "_age_dv"),           # Age
+    paste0(prefix, "_gor_dv"),           # Region
+    paste0(prefix, "_isced11_dv"),       # Education
+    
+    # --- EMPLOYMENT ---
+    paste0(prefix, "_jbstat"),           # Status
+    paste0(prefix, "_jbsic07_cc"),       # Industry (SIC)
+    paste0(prefix, "_jbsoc10_cc"),       # Occupation (SOC)
+    paste0(prefix, "_jbft_dv"),          # Full-time/Part-time
+    paste0(prefix, "_jbhrs"),            # Hours
+    paste0(prefix, "_jbsect"),           # Public/Private
+    paste0(prefix, "_jbterm1"),          # Perm/Temp
+    paste0(prefix, "_basrate"),          # base hourly salary
+    paste0(prefix, "_jbwah"),            # work at home (not available in all waves)
+    paste0(prefix, "_jswah"),            # work at home - self employed (not available in all waves)
+    paste0(prefix, "_jspl"),             # work location - self employed (not available in all waves)
+    paste0(prefix, "_jbpl"),             # work location (not available in all waves)
+    
+    # --- TIME USE ---
+    paste0(prefix, "_howlng"),           # Housework Hours
+    paste0(prefix, "_chcare"),           # Childcare (Binary in Baseline)
+    
+    # --- INCOME ---
+    paste0(prefix, "_pimnu_dv"),         # Gross Personal Income (Monthly)
+    
+    # --- TIMING ---
+    paste0(prefix, "_intdatm_dv"),       # Month
+    paste0(prefix, "_intdaty_dv")        # Year
+  )
+  
+  read_dta(file_path) %>%
+    select(any_of(cols_to_keep)) %>%
+    rename_with(~ str_remove(., paste0("^", prefix, "_")), -pidp) # Remove prefix
+}
+
+# 1. Load Raw l (Wave 12) and m (Wave 13) and n (Wave 14)
+df_l <- clean_recovery(file.path(path_main, "l_indresp.dta"), "l")
+df_m <- clean_recovery(file.path(path_main, "m_indresp.dta"), "m")
+df_n <- clean_recovery(file.path(path_main, "n_indresp.dta"), "n")
+
+
+
 
 # =========================================================================
 # STEP 4: CREATE INDIVIDUAL PANEL & DEFINE GROUPS
@@ -1440,21 +1492,178 @@ add_rows <- tibble(
   D = c("", "", "✓", "✓", "Males"),
   E = c("", "", "✓", "✓", "Females")
 ) %>% 
-  mutate(across(A:E, \(x) ifelse(x == "✓", "\\checkmark", x)))
+  mutate(across(A:E, \(x) ifelse(x == "✓", "$\\checkmark$", x)))
 
 # then run modelsummary(..., escape = FALSE)
 
+options(modelsummary_factory_latex = "kableExtra")
+
 modelsummary(
   models,
+  vcov = "HC1",
   coef_map = coef_map,
-  statistic = "std.error",
-  stars = TRUE,
+  estimate  = "{estimate}{stars}",
+  statistic = "({std.error})",
+  stars = c("*" = .10, "**" = .05, "***" = .01),
   gof_map = c("nobs", "r.squared"),
   add_rows = add_rows,
-  title = "Work Outside by Industry Group",
-  notes = "Standard errors in parentheses. * p<0.10, ** p<0.05, *** p<0.01",
-  output = "tables/workoutside_industry_comparison.tex",
-  fmt = 3,
   escape = FALSE,
-  latex_tabular = "tabular"   # <- key line: avoid talltblr/tabularray
+  title = "\\textit{Workoutside} in April 2020",
+  notes = c(
+    "Robust standard errors in parentheses.",
+    "* p < 0.1, ** p < 0.05, *** p < 0.01."
+  ),
+  output = "tables/workoutside_industry_comparison.tex"
 )
+
+# Pick industries and occupations that best predict workoutside
+
+library(glmnet)
+library(forcats)
+
+# ---- 0) Prep data (collapse rare levels to OTHER) ----
+min_n <- 20  # coverage threshold; tweak (e.g., 50 or 100)
+
+df_lasso <- df_sample %>%
+  filter(wave == "ca",
+         !is.na(industry), !is.na(occupation), !is.na(workoutside)) %>%
+  mutate(
+    industry   = fct_lump_min(factor(industry),   min = min_n, other_level = "OTHER"),
+    occupation = fct_lump_min(factor(occupation), min = min_n, other_level = "OTHER"),
+    y = as.integer(workoutside)  # ensure 0/1
+  )
+
+# ---- 1) Build design matrix with main effects + all interactions ----
+# This creates: industry dummies + occupation dummies + industry:occupation dummies
+X <- model.matrix(~ industry * occupation, data = df_lasso)[, -1]  # drop intercept
+y <- df_lasso$y
+
+# ---- 2) Cross-validated Lasso logistic regression ----
+set.seed(123)
+cvfit <- cv.glmnet(
+  x = X, y = y,
+  alpha = 1,          # Lasso
+  nfolds = 10,
+  family = "binomial",
+  type.measure = "deviance",  # standard for binomial; you can also try "class"
+  standardize = TRUE
+)
+
+# ---- 3) Choose lambda (1-SE rule is more conservative / fewer terms) ----
+lambda_min <- cvfit$lambda.min
+lambda_1se <- cvfit$lambda.1se
+
+lambda_min
+lambda_1se
+cvm <- cvfit$cvm
+lam <- cvfit$lambda
+
+best <- min(cvm)
+tol  <- 0.02  # 2% tolerance (increase to be more aggressive)
+
+idx <- which(cvm <= best * (1 + tol))
+lam_tol <- max(lam[idx])  # MOST aggressive within tolerance
+# ---- 4) Extract selected variables (nonzero coefficients) ----
+coef_1se <- coef(cvfit, s = lam_tol)
+nz_idx <- which(as.numeric(coef_1se) != 0)
+nz_names <- rownames(coef_1se)[nz_idx]
+nz_vals  <- as.numeric(coef_1se)[nz_idx]
+
+selected <- tibble(term = nz_names, coef = nz_vals) %>%
+  arrange(desc(abs(coef))) %>% 
+  mutate(term = str_replace_all(term, c("industry" = "Industry - ", "occupation" = "Occupation - ") ))
+
+kableExtra::kable(selected)
+
+# ---- 5) (Optional) Separate main effects vs interactions ----
+selected_main <- selected %>% filter(!grepl(":", term))
+selected_int  <- selected %>% filter(grepl(":", term))
+
+cat("\nSelected main effects:\n")
+print(selected_main, n = 200)
+
+cat("\nSelected interactions:\n")
+print(selected_int, n = 200)
+
+# ---- 6) (Optional) Predicted probabilities using the selected model ----
+p_hat <- as.numeric(predict(cvfit, newx = X, s = "lambda.1se", type = "response"))
+summary(p_hat)
+
+
+overall_rate <- mean(df_rf$workoutside)
+
+industry_effects <- df_lasso %>%
+  mutate(p_hat = p_hat) %>%
+  group_by(industry) %>%
+  summarise(
+    n = n(),
+    mean_y = mean(workoutside),
+    mean_p = mean(p_hat),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    diff_p = mean_p - overall_rate,
+    diff_y = mean_y - overall_rate,
+    score_p = abs(diff_p)*sqrt(n),
+    score_y = abs(diff_y)*sqrt(n)
+  ) %>%
+  arrange(desc(score_y))
+kableExtra::kable(industry_effects)
+
+occupation_effects <- df_lasso %>%
+  mutate(p_hat = p_hat) %>%
+  group_by(occupation) %>%
+  summarise(
+    n = n(),
+    mean_y = mean(workoutside),
+    mean_p = mean(p_hat),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    diff_p = mean_p - overall_rate,
+    diff_y = mean_y - overall_rate,
+    score_p = abs(diff_p)*sqrt(n),
+    score_y = abs(diff_y)*sqrt(n)
+  ) %>%
+  arrange(desc(score_y))
+kableExtra::kable(occupation_effects)
+
+
+
+
+cell_rank <- df_lasso %>%
+  mutate(p_hat = p_hat) %>%
+  group_by(industry) %>% 
+  mutate(mean_ind_y = mean(workoutside),
+         mean_ind_p = mean(p_hat)) %>% 
+  ungroup() %>% 
+  group_by(occupation) %>% 
+  mutate(mean_occ_y = mean(workoutside),
+         mean_occ_p = mean(p_hat)) %>% 
+  ungroup() %>% 
+  group_by(industry, occupation) %>%
+  summarise(
+    n_cell = n(),
+    mean_y = mean(workoutside),
+    mean_p = mean(p_hat),
+    mean_ind_y = mean(mean_ind_y),
+    mean_ind_p = mean(mean_ind_p),
+    mean_occ_y = mean(mean_occ_y),
+    mean_occ_p = mean(mean_occ_p),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # discrimination relative to additive effects:
+    diff_y_ind = mean_y  - mean_ind_y ,
+    diff_p_ind = mean_p  - mean_ind_p ,
+    diff_y_occ = mean_y  - mean_occ_y ,
+    diff_p_occ = mean_p  - mean_occ_p ,
+    # coverage-weighted discrimination scores (pick one)
+    score_y_ind = abs(diff_y_ind) * sqrt(n_cell),
+    score_p_ind = abs(diff_p_ind) * sqrt(n_cell),
+    score_y_occ = abs(diff_y_occ) * sqrt(n_cell),
+    score_p_occ = abs(diff_p_occ) * sqrt(n_cell)
+  ) %>%
+  arrange(desc(score_y_ind+score_y_occ)) %>% 
+  slice_head(n = 30)
+kableExtra::kable(cell_rank)
