@@ -19,14 +19,13 @@ key_workers <- key_workers %>% filter(!is.na(Group)) %>%
   pivot_longer(!c(Group, `SOC10M / INDC07M`, `SOC_label / SIC_label`), names_to = "SIC_4", values_to = "key") %>% 
   rename(SOC_4 = `SOC10M / INDC07M`, occ_group = Group, occupation = `SOC_label / SIC_label`  ) %>% 
   left_join(sics) %>% 
-  select(occ_group,occupation, SOC_4, industry, SIC_4, , key) %>% 
+  select(occ_group,occupation, SOC_4, industry, SIC_4,  key) %>% 
   mutate(across(c(SIC_4, SOC_4, key), as.numeric))
 key_inds <- key_workers %>% 
   group_by(SIC = floor(SIC_4/100), SOC = floor(SOC_4/10)) %>% 
   summarise(any_key = max(key)) %>% 
   left_join(SOC) %>% 
   left_join(SIC)
-
 
 
 # 1. DEFINE PATHS (Edit these!)
@@ -38,12 +37,71 @@ path_covid <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society 
 # =========================================================================
 print("--- Step 1: Building Composite Baseline ---")
 
-# Function to load and clean baseline waves with RICH variables
-clean_baseline <- function(file_path, prefix) {
+# --- NEW FUNCTION: Extract Family Structure from EGOALT and INDALL ---
+build_family_data <- function(path_main, prefix) {
+  egoalt_path <- file.path(path_main, paste0(prefix, "_egoalt.dta"))
+  indall_path <- file.path(path_main, paste0(prefix, "_indall.dta"))
   
-  # Define variables to keep (Employment, Time Use, Income, Job Context)
+  # 1. Get exact ages of ALL household members (including babies)
+  indall <- read_dta(indall_path) %>%
+    rename_with(~ str_remove(., paste0("^", prefix, "_"))) %>%
+    select(pidp, age_dv)
+  
+  # 2. Process Relationship Grid
+  egoalt <- read_dta(egoalt_path) %>%
+    rename_with(~ str_remove(., paste0("^", prefix, "_"))) %>%
+    select(pidp, apidp, relationship_dv)
+  
+  # A. Identify Couples (1 = Husband/Wife, 2 = Partner/Cohabitee, 3 = civil partner)
+  couples <- egoalt %>%
+    filter(relationship_dv %in% c(1, 2, 3)) %>%
+    select(pidp, partner_pidp = apidp, partner_rel = relationship_dv) %>%
+    distinct(pidp, .keep_all = TRUE) # Safety distinct
+  
+  # B. Identify Children (3 = Natural, 4 = Adopted, 5 = Foster, 6 = Step)
+  children <- egoalt %>%
+    filter(relationship_dv %in% 9:12) %>%
+    left_join(indall, by = c("apidp" = "pidp")) %>% # Get child's age from indall
+    filter(age_dv >= 0 ) %>%                         # Clean missing ages (-9, -8)
+    group_by(pidp) %>%
+    summarise(
+      n_children = n(),
+      n_children_18_under = sum(age_dv<=18, na.rm = T),
+      n_children_16_under = sum(age_dv<=16, na.rm = T),
+      n_children_10_under = sum(age_dv<=10, na.rm = T),
+      
+      age_youngest_child = min(age_dv, na.rm = TRUE),
+      # Creates a list of all ages, e.g., "3, 7, 12"
+      all_children_ages = paste(sort(age_dv), collapse = ", "), 
+      .groups = "drop"
+    )
+  
+  # Combine into one family lookup table
+  family_data <- egoalt %>% distinct(pidp) %>%
+    left_join(couples, by = "pidp") %>%
+    left_join(children, by = "pidp") %>%
+    mutate(n_children = replace_na(n_children, 0),
+           # NEW: Generate a distinctly formatted family identifier
+           family_id = case_when(
+             is.na(partner_pidp) ~ paste0("fam_", pidp),
+             pidp < partner_pidp ~ paste0("fam_", pidp, "_", partner_pidp),
+             TRUE ~ paste0("fam_", partner_pidp, "_", pidp)
+           )
+    ) %>%
+    rename_with(~ paste0(prefix, "_", .), -pidp)
+  
+  return(family_data)
+}
+
+# Function to load and clean baseline waves with RICH variables
+clean_baseline <- function(file_path, prefix, path_main) {
+  
+  # 1. First, build the accurate family data from indall/egoalt
+  df_family <- build_family_data(path_main, prefix)
+  
+  # Define variables to keep from INDRESP
   cols_to_keep <- c(
-    "pidp", "j_hidp", # ID and Household ID
+    "pidp", paste0(prefix,"_hidp"),                    # ID and Household ID
     paste0(prefix, "_sex"),              # Gender
     paste0(prefix, "_age_dv"),           # Age
     paste0(prefix, "_gor_dv"),           # Region
@@ -59,6 +117,11 @@ clean_baseline <- function(file_path, prefix) {
     paste0(prefix, "_jbterm1"),          # Perm/Temp
     paste0(prefix, "_basrate"),          # base hourly salary
     
+    # --- FAMILY & COUPLES (Added for division of labor) ---
+    paste0(prefix, "_mastat_dv"),        # Marital Status
+    paste0(prefix, "_sppid"),            # Spouse/Partner PIDP (To link couples)
+    paste0(prefix, "_nchild_dv"),        # Number of children in HH
+    paste0(prefix, "_ndepchl_dv"),       # Number of dependent children
     
     # --- TIME USE ---
     paste0(prefix, "_howlng"),           # Housework Hours
@@ -72,18 +135,23 @@ clean_baseline <- function(file_path, prefix) {
     paste0(prefix, "_intdaty_dv")        # Year
   )
   
+  # Read INDRESP and merge with the Family Data
   read_dta(file_path) %>%
     select(any_of(cols_to_keep)) %>%
+    left_join(df_family, by = "pidp") %>% # MERGE EGOALT/INDALL VARS HERE
     rename_with(~ str_remove(., paste0("^", prefix, "_")), -pidp) # Remove prefix
 }
 
-# 1. Load Raw J (Wave 10) and K (Wave 11)
-df_j <- clean_baseline(file.path(path_main, "j_indresp.dta"), "j")
-df_k <- clean_baseline(file.path(path_main, "k_indresp.dta"), "k")
+# 1. Load Raw J (Wave 10) and K (Wave 11) - Passing path_main for egoalt/indall lookup
+df_j <- clean_baseline(file.path(path_main, "j_indresp.dta"), "j", path_main)
+df_k <- clean_baseline(file.path(path_main, "k_indresp.dta"), "k", path_main)
 
 # 2. Filter K for STRICT Pre-COVID (Jan 2019 - Feb 2020)
 df_k_clean <- df_k %>%
   filter(intdaty_dv < 2020 | (intdaty_dv == 2020 & intdatm_dv < 3)) %>%
+  # since the baseline is 2019 I also remove Jan-Feb 2020
+  filter(intdaty_dv < 2020 ) %>%
+  
   mutate(source_wave = "K")
 
 # 3. Use J for anyone NOT in clean K
@@ -135,10 +203,10 @@ load_covid_wave <- function(wave_prefix) {
                     paste0(wave_prefix, "_timechcare"),   # Childcare and homeschooling Hours (Continuous!)
                     paste0(wave_prefix, "_husits_cv"),    # Who is responsible for childcare, couples
                     paste0(wave_prefix, "_workchsch"),    # Work pattern change due to homeschooling
-                    paste0(wave_prefix, "_workchsch2"),   # Work pattern change due to homeschooling
+                    paste0(wave_prefix, "_workchsch2")   # Work pattern change due to homeschooling
                     
                     
-)   
+  )   
   
   existing_vars <- intersect(vars_to_keep, names(data))
   data %>% select(all_of(existing_vars)) %>% 
@@ -152,62 +220,6 @@ list_covid_dfs <- list_covid_dfs[!sapply(list_covid_dfs, is.null)]
 df_covid_all <- list_covid_dfs %>% reduce(full_join, by = "pidp")
 
 print("COVID Waves Merged.")
-
-
-# # =========================================================================
-# # STEP 3: POST-COVID OUTCOMES (Recovery)
-# # =========================================================================
-print("--- Step 3: Adding Recovery Waves ---")
-
-# Function to load and clean baseline waves with RICH variables
-clean_recovery <- function(file_path, prefix) {
-  
-  # Define variables to keep (Employment, Time Use, Income, Job Context)
-  cols_to_keep <- c(
-    "pidp", "j_hidp", # ID and Household ID
-    paste0(prefix, "_sex"),              # Gender
-    paste0(prefix, "_age_dv"),           # Age
-    paste0(prefix, "_gor_dv"),           # Region
-    paste0(prefix, "_isced11_dv"),       # Education
-    
-    # --- EMPLOYMENT ---
-    paste0(prefix, "_jbstat"),           # Status
-    paste0(prefix, "_jbsic07_cc"),       # Industry (SIC)
-    paste0(prefix, "_jbsoc10_cc"),       # Occupation (SOC)
-    paste0(prefix, "_jbft_dv"),          # Full-time/Part-time
-    paste0(prefix, "_jbhrs"),            # Hours
-    paste0(prefix, "_jbsect"),           # Public/Private
-    paste0(prefix, "_jbterm1"),          # Perm/Temp
-    paste0(prefix, "_basrate"),          # base hourly salary
-    paste0(prefix, "_jbwah"),            # work at home (not available in all waves)
-    paste0(prefix, "_jswah"),            # work at home - self employed (not available in all waves)
-    paste0(prefix, "_jspl"),             # work location - self employed (not available in all waves)
-    paste0(prefix, "_jbpl"),             # work location (not available in all waves)
-    
-    # --- TIME USE ---
-    paste0(prefix, "_howlng"),           # Housework Hours
-    paste0(prefix, "_chcare"),           # Childcare (Binary in Baseline)
-    
-    # --- INCOME ---
-    paste0(prefix, "_pimnu_dv"),         # Gross Personal Income (Monthly)
-    
-    # --- TIMING ---
-    paste0(prefix, "_intdatm_dv"),       # Month
-    paste0(prefix, "_intdaty_dv")        # Year
-  )
-  
-  read_dta(file_path) %>%
-    select(any_of(cols_to_keep)) %>%
-    rename_with(~ str_remove(., paste0("^", prefix, "_")), -pidp) # Remove prefix
-}
-
-# 1. Load Raw l (Wave 12) and m (Wave 13) and n (Wave 14)
-df_l <- clean_recovery(file.path(path_main, "l_indresp.dta"), "l")
-df_m <- clean_recovery(file.path(path_main, "m_indresp.dta"), "m")
-df_n <- clean_recovery(file.path(path_main, "n_indresp.dta"), "n")
-
-
-
 
 # =========================================================================
 # STEP 4: CREATE INDIVIDUAL PANEL & DEFINE GROUPS
@@ -243,7 +255,7 @@ df_ind_panel <- df_baseline %>%
     keyworker_health_social = if_else(base_jbsic07_cc == 86 | base_jbsoc10_cc %in% c(124, 221, 222, 223, 321)|(base_jbsoc10_cc == 118 & base_jbsic07_cc %in% 86:88)|(base_jbsoc10_cc == 614 & base_jbsic07_cc %in% c(84,86:88)), 1, 0),
     keyworker_education = if_else(base_jbsic07_cc%in%c(85)|(base_jbsoc10_cc %in% c( 323,612, 623) &base_jbsic07_cc == 84)|(base_jbsoc10_cc == 231),1,0),
     keyworker_public_safety = if_else(base_jbsoc10_cc == 331, 1, 0),
-    keyworker_my_def = pmax(keyworker_health_social, keyworker_education,keyworker_public_safety),
+    keyworker_my_def = pmax(keyworker_health_social, keyworker_education,keyworker_public_safety)
     # --- DEFINE AMBIGUOUS (To Exclude) ---
     # Retail (47) and Transport (49-51) where we can't distinguish essential/non-essential
     # is_ambiguous = ifelse(base_jbsic07_cc %in% c(47, 49, 50, 51), 1, 0)
@@ -253,18 +265,26 @@ df_ind_panel <- df_baseline %>%
 
 # filter 
 df_sample <- df_ind_panel %>% 
-# working at baseline
+  # working at baseline
   filter(base_jbstat %in% 1:2) %>% 
   # has any covid data
   filter(rowSums(!is.na(across(starts_with("c")))) > 0)  %>% 
-  pivot_longer(starts_with("c"), names_sep = "_", names_to = c("wave", "var"), values_to = "val") %>% 
+  
+  # BUG FIX applied here: names_pattern safely handles multiple underscores (e.g. husits_cv)
+  pivot_longer(
+    cols = matches("^[c][a-i]_"), 
+    names_to = c("wave", "var"), 
+    names_pattern = "^([a-z]{2})_(.*)", 
+    values_to = "val"
+  ) %>% 
   pivot_wider(names_from = var, values_from = val)%>% 
+  
   mutate(group_self_report = case_when(shutdown_sec == 1 ~ "shutdown sector",
-                           keyworker == 1 | keyworksector %in% 1:8 ~ "key worker",
-                           T ~ "other"),
+                                       keyworker == 1 | keyworksector %in% 1:8 ~ "key worker",
+                                       T ~ "other"),
          group_industry_based = case_when(shutdown_sec == 1 ~ "shutdown sector",
-                                  keyworker_my_def == 1 ~ "key worker",
-                                  T ~ "other"),
+                                          keyworker_my_def == 1 ~ "key worker",
+                                          T ~ "other"),
          group_industry_based_detailed = case_when(shutdown_sec == 1 ~ "shutdown sector",
                                                    keyworker_health_social == 1 ~ "key worker - health and social services",
                                                    keyworker_education == 1 ~ "key worker - education",
@@ -276,11 +296,13 @@ df_sample <- df_sample %>%
   group_by(pidp) %>% 
   mutate(across(starts_with("bl"), first_valid)) %>% 
   ungroup()
+
 df_precovid <- df_sample %>% 
   group_by(pidp) %>% 
   slice_head(n=1) %>% 
   mutate(wave = "baseline",sempderived = blwork , hours = blhours, wah = blwah) %>% 
   ungroup()
+
 df_2019 <- df_sample %>% 
   group_by(pidp) %>% 
   slice_head(n=1) %>% 
@@ -290,11 +312,11 @@ df_2019 <- df_sample %>%
 df_sample <- bind_rows(df_2019, df_precovid, df_sample) %>% 
   mutate(hours = if_else(sempderived == 4 & is.na(hours), -8, hours),
          wah = if_else(sempderived == 4 & is.na(wah), -8, wah),
-         workoutside = case_when(sempderived < 0 ~ NA,
+         workoutside = case_when(sempderived < 0 ~ NA_real_,
                                  hours <= 0 ~ 0,
                                  wah == 1 ~ 0,
                                  wah %in% 2:4 ~ 1, 
-                                 T ~NA))
+                                 T ~NA_real_))
 # plot - working any hour last week, april 2020, by industry ----
 p <- df_sample %>%
   filter(wave == "ca" & !is.na(hours) & !hours%in%c(-9,-2,-1) & sempderived>=0) %>%
@@ -1444,7 +1466,26 @@ p <- df_sample %>%
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1))
 p
 ggsave("workoutside_overtime_detailed_groups.png",p, path = fig_path, width = 12, height = 8 ) 
+# Analyze couples ----
 
+df_sample %>% 
+  filter(wave == "2019") %>% 
+  count(base_partner_rel) %>% 
+  view()
+
+
+df_sample %>% 
+  filter(wave == "2019" & !is.na(base_partner_rel)) %>% 
+  mutate(children = case_when(base_n_children == 0 ~ "No Children",
+                              base_age_youngest_child<18 ~ paste0("Youngest child ", base_age_youngest_child, " years old"),
+                              T ~ "youngest child 18+")) %>% 
+  group_by(base_family_id) %>% 
+  slice_head(n=1) %>% 
+  ungroup() %>% 
+  count(children) %>% 
+  view()
+
+# Predict workoutside ----
 df_sample <- df_sample %>% 
   mutate(group_industry_based_detailed = relevel(factor(group_industry_based_detailed), ref = "other"))
 
@@ -1667,3 +1708,4 @@ cell_rank <- df_lasso %>%
   arrange(desc(score_y_ind+score_y_occ)) %>% 
   slice_head(n = 30)
 kableExtra::kable(cell_rank)
+
