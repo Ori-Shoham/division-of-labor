@@ -2,7 +2,11 @@
 \usepackage{graphicx} % Required for inserting images
 \usepackage{enumitem}
 \usepackage{amsmath}
-
+\setlength{\topmargin}{-0.5in} \setlength{\textheight}{8.5in}
+\setlength{\oddsidemargin}{0.0in} \setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{6.5in}
+\parindent=12pt
+\baselinestretch
 \begin{document}
 
 \section{Data}
@@ -101,7 +105,25 @@ Definition of workoutside: work=1 and did not respond always to work from home.
 
 
 
+\subsection{Data driven instruments}
 
+\section{Data driven approach}
+The alternative approach to identifying the treatment would be a data driven approach. This requires running a regression (LASSO -- can also be more sophisticated later, RF) of the "work outside" in April 2020 on the interactions of industry and occupations. 
+
+The sample for this LASSO should exclude the parents of children up to age 10.
+
+The prediction can be used as an instrument for work. Note that of course, when constructing the instrument at the observation level, the pre-covid occupation and industry should be used. 
+
+[[Adding controls (maybe later): Adding controls like gender could help alleviate concerns that the occupation level outcomes in 2020 are driven omitted variables which are correlated with industry and occupation (like gender composition). The controls will be added to the LASSO, but the prediction will be made for men. This will not work in RF -- instead, first can demean everything by gender and only then put in the RF.]]  
+
+Validation test:
+\begin{itemize}
+    \item Pre-trends in the outcomes. Show that there is no reduced form in the pre-period. 
+    \item Show that for couples without young kids in the post, there is first stage but no reduced form.
+    
+\end{itemize}
+
+\section{Main hypothesis}
 
 
 
