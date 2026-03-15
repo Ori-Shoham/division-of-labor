@@ -16,7 +16,7 @@
 # =============================================================================
 
 # ---- Data INPUT root folders (outside repo; confidential/raw) -----------------
-path_main  <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata13_se/ukhls"
+path_main  <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata14_se/ukhls"
 path_covid <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-8644-stata/stata/stata13_se/"
 
 # ---- Project REPO folders (inside repo; safe to sync) -------------------------
@@ -44,4 +44,4 @@ cache_path   <- file.path(data_out_root, "cache")
 
 # ---- Waves -------------------------------------------------------------------
 covid_waves  <- c("ca", "cb", "cc", "cd", "ce", "cf", "cg", "ch", "ci")
-future_waves <- c("l", "m", "n") # add "o" later
+future_waves <- c("l", "m", "n", "o") 

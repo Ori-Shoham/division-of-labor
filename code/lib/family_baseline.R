@@ -210,6 +210,22 @@ build_baseline <- function(path_main) {
     dplyr::mutate(
       # Your education recode: merge PhD with MA; drop negative codes
       base_isced11_dv = dplyr::if_else(base_isced11_dv == 8, 7, base_isced11_dv),
-      base_isced11_dv = dplyr::if_else(base_isced11_dv < 0, NA_real_, base_isced11_dv)
-    )
+      base_isced11_dv = dplyr::if_else(base_isced11_dv < 0, NA_real_, base_isced11_dv),
+      
+      # Harmonized baseline general health:
+      # use base_scsf1 when available, otherwise base_sf1
+      base_health_sf = combine_health(base_sf1, base_scsf1),
+      
+      base_health_sf = factor(
+        dplyr::case_when(
+          base_health_sf == 1 ~ "Excellent",
+          base_health_sf == 2 ~ "Very good",
+          base_health_sf == 3 ~ "Good",
+          base_health_sf == 4 ~ "Fair",
+          base_health_sf == 5 ~ "Poor",
+          TRUE ~ NA_character_
+        ),
+        levels = c("Excellent", "Very good", "Good", "Fair", "Poor"),
+        ordered = TRUE
+      )    )
 }

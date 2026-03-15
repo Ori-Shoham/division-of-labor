@@ -238,11 +238,23 @@ df_future_long <- df_future_long %>%
     wfh_code = tmp_wfh$wfh_code,
     wfh_cat  = tmp_wfh$wfh_cat,
     health_sf = combine_health(sf1, scsf1),
+    
+    health_sf = factor(
+      dplyr::case_when(
+        health_sf == 1 ~ "Excellent",
+        health_sf == 2 ~ "Very good",
+        health_sf == 3 ~ "Good",
+        health_sf == 4 ~ "Fair",
+        health_sf == 5 ~ "Poor",
+        TRUE ~ NA_character_
+      ),
+      levels = c("Excellent", "Very good", "Good", "Fair", "Poor"),
+      ordered = TRUE
+    ),
     workoutside = make_workoutside_future(
-      jbstat = jbstat,
-      jbhrs  = jbhrs,
-      jbpl   = jbpl,
-      jbwah  = jbwah
+      jbstat   = jbstat,
+      jbhrs    = jbhrs,
+      wfh_code = wfh_code
     )
   )
 

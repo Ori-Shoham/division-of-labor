@@ -190,40 +190,38 @@ make_workoutside_covid <- function(sempderived, hours, wah) {
 # Future-outcomes workoutside
 #
 # Inputs:
-#   jbstat : labour-market status
-#            1 employed
-#            2 self-employed
+#   jbstat   : labour-market status
+#              1 employed
+#              2 self-employed
 #
-#   jbhrs  : usual weekly hours worked
+#   jbhrs    : usual weekly hours worked
 #
-#   jbpl   : work location
-#            1 home
-#            2 employer premises
-#            3 driving/travelling
-#            4 other places
-#
-#   jbwah  : working-from-home frequency
-#            1 always
-#            2 often
-#            3 sometimes
-#            4 never
+#   wfh_code : harmonized WFH code from combine_wfh()
+#              1 always
+#              2 often
+#              3 sometimes
+#              4 never
 #
 # Logic:
+#   - if employment status missing/invalid -> NA
 #   - if not employed/self-employed -> 0
-#   - if no hours / zero hours -> 0
-#   - if works at home (jbpl==1) -> 0
-#   - otherwise, if works and not home-based -> 1
+#   - if hours missing -> NA
+#   - if zero or negative hours -> 0
+#   - if always WFH -> 0
+#   - if often / sometimes / never WFH -> 1
 #
-# This is the closest future-wave analogue to the COVID workoutside variable.
+# This makes workoutside depend on the harmonized WFH definition rather than
+# reconstructing it separately from jbpl/jbwah.
 # -----------------------------------------------------------------------------
-make_workoutside_future <- function(jbstat, jbhrs, jbpl, jbwah = NA) {
+make_workoutside_future <- function(jbstat, jbhrs, wfh_code) {
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
+    is.na(wfh_code) ~ NA_real_,
     !(jbstat %in% c(1, 2)) ~ 0,
     is.na(jbhrs) ~ NA_real_,
     jbhrs <= 0 ~ 0,
-    jbpl == 1 ~ 0,
-    jbpl %in% 2:4 ~ 1,
+    wfh_code == 1 ~ 0,
+    wfh_code %in% 2:4 ~ 1,
     TRUE ~ NA_real_
   )
 }

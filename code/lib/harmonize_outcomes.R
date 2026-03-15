@@ -29,12 +29,13 @@
 combine_wfh <- function(jbpl, jbwah) {
   
   wfh_code <- dplyr::case_when(
+    is.na(jbwah) ~ NA_real_,
     !is.na(jbpl) & jbpl == 1 ~ 1,
-    is.na(jbpl) | jbpl != 1  ~ as.numeric(jbwah),
-    TRUE ~ NA_real_
+    TRUE ~ as.numeric(jbwah)
   )
   
   wfh_cat <- dplyr::case_when(
+    is.na(jbwah) ~ NA_character_,
     wfh_code == 1 ~ "Always",
     wfh_code == 2 ~ "Often",
     wfh_code == 3 ~ "Sometimes",
@@ -42,7 +43,16 @@ combine_wfh <- function(jbpl, jbwah) {
     TRUE ~ NA_character_
   )
   
-  list(wfh_code = wfh_code, wfh_cat = wfh_cat)
+  wfh_cat <- factor(
+    wfh_cat,
+    levels = c("Always", "Often", "Sometimes", "Never", "Missing"),
+    ordered = TRUE
+  )
+  
+  list(
+    wfh_code = wfh_code,
+    wfh_cat  = wfh_cat
+  )
 }
 
 combine_health <- function(sf1, scsf1) {
