@@ -70,7 +70,10 @@ build_keyworker_crosswalk <- function(xlsx_path, sheet = 4, SOC, SIC) {
   # Collapse to the level you use in analysis (SOC, SIC)
   key_inds <- key_workers %>%
     group_by(SIC = floor(SIC_4/100), SOC = floor(SOC_4/10)) %>%
-    summarise(any_key = max(key, na.rm = TRUE), .groups = "drop") %>%
+    summarise(
+      any_key = if (all(is.na(key))) NA_real_ else max(key, na.rm = TRUE),
+      .groups = "drop"
+    ) %>% 
     left_join(SOC, by = "SOC") %>%
     left_join(SIC, by = "SIC")
   

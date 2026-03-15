@@ -85,7 +85,12 @@ load_main_wave_indresp <- function(path_main, prefix) {
   haven::read_dta(f) %>%
     dplyr::select(any_of(cols_to_keep)) %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp) %>%
-    dplyr::mutate(wave = prefix)
+    dplyr::mutate(
+      wave = prefix,
+      # Month-year as a proper Date (first of month). Easy to plot and aggregate.
+      ym = as.Date(sprintf("%d-%02d-01", intdaty_dv, intdatm_dv)),
+      year = as.integer(intdaty_dv)
+    )
 }
 
 load_main_wave_with_family <- function(path_main, prefix) {

@@ -20,7 +20,6 @@ suppressPackageStartupMessages({
   library(tidyverse)
 })
 
-rm(list = ls())
 
 # ---- Source config ------------------------------------------------------------
 source("code/lib/config.R")
@@ -102,8 +101,8 @@ if (!dir.exists("derived")) dir.create("derived", recursive = TRUE)
 cat("\n--- Checking policy files ---\n")
 
 policy_checks <- bind_rows(
-  check_exists(soc_path, "SOC.csv"),
-  check_exists(sic_path, "SIC.csv")
+  check_exists(pol_path, "SOC.csv"),
+  check_exists(pol_path, "SIC.csv")
 )
 
 print(policy_checks)
@@ -124,12 +123,12 @@ print(data_root_checks)
 
 # =============================================================================
 # Step 3: Check required MAIN wave files
-#   Baseline requires J/K; Future outcomes require L–O
+#   Baseline requires I/J/K; Future outcomes require L–O
 # =============================================================================
 
-cat("\n--- Checking MAIN wave files (baseline J/K + future L–O) ---\n")
+cat("\n--- Checking MAIN wave files (baseline I/J/K + future L–O) ---\n")
 
-main_required_waves <- c("j", "k", future_waves)
+main_required_waves <- c("i", "j", "k", future_waves)
 main_checks <- check_main_wave_files(path_main, main_required_waves)
 
 # Summaries

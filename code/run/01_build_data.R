@@ -2,21 +2,22 @@
 # Script: code/run/01_build_data.R
 #
 # Purpose:
-#   End-to-end build:
-#     - baseline J/K composite (K restricted to 2019)
-#     - COVID waves ca–ci merged wide + long panel
-#     - four baseline-defined analytic samples
-#     - future main waves L–O outcomes + family structure + couple evolution
-#     - unified event-study long dataset
+#   Build derived datasets and analytic samples.
 #
-# Outputs (RDS):
-#   derived/baseline.rds
-#   derived/covid_all_wide.rds
-#   derived/df_sample_long_covid.rds
-#   derived/samples/*.rds
-#   derived/future_outcomes_long_lmo.rds
-#   derived/future_outcomes_wide_lmo.rds
-#   derived/eventstudy_long_2019_baseline_covid_lmo.rds
+# IMPORTANT:
+#   All derived outputs are saved OUTSIDE the repo under data_out_root:
+#     der_path     = <data_out_root>/derived
+#     samples_path = <data_out_root>/samples
+#
+# This version:
+#   - uses policies_keyworkers.R for SOC/SIC + keyworker crosswalks
+#   - keeps the existing person-level outputs used by later scripts
+#   - adds new couple-level outputs:
+#       * baseline_couple_roster.rds
+#       * s2019_baseline_couplelevel.rds
+#       * df_sample_long_covid_couplelevel.rds
+#       * future_outcomes_couple_wide_lmo.rds
+#       * s2019_baseline_couplelevel_plus_lmo.rds
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -31,6 +32,8 @@ rm(list = ls())
 source("code/lib/config.R")
 source("code/lib/utils.R")
 source("code/lib/harmonize_outcomes.R")
+source("code/lib/work_groups.R")
+source("code/lib/policies_keyworkers.R")
 
 source("code/lib/family_baseline.R")
 source("code/lib/covid_loader.R")
@@ -38,141 +41,324 @@ source("code/lib/covid_panel.R")
 source("code/lib/future_outcomes.R")
 source("code/lib/samples.R")
 
-# ---- Ensure output folders exist ---------------------------------------------
-dir.create(der_path, showWarnings = FALSE, recursive = TRUE)
-dir.create(file.path(der_path, "samples"), showWarnings = FALSE, recursive = TRUE)
+# ---- Ensure output folders exist (outside repo) -------------------------------
+dir.create(data_out_root, showWarnings = FALSE, recursive = TRUE)
+dir.create(der_path,      showWarnings = FALSE, recursive = TRUE)
+dir.create(samples_path,  showWarnings = FALSE, recursive = TRUE)
+dir.create(cache_path,    showWarnings = FALSE, recursive = TRUE)
 
-# ---- Policies: SOC/SIC label crosswalks --------------------------------------
-SOC <- read.csv(soc_path)
-SIC <- read.csv(sic_path)
+# =============================================================================
+# Step 0: Load policy files and keyworker crosswalk
+# =============================================================================
+cat("\n--- Step 0: Load policies and keyworker crosswalk ---\n")
 
-# ---- Key worker crosswalk (your excel pipeline; kept here as data input step) -
-key_workers_raw <- readxl::read_excel(
-  "C:/Users/USER/Dropbox/WFH_covid/UK project/division-of-labor/policies/keyworkersreferencetableupdated2.xlsx",
-  sheet = 4
+# Load SOC and SIC lookup files
+pols <- load_policies(pol_path)
+SOC  <- pols$SOC
+SIC  <- pols$SIC
+
+# Build condensed SOC x SIC keyworker crosswalk
+# Requires KEYWORKER_XLSX to be defined in config.R
+key_inds <- build_keyworker_crosswalk(
+  xlsx_path = KEYWORKER_XLSX,
+  sheet     = 4,
+  SOC       = SOC,
+  SIC       = SIC
 )
 
-sics <- tibble(
-  SIC_4 = colnames(key_workers_raw)[4:599],
-  industry = unlist(key_workers_raw[1, 4:599])
-)
+cat("Policies loaded.\n")
+cat("SOC rows: ", nrow(SOC), "\n", sep = "")
+cat("SIC rows: ", nrow(SIC), "\n", sep = "")
+cat("Keyworker crosswalk rows: ", nrow(key_inds), "\n", sep = "")
 
-key_workers <- key_workers_raw %>%
-  filter(!is.na(Group)) %>%
-  pivot_longer(
-    !c(Group, `SOC10M / INDC07M`, `SOC_label / SIC_label`),
-    names_to = "SIC_4",
-    values_to = "key"
-  ) %>%
-  rename(
-    SOC_4      = `SOC10M / INDC07M`,
-    occ_group  = Group,
-    occupation = `SOC_label / SIC_label`
-  ) %>%
-  left_join(sics, by = "SIC_4") %>%
-  select(occ_group, occupation, SOC_4, industry, SIC_4, key) %>%
-  mutate(across(c(SIC_4, SOC_4, key), as.numeric))
+# =============================================================================
+# Step 1: Baseline J/K/I composite
+# =============================================================================
+cat("\n--- Step 1: Build baseline (I/J/K composite) ---\n")
 
-key_inds <- key_workers %>%
-  group_by(SIC = floor(SIC_4 / 100), SOC = floor(SOC_4 / 10)) %>%
-  summarise(any_key = max(key), .groups = "drop") %>%
-  left_join(SOC, by = "SOC") %>%
-  left_join(SIC, by = "SIC")
-
-# ---- Step 1: baseline ---------------------------------------------------------
-cat("\n--- Step 1: Build baseline (J/K composite; K restricted to 2019) ---\n")
 df_baseline <- build_baseline(path_main)
+
 saveRDS(df_baseline, file.path(der_path, "baseline.rds"))
-cat("Baseline N=", nrow(df_baseline), "\n")
 
-# ---- Step 2: COVID wide -------------------------------------------------------
+cat("Baseline saved to: ", file.path(der_path, "baseline.rds"), "\n", sep = "")
+
+# =============================================================================
+# Step 2: COVID wide (ca–ci)
+# =============================================================================
 cat("\n--- Step 2: Merge COVID waves wide (ca–ci) ---\n")
+
 df_covid_wide <- merge_covid_waves_wide(path_covid, covid_waves)
+
 saveRDS(df_covid_wide, file.path(der_path, "covid_all_wide.rds"))
-cat("COVID wide N=", nrow(df_covid_wide), "\n")
 
-# ---- Step 3: COVID long panel -------------------------------------------------
+cat("COVID wide saved to: ", file.path(der_path, "covid_all_wide.rds"), "\n", sep = "")
+
+# =============================================================================
+# Step 3: COVID long panel
+# =============================================================================
 cat("\n--- Step 3: Build COVID long panel ---\n")
+
 df_sample_long_covid <- build_covid_long_panel(
-  df_baseline = df_baseline,
+  df_baseline   = df_baseline,
   df_covid_wide = df_covid_wide,
-  SOC = SOC,
-  SIC = SIC,
-  key_inds = key_inds
+  SOC           = SOC,
+  SIC           = SIC,
+  key_inds      = key_inds
 )
+
+# Save full person-level COVID panel
 saveRDS(df_sample_long_covid, file.path(der_path, "df_sample_long_covid.rds"))
-cat("COVID long rows=", nrow(df_sample_long_covid), "\n")
 
-pidp_in_covid <- df_sample_long_covid %>% distinct(pidp) %>% pull(pidp)
+cat("COVID long saved to: ",
+    file.path(der_path, "df_sample_long_covid.rds"), "\n", sep = "")
 
-# ---- Step 4: samples ----------------------------------------------------------
-cat("\n--- Step 4: Build baseline-defined analytic samples ---\n")
-samples <- build_samples_2019(df_baseline, pidp_in_covid = pidp_in_covid)
+# Keep existing person-level "couples" subset for backward compatibility
+# with current descriptives scripts
+df_sample_long_covid_couples <- df_sample_long_covid %>%
+  dplyr::filter(!is.na(base_partner_pidp))
 
-saveRDS(samples$s2019_all,           file.path(der_path, "samples", "s2019_all.rds"))
-saveRDS(samples$s2019_couples,       file.path(der_path, "samples", "s2019_couples.rds"))
-saveRDS(samples$s2019_covid,         file.path(der_path, "samples", "s2019_covid.rds"))
-saveRDS(samples$s2019_covid_couples, file.path(der_path, "samples", "s2019_covid_couples.rds"))
+saveRDS(
+  df_sample_long_covid_couples,
+  file.path(der_path, "df_sample_long_covid_couples.rds")
+)
 
-# ---- Step 5: future outcomes L–O ---------------------------------------------
-cat("\n--- Step 5: Build future outcomes (L–O) ---\n")
-df_future_long <- build_future_outcomes_long(path_main, future_waves = future_waves)
-df_future_long <- add_baseline_couple_evolution(df_future_long, df_baseline)
+cat("COVID long (person-level baseline couples subset) saved to: ",
+    file.path(der_path, "df_sample_long_covid_couples.rds"), "\n", sep = "")
 
-tmp_wfh <- combine_wfh(df_future_long$jbpl, df_future_long$jbwah)
+# PIDP list for defining COVID-observed samples
+pidp_in_covid <- df_sample_long_covid %>%
+  dplyr::distinct(pidp) %>%
+  dplyr::pull(pidp)
+
+# =============================================================================
+# Step 4: Person-level analytic samples
+# =============================================================================
+cat("\n--- Step 4: Build baseline-defined person-level analytic samples ---\n")
+
+samples <- build_samples_2019(
+  df_baseline,
+  pidp_in_covid = pidp_in_covid
+)
+
+saveRDS(samples$s2019_all,           file.path(samples_path, "s2019_all.rds"))
+saveRDS(samples$s2019_couples,       file.path(samples_path, "s2019_couples.rds"))
+saveRDS(samples$s2019_covid,         file.path(samples_path, "s2019_covid.rds"))
+saveRDS(samples$s2019_covid_couples, file.path(samples_path, "s2019_covid_couples.rds"))
+
+cat("Person-level samples saved to: ", samples_path, "\n", sep = "")
+
+# =============================================================================
+# Step 4b: Couple roster and couple-level COVID sample
+# =============================================================================
+cat("\n--- Step 4b: Build couple roster and couple-level samples ---\n")
+
+# Build one-row-per-couple roster using baseline partner links only
+# Restrict to heterosexual baseline couples (one male, one female)
+couple_roster <- build_baseline_couple_roster(
+  df_baseline   = df_baseline,
+  pidp_in_covid = pidp_in_covid
+)
+
+# Structural baseline roster
+saveRDS(
+  couple_roster,
+  file.path(samples_path, "baseline_couple_roster.rds")
+)
+
+cat("Baseline couple roster saved to: ",
+    file.path(samples_path, "baseline_couple_roster.rds"), "\n", sep = "")
+
+# Baseline couple-level sample object
+s2019_baseline_couplelevel <- couple_roster
+
+saveRDS(
+  s2019_baseline_couplelevel,
+  file.path(samples_path, "s2019_baseline_couplelevel.rds")
+)
+
+cat("Baseline couple-level sample saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel.rds"), "\n", sep = "")
+
+# Optional restricted roster: couples where both spouses appear in COVID
+couple_roster_covid_both <- couple_roster %>%
+  dplyr::filter(both_in_covid)
+
+saveRDS(
+  couple_roster_covid_both,
+  file.path(samples_path, "baseline_couple_roster_both_in_covid.rds")
+)
+
+cat("COVID-observed couple roster saved to: ",
+    file.path(samples_path, "baseline_couple_roster_both_in_covid.rds"), "\n", sep = "")
+
+# Build strict couple-wave COVID panel:
+# one row per couple x wave, keeping only waves where both spouses are observed
+df_covid_couple_long <- build_covid_couple_long(
+  df_covid_long = df_sample_long_covid,
+  roster        = couple_roster
+)
+
+saveRDS(
+  df_covid_couple_long,
+  file.path(der_path, "df_sample_long_covid_couplelevel.rds")
+)
+
+cat("COVID couple-level panel saved to: ",
+    file.path(der_path, "df_sample_long_covid_couplelevel.rds"), "\n", sep = "")
+
+# =============================================================================
+# Step 5: Future outcomes L–O
+# =============================================================================
+cat("\n--- Step 5: Build future outcomes (L/M/N or L–O as configured) ---\n")
+
+df_future_long <- build_future_outcomes_long(
+  path_main    = path_main,
+  future_waves = future_waves
+)
+
+# Add indicators comparing later partner status to baseline partner
+df_future_long <- add_baseline_couple_evolution(
+  df_future_long,
+  df_baseline
+)
+
+# Add baseline variables before constructing baseline-based groups
 df_future_long <- df_future_long %>%
-  mutate(
+  dplyr::left_join(
+    df_baseline %>% dplyr::select(pidp, starts_with("base_")),
+    by = "pidp"
+  )
+
+# Create harmonized WFH and workoutside variables
+tmp_wfh <- combine_wfh(df_future_long$jbpl, df_future_long$jbwah)
+
+df_future_long <- df_future_long %>%
+  add_baseline_work_groups() %>%
+  dplyr::mutate(
     wfh_code = tmp_wfh$wfh_code,
     wfh_cat  = tmp_wfh$wfh_cat,
-    health_sf = combine_health(sf1, scsf1)
+    health_sf = combine_health(sf1, scsf1),
+    workoutside = make_workoutside_future(
+      jbstat = jbstat,
+      jbhrs  = jbhrs,
+      jbpl   = jbpl,
+      jbwah  = jbwah
+    )
   )
 
-saveRDS(df_future_long, file.path(der_path, "future_outcomes_long_lmo.rds"))
+saveRDS(
+  df_future_long,
+  file.path(der_path, "future_outcomes_long_lmo.rds")
+)
+
+cat("Future outcomes long saved to: ",
+    file.path(der_path, "future_outcomes_long_lmo.rds"), "\n", sep = "")
+
+# =============================================================================
+# Step 6: Future wide by year-month (ym)
+# =============================================================================
+cat("\n--- Step 6: Build future outcomes wide by year-month ---\n")
+
+# Make a clean suffix for columns: YYYY_MM
+df_future_long <- df_future_long %>%
+  dplyr::mutate(
+    ym_str = format(ym, "%Y_%m")
+  )
+
+# Identify baseline columns
+base_cols <- names(df_future_long)[startsWith(names(df_future_long), "base_")]
 
 df_future_wide <- df_future_long %>%
-  select(-hidp) %>%
-  pivot_wider(
+  dplyr::select(-hidp) %>%
+  tidyr::pivot_wider(
     id_cols = pidp,
-    names_from = wave,
-    values_from = -c(pidp, wave),
-    names_glue = "{.value}_{wave}"
+    names_from = ym_str,
+    values_from = -c(
+      pidp, wave, intdaty_dv, intdatm_dv, ym, year, ym_str,
+      dplyr::all_of(base_cols)
+    ),
+    names_glue = "{.value}_{ym_str}"
   )
 
+# Attach baseline columns once
+if (length(base_cols) > 0) {
+  df_future_wide <- df_future_wide %>%
+    dplyr::left_join(
+      df_future_long %>%
+        dplyr::select(pidp, dplyr::all_of(base_cols)) %>%
+        dplyr::distinct(pidp, .keep_all = TRUE),
+      by = "pidp"
+    )
+}
+
+saveRDS(df_future_wide, file.path(der_path, "future_outcomes_wide_ym.rds"))
 saveRDS(df_future_wide, file.path(der_path, "future_outcomes_wide_lmo.rds"))
 
-# ---- Step 6: unified event-study long ----------------------------------------
-cat("\n--- Step 6: Unified event-study long dataset ---\n")
+cat("Future outcomes wide saved to: ",
+    file.path(der_path, "future_outcomes_wide_lmo.rds"), "\n", sep = "")
 
-df_event_covid <- df_sample_long_covid %>%
-  mutate(
-    wfh_code_all = as.numeric(wah),
-    wfh_cat_all = case_when(
-      wfh_code_all == 1 ~ "Always",
-      wfh_code_all == 2 ~ "Often",
-      wfh_code_all == 3 ~ "Sometimes",
-      wfh_code_all == 4 ~ "Never",
-      TRUE ~ NA_character_
-    ),
-    source = "covid_panel"
-  )
+# =============================================================================
+# Step 6b: Couple-level future outcomes wide
+# =============================================================================
+cat("\n--- Step 6b: Build couple-level future outcomes wide ---\n")
 
-df_event_future <- df_future_long %>%
-  mutate(
-    wfh_code_all = wfh_code,
-    wfh_cat_all  = wfh_cat,
-    source = "main_future"
-  )
+df_future_couple_wide <- build_future_couple_wide(
+  df_future_wide = df_future_wide,
+  roster         = couple_roster
+)
 
-df_eventstudy_long <- bind_rows(df_event_covid, df_event_future)
-saveRDS(df_eventstudy_long, file.path(der_path, "eventstudy_long_2019_baseline_covid_lmo.rds"))
+saveRDS(
+  df_future_couple_wide,
+  file.path(der_path, "future_outcomes_couple_wide_lmo.rds")
+)
 
-# ---- Step 7: merge future outcomes into samples ------------------------------
-cat("\n--- Step 7: Merge future outcomes into samples ---\n")
-samples_plus <- merge_future_wide_into_samples(samples, df_future_wide)
+cat("Future couple-level wide saved to: ",
+    file.path(der_path, "future_outcomes_couple_wide_lmo.rds"), "\n", sep = "")
 
-saveRDS(samples_plus$s2019_all,           file.path(der_path, "samples", "s2019_all_plus_lmo.rds"))
-saveRDS(samples_plus$s2019_couples,       file.path(der_path, "samples", "s2019_couples_plus_lmo.rds"))
-saveRDS(samples_plus$s2019_covid,         file.path(der_path, "samples", "s2019_covid_plus_lmo.rds"))
-saveRDS(samples_plus$s2019_covid_couples, file.path(der_path, "samples", "s2019_covid_couples_plus_lmo.rds"))
+# Same baseline couple sample, now with future outcomes attached where available
+s2019_baseline_couplelevel_plus_lmo <- df_future_couple_wide
 
+saveRDS(
+  s2019_baseline_couplelevel_plus_lmo,
+  file.path(samples_path, "s2019_baseline_couplelevel_plus_lmo.rds")
+)
+
+cat("Baseline couple-level sample + future wide saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel_plus_lmo.rds"), "\n", sep = "")
+
+# Optional: future couple-wide subset where both spouses appear in COVID
+df_future_couple_wide_covidboth <- df_future_couple_wide %>%
+  dplyr::filter(both_in_covid)
+
+saveRDS(
+  df_future_couple_wide_covidboth,
+  file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds")
+)
+
+cat("Future couple-level wide (both spouses in COVID) saved to: ",
+    file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds"),
+    "\n", sep = "")
+
+# =============================================================================
+# Step 7: Merge future wide into person-level samples
+# =============================================================================
+cat("\n--- Step 7: Merge future wide into person-level samples ---\n")
+
+samples_plus <- merge_future_wide_into_samples(
+  samples,
+  df_future_wide
+)
+
+saveRDS(samples_plus$s2019_all,           file.path(samples_path, "s2019_all_plus_lmo.rds"))
+saveRDS(samples_plus$s2019_couples,       file.path(samples_path, "s2019_couples_plus_lmo.rds"))
+saveRDS(samples_plus$s2019_covid,         file.path(samples_path, "s2019_covid_plus_lmo.rds"))
+saveRDS(samples_plus$s2019_covid_couples, file.path(samples_path, "s2019_covid_couples_plus_lmo.rds"))
+
+cat("Person-level samples + future wide saved to: ", samples_path, "\n", sep = "")
+
+# =============================================================================
+# Done
+# =============================================================================
 cat("\nBUILD COMPLETE.\n")
+cat("Derived datasets: ", der_path, "\n", sep = "")
+cat("Samples:          ", samples_path, "\n", sep = "")

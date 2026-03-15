@@ -2,7 +2,7 @@
 # File: code/lib/family_baseline.R
 #
 # Purpose:
-#   Build composite baseline (pre-pandemic) using UKHLS main waves J/K.
+#   Build composite baseline (pre-pandemic) using UKHLS main waves I/J/K.
 #   - Pull rich covariates and outcomes from INDRESP
 #   - Build family structure from EGOALT + INDALL:
 #       partner_pidp, partner_rel, number and ages of children, family_id
@@ -179,20 +179,33 @@ clean_baseline_wave <- function(path_main, prefix) {
 
 build_baseline <- function(path_main) {
   
+  df_i <- clean_baseline_wave(path_main, "i")
   df_j <- clean_baseline_wave(path_main, "j")
   df_k <- clean_baseline_wave(path_main, "k")
   
-  # Restrict K to strictly 2019 for baseline (your earlier choice)
+  # K baseline: keep strictly pre-2020 (your existing convention)
   df_k_2019 <- df_k %>%
     dplyr::filter(intdaty_dv < 2020) %>%
     dplyr::mutate(source_wave = "K")
   
-  # Use J for anyone not in K-2019
-  df_j_fill <- df_j %>%
-    dplyr::anti_join(df_k_2019, by = "pidp") %>%
+  # J baseline: keep strictly pre-2020 (your existing convention)
+  df_j_2019 <- df_j %>%
+    dplyr::filter(intdaty_dv < 2020) %>%
     dplyr::mutate(source_wave = "J")
   
-  dplyr::bind_rows(df_k_2019, df_j_fill) %>%
+  # I spans 2017–2019, so REQUIRE 2019 explicitly
+  df_i_2019only <- df_i %>%
+    dplyr::filter(intdaty_dv == 2019) %>%
+    dplyr::mutate(source_wave = "I")
+  
+  # Priority fill: K first, then J, then I
+  df_j_fill <- df_j_2019 %>%
+    dplyr::anti_join(df_k_2019, by = "pidp")
+  
+  df_i_fill <- df_i_2019only %>%
+    dplyr::anti_join(dplyr::bind_rows(df_k_2019, df_j_fill), by = "pidp")
+  
+  dplyr::bind_rows(df_k_2019, df_j_fill, df_i_fill) %>%
     dplyr::rename_with(~ paste0("base_", .), -pidp) %>%
     dplyr::mutate(
       # Your education recode: merge PhD with MA; drop negative codes
