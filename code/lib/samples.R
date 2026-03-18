@@ -12,8 +12,10 @@
 #
 #   Couple-level helpers:
 #   5) baseline heterosexual couple roster (one row per couple)
-#   6) COVID couple-wave panel (one row per couple x wave)
-#   7) future outcomes couple-wide file (one row per couple)
+#   6) rich baseline couple-level dataset (one row per couple, spouse vars side by side)
+#   7) COVID couple-wave panel (one row per couple x wave)
+#   8) future outcomes couple-long panel (one row per couple x wave)
+#   9) future outcomes couple-wide file (one row per couple)
 #
 # Notes:
 #   - Couple status is fixed at baseline; later family structure changes are
@@ -22,6 +24,9 @@
 #       1 = male, 2 = female
 # =============================================================================
 
+suppressPackageStartupMessages({
+  library(tidyverse)
+})
 
 # -----------------------------------------------------------------------------
 # Baseline person-level samples
@@ -172,6 +177,41 @@ build_baseline_couple_roster <- function(df_baseline, pidp_in_covid = NULL) {
 
 
 # -----------------------------------------------------------------------------
+# Build rich baseline couple-level dataset
+#
+# Input:
+#   df_baseline: one row per person
+#   roster: one row per couple
+#
+# Output:
+#   one row per couple with husband and wife baseline vars side by side
+#
+# Notes:
+#   - All husband variables get suffix _h
+#   - All wife variables get suffix _w
+#   - Keeps roster flags (e.g. both_in_covid) if present
+# -----------------------------------------------------------------------------
+build_baseline_couple_dataset <- function(df_baseline, roster) {
+  
+  husband <- df_baseline %>%
+    dplyr::rename(husband_pidp = pidp) %>%
+    dplyr::rename_with(
+      ~ ifelse(.x == "husband_pidp", .x, paste0(.x, "_h"))
+    )
+  
+  wife <- df_baseline %>%
+    dplyr::rename(wife_pidp = pidp) %>%
+    dplyr::rename_with(
+      ~ ifelse(.x == "wife_pidp", .x, paste0(.x, "_w"))
+    )
+  
+  roster %>%
+    dplyr::left_join(husband, by = "husband_pidp") %>%
+    dplyr::left_join(wife, by = "wife_pidp")
+}
+
+
+# -----------------------------------------------------------------------------
 # Build COVID couple-level long panel
 #
 # Input:
@@ -208,6 +248,57 @@ build_covid_couple_long <- function(df_covid_long, roster) {
     dplyr::inner_join(husband, by = "husband_pidp") %>%
     dplyr::inner_join(wife, by = c("wife_pidp", "wave")) %>%
     dplyr::arrange(couple_id, wave)
+}
+
+
+# -----------------------------------------------------------------------------
+# Build future-outcomes couple-level long panel
+#
+# Input:
+#   df_future_long: one row per person x wave
+#   roster: one row per couple
+#
+# Output:
+#   one row per couple x wave
+#
+# Notes:
+#   - Keeps only waves where both spouses are observed in the same wave
+#   - All husband variables get suffix _h
+#   - All wife variables get suffix _w
+#   - Mirrors build_covid_couple_long()
+# -----------------------------------------------------------------------------
+build_future_couple_long <- function(df_future_long, roster) {
+  
+  husband <- df_future_long %>%
+    dplyr::rename(husband_pidp = pidp) %>%
+    dplyr::rename_with(
+      ~ ifelse(.x %in% c("husband_pidp", "wave", "ym", "year", "intdaty_dv", "intdatm_dv"),
+               .x,
+               paste0(.x, "_h"))
+    )
+  
+  wife <- df_future_long %>%
+    dplyr::rename(wife_pidp = pidp) %>%
+    dplyr::rename_with(
+      ~ ifelse(.x %in% c("wife_pidp", "wave", "ym", "year", "intdaty_dv", "intdatm_dv"),
+               .x,
+               paste0(.x, "_w"))
+    )
+  
+  roster %>%
+    dplyr::inner_join(husband, by = "husband_pidp") %>%
+    dplyr::inner_join(
+      wife,
+      by = c(
+        "wife_pidp",
+        "wave",
+        "ym",
+        "year",
+        "intdaty_dv",
+        "intdatm_dv"
+      )
+    ) %>%
+    dplyr::arrange(couple_id, ym)
 }
 
 

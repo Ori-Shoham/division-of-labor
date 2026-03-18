@@ -20,16 +20,17 @@
 # =============================================================================
 
 # ---- Toggle what to run -------------------------------------------------------
-RUN_CHECK_INPUTS    <- TRUE
-RUN_BUILD_DATA      <- TRUE
-RUN_DESCRIPTIVES    <- TRUE
+RUN_CHECK_INPUTS        <- TRUE
+RUN_BUILD_DATA          <- TRUE
+RUN_DESCRIPTIVES        <- TRUE
 RUN_FUTURE_DESCRIPTIVES <- TRUE
-RUN_MODELS          <- TRUE
-RUN_LASSO           <- TRUE
-RUN_SESSION_INFO    <- TRUE
+RUN_SAMPLE_TABLES       <- TRUE
+RUN_MODELS              <- TRUE
+RUN_LASSO               <- TRUE
+RUN_SESSION_INFO        <- TRUE
 
 # Optional: stop after each stage for debugging
-STOP_AFTER_EACH     <- TRUE
+STOP_AFTER_EACH         <- FALSE
 
 # =============================================================================
 # Helper: run a stage in a fresh environment
@@ -71,7 +72,7 @@ if (RUN_BUILD_DATA) {
 }
 
 # =============================================================================
-# Stage 2: Descriptive figures
+# Stage 2: Descriptive figures and tables
 # =============================================================================
 if (RUN_DESCRIPTIVES) {
   message("\n==================== Stage 2: Descriptives =====================")
@@ -85,6 +86,11 @@ if (RUN_FUTURE_DESCRIPTIVES) {
   if (STOP_AFTER_EACH) stop("Stopped after Stage 2b (as requested).")
 }
 
+if (RUN_SAMPLE_TABLES) {
+  message("\n==================== Stage 2c: Sample tables =============")
+  run_stage("code/run/02c_sample_tables.R")
+  if (STOP_AFTER_EACH) stop("Stopped after Stage 2c (as requested).")
+}
 # =============================================================================
 # Stage 3: Regression tables
 # =============================================================================

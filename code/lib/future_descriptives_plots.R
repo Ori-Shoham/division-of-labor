@@ -12,6 +12,7 @@
 suppressPackageStartupMessages({
   library(tidyverse)
   library(scales)
+  library(forcats)
 })
 
 # --- labels and metadata ------------------------------------------------------
@@ -45,13 +46,13 @@ suppressPackageStartupMessages({
 
 .var_units <- function(var, is_binary = FALSE) {
   if (is_binary) return("Share of respondents")
+  
   dplyr::case_when(
     var %in% c("jbhrs", "jbot") ~ "Hours per week",
     var %in% c("paygu_dv", "fimnlabgrs_dv", "fimngrs_dv") ~ "Pounds per month",
     var %in% c("nchild_dv", "ndepchl_dv") ~ "Count",
-    var == "scghq1_dv" ~ "GHQ mental distress score\n (0-36 scale from least to greatest stress)",
-    var == "scghq2_dv" ~ "GHQ mental distress caseness score\n (0-12 scale from least to greatest stress)",
-    var == "sclfsato" ~ "Life satisfaction (1-7)",
+    var == "scghq1_dv" ~ "GHQ mental distress score\n(0-36 scale from least to greatest stress)",
+    var == "scghq2_dv" ~ "GHQ mental distress caseness score\n(0-12 scale from least to greatest stress)",
     TRUE ~ .var_label(var)
   )
 }
@@ -73,6 +74,11 @@ suppressPackageStartupMessages({
 
 # Human-readable category labels
 .label_values <- function(var, x) {
+  
+  # Preserve ordered factors for variables that are already correctly labeled
+  if (is.factor(x) && !var %in% c("sex", "jbft_dv", "jbstat", "mastat_dv", "workoutside")) {
+    return(x)
+  }
   
   x_chr <- as.character(x)
   
@@ -168,41 +174,21 @@ suppressPackageStartupMessages({
   )
   
   if (!var %in% names(label_maps)) {
-    return(x_chr)
+    return(x)
   }
   
   lab_map <- label_maps[[var]]
   out <- unname(lab_map[x_chr])
-  
-  # Keep original values if no mapping exists
   out[is.na(out)] <- x_chr[is.na(out)]
   
-  if (var %in% names(level_maps)) {
-    return(factor(out, levels = level_maps[[var]]))
-  }
-  
-  out
+  factor(out, levels = level_maps[[var]])
 }
 
 # Fixed wave labels requested by user
-.wave_label_map <- c(
-  "2019" = "2019 baseline",
-  "l" = "Wave 12",
-  "m" = "Wave 13",
-  "n" = "Wave 14",
-  "o" = "Wave 15",
-  "12" = "Wave 12",
-  "13" = "Wave 13",
-  "14" = "Wave 14",
-  "15" = "Wave 15"
-)
-
 .apply_time_labels <- function(p, dd, agg = "wave") {
   if (agg == "wave") {
     p + scale_x_discrete(labels = function(x) {
-      out <- .wave_label_map[x]
-      out[is.na(out)] <- x[is.na(out)]
-      unname(out)
+      label_time_values(x, scale = "future", which = "short")
     })
   } else if (agg == "ym") {
     p + scale_x_date(date_labels = "%b %Y", date_breaks = "3 months")
@@ -210,7 +196,6 @@ suppressPackageStartupMessages({
     p + scale_x_continuous(breaks = sort(unique(dd$time)))
   }
 }
-
 # --- helpers ------------------------------------------------------------------
 
 .safe_name <- function(x) {
@@ -463,9 +448,27 @@ plot_future_numeric_mean <- function(
 # --- categorical helpers ------------------------------------------------------
 
 .clean_future_categorical_for_plot <- function(x, include_missing = FALSE) {
+  
+  is_fac <- is.factor(x)
+  fac_levels <- if (is_fac) levels(x) else NULL
+  fac_ordered <- if (is_fac) is.ordered(x) else FALSE
+  
   if (is.numeric(x) || is.integer(x)) {
     x <- as.numeric(x)
     x[x %in% c(-9, -8, -7, -2, -1)] <- NA_real_
+  }
+  
+  if (is_fac) {
+    x_chr <- as.character(x)
+    x_chr[trimws(x_chr) == ""] <- NA_character_
+    
+    if (include_missing) {
+      x_chr[is.na(x_chr)] <- "Missing"
+      new_levels <- unique(c(fac_levels, "Missing"))
+      return(factor(x_chr, levels = new_levels, ordered = fac_ordered))
+    } else {
+      return(factor(x_chr, levels = fac_levels, ordered = fac_ordered))
+    }
   }
   
   x <- as.character(x)
@@ -582,6 +585,11 @@ plot_future_numeric_mean <- function(
         time = year,
         time_lab = as.character(year)
       )
+  }
+  
+  if (is.factor(dd_all$value)) {
+    dd_all <- dd_all %>%
+      dplyr::mutate(value = forcats::fct_drop(value))
   }
   
   dd_all %>%
@@ -732,6 +740,11 @@ plot_future_categorical_dist <- function(
         time = year,
         time_lab = as.character(year)
       )
+  }
+  
+  if (is.factor(dd_all$value)) {
+    dd_all <- dd_all %>%
+      dplyr::mutate(value = forcats::fct_drop(value))
   }
   
   dd_all %>%

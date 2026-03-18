@@ -18,6 +18,7 @@ suppressPackageStartupMessages({
 rm(list = ls())
 
 source("code/lib/config.R")
+source("code/lib/wave_labels.R")
 source("code/lib/future_descriptives_plots.R")
 
 dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)

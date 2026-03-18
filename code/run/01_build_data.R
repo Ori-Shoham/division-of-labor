@@ -12,10 +12,11 @@
 # This version:
 #   - uses policies_keyworkers.R for SOC/SIC + keyworker crosswalks
 #   - keeps the existing person-level outputs used by later scripts
-#   - adds new couple-level outputs:
+#   - builds richer couple-level outputs:
 #       * baseline_couple_roster.rds
 #       * s2019_baseline_couplelevel.rds
 #       * df_sample_long_covid_couplelevel.rds
+#       * future_outcomes_couple_long_lmo.rds
 #       * future_outcomes_couple_wide_lmo.rds
 #       * s2019_baseline_couplelevel_plus_lmo.rds
 # =============================================================================
@@ -76,7 +77,8 @@ cat("Keyworker crosswalk rows: ", nrow(key_inds), "\n", sep = "")
 # =============================================================================
 cat("\n--- Step 1: Build baseline (I/J/K composite) ---\n")
 
-df_baseline <- build_baseline(path_main)
+df_baseline <- build_baseline(path_main) %>%
+  add_baseline_work_groups()
 
 saveRDS(df_baseline, file.path(der_path, "baseline.rds"))
 
@@ -112,8 +114,7 @@ saveRDS(df_sample_long_covid, file.path(der_path, "df_sample_long_covid.rds"))
 cat("COVID long saved to: ",
     file.path(der_path, "df_sample_long_covid.rds"), "\n", sep = "")
 
-# Keep existing person-level "couples" subset for backward compatibility
-# with current descriptives scripts
+# Backward-compatible person-level couples subset
 df_sample_long_covid_couples <- df_sample_long_covid %>%
   dplyr::filter(!is.na(base_partner_pidp))
 
@@ -168,8 +169,10 @@ saveRDS(
 cat("Baseline couple roster saved to: ",
     file.path(samples_path, "baseline_couple_roster.rds"), "\n", sep = "")
 
-# Baseline couple-level sample object
-s2019_baseline_couplelevel <- couple_roster
+s2019_baseline_couplelevel <- build_baseline_couple_dataset(
+  df_baseline = df_baseline,
+  roster      = couple_roster
+)
 
 saveRDS(
   s2019_baseline_couplelevel,
@@ -225,7 +228,13 @@ df_future_long <- add_baseline_couple_evolution(
 # Add baseline variables before constructing baseline-based groups
 df_future_long <- df_future_long %>%
   dplyr::left_join(
-    df_baseline %>% dplyr::select(pidp, starts_with("base_")),
+    df_baseline %>%
+      dplyr::select(
+        pidp,
+        starts_with("base_"),
+        group_industry_based,
+        group_industry_based_detailed
+      ),
     by = "pidp"
   )
 
@@ -265,6 +274,24 @@ saveRDS(
 
 cat("Future outcomes long saved to: ",
     file.path(der_path, "future_outcomes_long_lmo.rds"), "\n", sep = "")
+
+# =============================================================================
+# Step 5b: Couple-level future outcomes long
+# =============================================================================
+cat("\n--- Step 5b: Build couple-level future outcomes long ---\n")
+
+df_future_couple_long <- build_future_couple_long(
+  df_future_long = df_future_long,
+  roster         = couple_roster
+)
+
+saveRDS(
+  df_future_couple_long,
+  file.path(der_path, "future_outcomes_couple_long_lmo.rds")
+)
+
+cat("Future couple-level long saved to: ",
+    file.path(der_path, "future_outcomes_couple_long_lmo.rds"), "\n", sep = "")
 
 # =============================================================================
 # Step 6: Future wide by year-month (ym)

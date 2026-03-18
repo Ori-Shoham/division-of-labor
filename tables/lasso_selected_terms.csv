@@ -1,0 +1,71 @@
+term,coef
+Industry - Human health activities,1.3132637590921188
+Industry - Postal and courier activities,0.8499591228704498
+"Industry - Computer programming, consultancy and related activities",-0.8250574605298723
+Occupation - Protective Service Occupations,0.81122634501414
+(Intercept),-0.79782405187646
+Industry - Residential care activities,0.7429874832069954
+Industry - Manufacture of food products:Occupation - missing,0.7134801243521507
+Industry - Social work activities without accommodation:Occupation - Administrative Occupations: Government and Related Organisations,0.6412904992806324
+"Occupation - Business, Finance and Related Associate Professionals",-0.6373368015099458
+"Occupation - Sales, Marketing and Related Associate Professionals",-0.5889476064749319
+Occupation - Information Technology and Telecommunications Professionals,-0.5614420233967761
+Occupation - Caring Personal Services,0.5515716575988645
+Industry - Telecommunications:Occupation - Electrical and Electronic Trades,0.5248712774870867
+"Occupation - Business, Research and Administrative Professionals",-0.5164496201225374
+"Industry - Retail trade, except of motor vehicles and motorcycles",0.48811092180465704
+Occupation - Design Occupations,-0.45436738581552144
+Occupation - Electrical and Electronic Trades,0.45127366144751263
+Occupation - Health Professionals,0.41503926105751016
+"Industry - Wholesale trade, except of motor vehicles and motorcycles:Occupation - Road Transport Drivers",0.40138153382700714
+Industry - Veterinary activities:Occupation - Animal Care and Control Services,0.3990488439305807
+Industry - Social work activities without accommodation:Occupation - Health Associate Professionals,0.3810623447282563
+Industry - OTHER:Occupation - Plant and Machine Operatives,0.3810378751534917
+"Industry - Crop and animal production, hunting and related service activities",0.34350448394850736
+"Industry - Waste collection, treatment and disposal activities; materials recovery",0.32244957125036633
+Industry - Warehousing and support activities for transportation,0.2851526309017765
+Industry - Services to buildings and landscape activities,0.27647916899471714
+Industry - Public administration and defence; compulsory social security:Occupation - Protective Service Occupations,0.27129113156898393
+Occupation - Functional Managers and Directors,-0.2673928911000505
+Industry - Security and investigation activities:Occupation - Elementary Security Occupations,0.2624865885358519
+Industry - Land transport and transport via pipelines:Occupation - OTHER,0.2531517217655686
+Industry - Manufacture of other transport equipment,0.23940857375396274
+"Industry - Manufacture of motor vehicles, trailers and semi-trailers:Occupation - Functional Managers and Directors",0.23701914918678468
+Occupation - Public Services and Other Associate Professionals,-0.23483105606145924
+Industry - Manufacture of other transport equipment:Occupation - missing,0.23472269242641347
+Occupation - Nursing and Midwifery Professionals,0.2294815622950918
+Occupation - Media Professionals,-0.22802863671424603
+Industry - Other personal service activities,-0.19934639753093386
+"Industry - Creative, arts and entertainment activities",-0.1940857796754183
+Industry - Legal and accounting activities,-0.1779173930784611
+"Occupation - Artistic, Literary and Media Occupations",-0.17716057739974125
+Occupation - Legal Professionals,-0.17538064202344109
+"Industry - Insurance, reinsurance and pension funding, except compulsory social security",-0.16058530282717579
+Occupation - Sports and Fitness Occupations,-0.15908146453417854
+Industry - Security and investigation activities,0.15817368099129245
+"Industry - Scientific research and development:Occupation - Science, Engineering and Production Technicians",0.14021686074133224
+Industry - Food and beverage service activities,-0.1395068455938708
+Industry - Manufacture of food products,0.1343233750881539
+Occupation - Elementary Security Occupations,0.12911261764489132
+Industry - Social work activities without accommodation:Occupation - Welfare Professionals,0.1163440870691446
+Industry - Social work activities without accommodation:Occupation - Caring Personal Services,0.11439754198425676
+Occupation - Elementary Storage Occupations,0.10796840502298195
+Industry - Activities auxiliary to financial services and insurance activities:Occupation - missing,-0.10468242098462482
+Industry - Public administration and defence; compulsory social security:Occupation - Caring Personal Services,0.08971515774009846
+Industry - Food and beverage service activities:Occupation - missing,-0.0881369203013824
+Industry - Human health activities:Occupation - missing,0.08160840119292907
+Industry - Publishing activities,-0.07844786794969107
+Occupation - Managers and Proprietors in Hospitality and Leisure Services,-0.07789041692375206
+Occupation - missing,0.07561624516343664
+Industry - Architectural and engineering activities; technical testing and analysis,-0.05647750808758112
+Occupation - Other Administrative Occupations,-0.04816941790474614
+Industry - Public administration and defence; compulsory social security:Occupation - OTHER,0.04801234466633527
+Occupation - Managers and Directors in Retail and Wholesale,0.04438799601195635
+Industry - Land transport and transport via pipelines,0.03842263259288526
+Industry - Other personal service activities:Occupation - Caring Personal Services,0.028832361072105857
+"Industry - Retail trade, except of motor vehicles and motorcycles:Occupation - Managers and Proprietors in Other Services",0.023603913618780906
+Industry - Advertising and market research,-0.018677395750209574
+Industry - Public administration and defence; compulsory social security:Occupation - missing,0.014636898391476116
+Industry - Activities auxiliary to financial services and insurance activities,-0.009899782720057785
+Industry - Manufacture of food products:Occupation - Process Operatives,0.005861756345715985
+Industry - Public administration and defence; compulsory social security:Occupation - Welfare and Housing Associate Professionals,-2.735185988412114e-4
