@@ -41,7 +41,7 @@
   \begin{tikzpicture}
     \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.9);
     \node[align=center, text width=9.6cm] at (5.4,2.95)
-    {\small Figure not found:\\[0.3em]\texttt{#1}};
+    {\small Figure not found:\\[0.3em]\ttfamily\detokenize{#1}};
   \end{tikzpicture}%
 }
 
@@ -49,7 +49,7 @@
   \begin{tikzpicture}
     \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.1);
     \node[align=center, text width=9.6cm] at (5.4,2.55)
-    {\small Table not found:\\[0.3em]\texttt{#1}};
+    {\small Table not found:\\[0.3em]\ttfamily\detokenize{#1}};
   \end{tikzpicture}%
 }
 
