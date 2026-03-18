@@ -351,17 +351,23 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     stringr::str_match(x, "\\\\begin\\{tabular\\}\\{([^}]+)\\}")[, 2]
   }
   
+  strip_rules <- function(x) {
+    x <- gsub("^\\\\toprule\\s*", "", x)
+    x <- gsub("\\s*\\\\bottomrule\\s*$", "", x)
+    x
+  }
+  
   spec <- get_spec(tex_a)
   
-  body_a <- strip_tabular(tex_a)
-  body_b <- strip_tabular(tex_b)
-  body_c <- strip_tabular(tex_c)
+  body_a <- strip_rules(strip_tabular(tex_a))
+  body_b <- strip_rules(strip_tabular(tex_b))
+  body_c <- strip_rules(strip_tabular(tex_c))
   
   panel_line <- function(title, ncol) {
     paste0(
-      "\\\\addlinespace[0.5em]\n",
-      "\\\\multicolumn{", ncol, "}{l}{\\\\textbf{", title, "}} \\\\\n",
-      "\\\\addlinespace[0.25em]\n"
+      "\\addlinespace[0.5em]\n",
+      "\\multicolumn{", ncol, "}{l}{\\textbf{", title, "}} \\\\\n",
+      "\\addlinespace[0.25em]\n"
     )
   }
   
@@ -379,9 +385,6 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     "\\bottomrule\n",
     "\\end{tabular}\n"
   )
-  
-  table_body <- gsub("\\\\toprule\\n", "", table_body)
-  table_body <- gsub("\\\\bottomrule\\n", "", table_body)
   
   header <- ""
   
