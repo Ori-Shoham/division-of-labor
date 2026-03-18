@@ -369,6 +369,26 @@ for (spec in .dataset_specs) {
     out_file = paste0("workoutside_overtime_detailed_groups", suffix, ".png"),
     fig_path = fig_path
   )
+
+  # At least some WFH over time (overall + groups + detailed)
+  plot_wfh_some_overtime(
+    df = df,
+    by = NULL,
+    out_file = paste0("wfh_some_overtime", suffix, ".png"),
+    fig_path = fig_path
+  )
+  plot_wfh_some_overtime(
+    df = df,
+    by = "group_industry_based",
+    out_file = paste0("wfh_some_overtime_groups", suffix, ".png"),
+    fig_path = fig_path
+  )
+  plot_wfh_some_overtime(
+    df = df,
+    by = "group_industry_based_detailed",
+    out_file = paste0("wfh_some_overtime_detailed_groups", suffix, ".png"),
+    fig_path = fig_path
+  )
   
   # WFH over time (faceted bars; groups + detailed)
   plot_wfh_overtime_facets(

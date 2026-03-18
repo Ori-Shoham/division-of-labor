@@ -20,6 +20,7 @@ suppressPackageStartupMessages({
 .var_label <- function(var) {
   dplyr::case_when(
     var == "workoutside" ~ "Working outside the home",
+    var == "wfh_some" ~ "Working from home at least sometimes",
     var == "jbhrs" ~ "Weekly hours worked",
     var == "jbot" ~ "Overtime hours worked",
     var == "paygu_dv" ~ "Gross monthly pay",
@@ -170,7 +171,8 @@ suppressPackageStartupMessages({
       "Surviving civil partner"
     ),
     
-    workoutside = c("Yes", "No")
+    workoutside = c("Yes", "No"),
+    wfh_some = c("Yes", "No")
   )
   
   if (!var %in% names(label_maps)) {
@@ -268,7 +270,8 @@ suppressPackageStartupMessages({
     include_baseline_2019 = TRUE,
     baseline_var = NULL,
     zero_if_not_working = FALSE,
-    employment_var = "jbstat"
+    employment_var = "jbstat",
+    exclude_2025 = TRUE
 ) {
   agg <- match.arg(agg)
   
@@ -356,8 +359,14 @@ suppressPackageStartupMessages({
     
   } else {
     
-    dd_sum <- dd_future %>%
-      dplyr::filter(!is.na(year), !is.na(value)) %>%
+    dd_year <- dd_future %>%
+      dplyr::filter(!is.na(year), !is.na(value))
+    
+    if (exclude_2025) {
+      dd_year <- dd_year %>% dplyr::filter(year != 2025)
+    }
+    
+    dd_sum <- dd_year %>%
       dplyr::mutate(
         time = year,
         time_lab = as.character(year)
@@ -382,6 +391,7 @@ plot_future_numeric_mean <- function(
     baseline_var = NULL,
     zero_if_not_working = FALSE,
     employment_var = "jbstat",
+    exclude_2025 = TRUE,
     out_file,
     fig_path
 ) {
@@ -397,7 +407,8 @@ plot_future_numeric_mean <- function(
     include_baseline_2019 = include_baseline_2019,
     baseline_var = baseline_var,
     zero_if_not_working = zero_if_not_working,
-    employment_var = employment_var
+    employment_var = employment_var,
+    exclude_2025 = exclude_2025
   )
   
   dd <- prep$data
@@ -503,7 +514,8 @@ plot_future_numeric_mean <- function(
     agg = c("wave", "ym", "year"),
     include_baseline_2019 = TRUE,
     baseline_var = NULL,
-    include_missing = FALSE
+    include_missing = FALSE,
+    exclude_2025 = TRUE
 ) {
   agg <- match.arg(agg)
   stopifnot(var %in% names(df))
@@ -580,7 +592,13 @@ plot_future_numeric_mean <- function(
   } else {
     
     dd_all <- dd_all %>%
-      dplyr::filter(!is.na(year)) %>%
+      dplyr::filter(!is.na(year))
+    
+    if (exclude_2025) {
+      dd_all <- dd_all %>% dplyr::filter(year != 2025)
+    }
+    
+    dd_all <- dd_all %>%
       dplyr::mutate(
         time = year,
         time_lab = as.character(year)
@@ -606,6 +624,7 @@ plot_future_categorical_dist <- function(
     include_baseline_2019 = TRUE,
     baseline_var = NULL,
     include_missing = FALSE,
+    exclude_2025 = TRUE,
     out_file,
     fig_path
 ) {
@@ -618,7 +637,8 @@ plot_future_categorical_dist <- function(
     agg = agg,
     include_baseline_2019 = include_baseline_2019,
     baseline_var = baseline_var,
-    include_missing = include_missing
+    include_missing = include_missing,
+    exclude_2025 = exclude_2025
   )
   
   p <- ggplot(dd, aes(x = time, y = share, fill = value)) +
@@ -656,7 +676,8 @@ plot_future_categorical_dist <- function(
     agg = c("wave", "ym", "year"),
     include_baseline_2019 = TRUE,
     baseline_var = NULL,
-    include_missing = FALSE
+    include_missing = FALSE,
+    exclude_2025 = TRUE
 ) {
   agg <- match.arg(agg)
   
@@ -735,7 +756,13 @@ plot_future_categorical_dist <- function(
   } else {
     
     dd_all <- dd_all %>%
-      dplyr::filter(!is.na(year)) %>%
+      dplyr::filter(!is.na(year))
+    
+    if (exclude_2025) {
+      dd_all <- dd_all %>% dplyr::filter(year != 2025)
+    }
+    
+    dd_all <- dd_all %>%
       dplyr::mutate(
         time = year,
         time_lab = as.character(year)
@@ -762,6 +789,7 @@ plot_future_categorical_dist_facet <- function(
     include_baseline_2019 = TRUE,
     baseline_var = NULL,
     include_missing = FALSE,
+    exclude_2025 = TRUE,
     scales = "fixed",
     ncol = NULL,
     out_file,
@@ -779,7 +807,8 @@ plot_future_categorical_dist_facet <- function(
     agg = agg,
     include_baseline_2019 = include_baseline_2019,
     baseline_var = baseline_var,
-    include_missing = include_missing
+    include_missing = include_missing,
+    exclude_2025 = exclude_2025
   )
   
   p <- ggplot(dd, aes(x = time, y = share, fill = value)) +
@@ -817,6 +846,7 @@ plot_all_future_outcomes <- function(
     df,
     prefix,
     fig_path,
+    exclude_2025 = TRUE,
     exclude = c(
       "pidp", "hidp", "wave", "ym", "year",
       "industry", "occupation",
@@ -842,14 +872,16 @@ plot_all_future_outcomes <- function(
         df = df,
         var = v,
         out_file = paste0(out_stub, "_timeplot.png"),
-        fig_path = fig_path
+        fig_path = fig_path,
+        exclude_2025 = exclude_2025
       )
     } else {
       plot_future_categorical_dist(
         df = df,
         var = v,
         out_file = paste0(out_stub, "_dist.png"),
-        fig_path = fig_path
+        fig_path = fig_path,
+        exclude_2025 = exclude_2025
       )
     }
   }

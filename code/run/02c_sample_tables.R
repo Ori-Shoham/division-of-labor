@@ -15,6 +15,7 @@
 #
 #   B. Figures
 #      - Distribution of joint husband-wife workoutside status over time
+#      - Distribution of joint husband-wife WFH-some status over time
 #      - For COVID study: by COVID-study wave
 #      - For future study: by wave and by year
 #
@@ -24,7 +25,7 @@
 #       * future_outcomes_couple_long_lmo.rds exists
 #       * both long couple datasets carry baseline group variables through
 #   - Long datasets are collapsed to one row per couple for the frequency tables
-#   - The workoutside figures keep the full couple-wave structure
+#   - The workoutside and WFH-some figures keep the full couple-wave structure
 #   - Wave labels are drawn from code/lib/wave_labels.R
 # =============================================================================
 
@@ -256,7 +257,7 @@ p_covid_share <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_covid_wave_share.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_covid_wave_share.png"),
   plot = p_covid_share,
   width = 10,
   height = 6
@@ -271,7 +272,7 @@ p_covid_N <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_covid_wave_N.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_covid_wave_N.png"),
   plot = p_covid_N,
   width = 10,
   height = 6
@@ -290,7 +291,7 @@ p_future_wave_share <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_future_wave_share.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_future_wave_share.png"),
   plot = p_future_wave_share,
   width = 10,
   height = 6
@@ -305,7 +306,7 @@ p_future_wave_N <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_future_wave_N.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_future_wave_N.png"),
   plot = p_future_wave_N,
   width = 10,
   height = 6
@@ -324,7 +325,7 @@ p_future_year_share <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_future_year_share.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_future_year_share.png"),
   plot = p_future_year_share,
   width = 10,
   height = 6
@@ -339,7 +340,7 @@ p_future_year_N <- plot_workoutside_composition(
 )
 
 ggplot2::ggsave(
-  filename = file.path(fig_path, "couple_workoutside_future_year_N.pdf"),
+  filename = file.path(fig_path, "couple_workoutside_future_year_N.png"),
   plot = p_future_year_N,
   width = 10,
   height = 6
@@ -362,9 +363,135 @@ cat(" - sample_table_youngest_child_exact_all.tex\n")
 cat(" - sample_table_youngest_child_binned_all.tex\n")
 
 cat("\nSaved couple workoutside composition figures to ", fig_path, ":\n", sep = "")
-cat(" - couple_workoutside_covid_wave_share.pdf\n")
-cat(" - couple_workoutside_covid_wave_N.pdf\n")
-cat(" - couple_workoutside_future_wave_share.pdf\n")
-cat(" - couple_workoutside_future_wave_N.pdf\n")
-cat(" - couple_workoutside_future_year_share.pdf\n")
-cat(" - couple_workoutside_future_year_N.pdf\n")
+cat(" - couple_workoutside_covid_wave_share.png\n")
+cat(" - couple_workoutside_covid_wave_N.png\n")
+cat(" - couple_workoutside_future_wave_share.png\n")
+cat(" - couple_workoutside_future_wave_N.png\n")
+cat(" - couple_workoutside_future_year_share.png\n")
+cat(" - couple_workoutside_future_year_N.png\n")
+
+# =============================================================================
+# SECTION C: Couple WFH-some composition over time
+#
+# This is the graphical counterpart to a sequence of 2x2 husband-wife
+# WFH-some tables by period. Rather than saving many separate tables, we plot
+# the composition over time.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# C1. COVID study waves
+# -----------------------------------------------------------------------------
+
+p_covid_wfh_some_share <- plot_wfh_some_composition(
+  df         = df_covid_plot,
+  time_var   = wave,
+  time_scale = "covid_wave",
+  use_shares = TRUE,
+  title      = "Couple work-from-home-some composition across COVID study waves"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_covid_wave_share.png"),
+  plot = p_covid_wfh_some_share,
+  width = 11,
+  height = 7
+)
+
+p_covid_wfh_some_N <- plot_wfh_some_composition(
+  df         = df_covid_plot,
+  time_var   = wave,
+  time_scale = "covid_wave",
+  use_shares = FALSE,
+  title      = "Number of couples by work-from-home-some composition across COVID study waves"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_covid_wave_N.png"),
+  plot = p_covid_wfh_some_N,
+  width = 11,
+  height = 7
+)
+
+# -----------------------------------------------------------------------------
+# C2. Future study waves
+# -----------------------------------------------------------------------------
+
+p_future_wfh_some_wave_share <- plot_wfh_some_composition(
+  df         = df_future_plot,
+  time_var   = wave,
+  time_scale = "future_wave",
+  use_shares = TRUE,
+  title      = "Couple work-from-home-some composition across future study waves"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_future_wave_share.png"),
+  plot = p_future_wfh_some_wave_share,
+  width = 11,
+  height = 7
+)
+
+p_future_wfh_some_wave_N <- plot_wfh_some_composition(
+  df         = df_future_plot,
+  time_var   = wave,
+  time_scale = "future_wave",
+  use_shares = FALSE,
+  title      = "Number of couples by work-from-home-some composition across future study waves"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_future_wave_N.png"),
+  plot = p_future_wfh_some_wave_N,
+  width = 11,
+  height = 7
+)
+
+# -----------------------------------------------------------------------------
+# C3. Future study years
+# -----------------------------------------------------------------------------
+
+p_future_wfh_some_year_share <- plot_wfh_some_composition(
+  df         = df_future_plot,
+  time_var   = year,
+  time_scale = "year",
+  use_shares = TRUE,
+  title      = "Couple work-from-home-some composition across future study years"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_future_year_share.png"),
+  plot = p_future_wfh_some_year_share,
+  width = 11,
+  height = 7
+)
+
+p_future_wfh_some_year_N <- plot_wfh_some_composition(
+  df         = df_future_plot,
+  time_var   = year,
+  time_scale = "year",
+  use_shares = FALSE,
+  title      = "Number of couples by work-from-home-some composition across future study years"
+)
+
+ggplot2::ggsave(
+  filename = file.path(fig_path, "couple_wfh_some_future_year_N.png"),
+  plot = p_future_wfh_some_year_N,
+  width = 11,
+  height = 7
+)
+
+cat("
+Saved couple WFH-some composition figures to ", fig_path, ":
+", sep = "")
+cat(" - couple_wfh_some_covid_wave_share.png
+")
+cat(" - couple_wfh_some_covid_wave_N.png
+")
+cat(" - couple_wfh_some_future_wave_share.png
+")
+cat(" - couple_wfh_some_future_wave_N.png
+")
+cat(" - couple_wfh_some_future_year_share.png
+")
+cat(" - couple_wfh_some_future_year_N.png
+")

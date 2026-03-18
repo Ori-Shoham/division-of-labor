@@ -413,6 +413,58 @@ write_three_panel_table <- function(df_a, df_b, df_c,
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# Internal helper: build joint husband-wife binary status
+#
+# Output categories:
+#   - Neither spouse ...
+#   - Husband only ...
+#   - Wife only ...
+#   - Both spouses ...
+#
+# Notes:
+#   - Assumes the husband and wife variables are coded 0/1
+#   - Rows with missing husband or wife values are dropped
+# -----------------------------------------------------------------------------
+make_joint_binary_status <- function(df,
+                                     husband_var,
+                                     wife_var,
+                                     status_var_name,
+                                     label_neither,
+                                     label_husband_only,
+                                     label_wife_only,
+                                     label_both) {
+  husband_var <- rlang::ensym(husband_var)
+  wife_var <- rlang::ensym(wife_var)
+  status_var_name <- rlang::as_string(rlang::ensym(status_var_name))
+  
+  status_levels <- c(
+    label_neither,
+    label_husband_only,
+    label_wife_only,
+    label_both
+  )
+  
+  out <- df %>%
+    dplyr::filter(
+      !is.na(!!husband_var),
+      !is.na(!!wife_var)
+    ) %>%
+    dplyr::mutate(
+      status_value = dplyr::case_when(
+        !!husband_var == 0 & !!wife_var == 0 ~ label_neither,
+        !!husband_var == 1 & !!wife_var == 0 ~ label_husband_only,
+        !!husband_var == 0 & !!wife_var == 1 ~ label_wife_only,
+        !!husband_var == 1 & !!wife_var == 1 ~ label_both,
+        TRUE ~ NA_character_
+      )
+    )
+  
+  out[[status_var_name]] <- factor(out$status_value, levels = status_levels)
+  out$status_value <- NULL
+  out
+}
+
+# -----------------------------------------------------------------------------
 # Joint husband-wife workoutside status
 #
 # Output categories:
@@ -426,29 +478,42 @@ write_three_panel_table <- function(df_a, df_b, df_c,
 #   - Rows with missing husband or wife workoutside are dropped
 # -----------------------------------------------------------------------------
 make_joint_workoutside_status <- function(df) {
-  df %>%
-    dplyr::filter(
-      !is.na(workoutside_h),
-      !is.na(workoutside_w)
-    ) %>%
-    dplyr::mutate(
-      couple_workoutside_status = dplyr::case_when(
-        workoutside_h == 0 & workoutside_w == 0 ~ "Neither spouse works outside",
-        workoutside_h == 1 & workoutside_w == 0 ~ "Husband only works outside",
-        workoutside_h == 0 & workoutside_w == 1 ~ "Wife only works outside",
-        workoutside_h == 1 & workoutside_w == 1 ~ "Both spouses work outside",
-        TRUE ~ NA_character_
-      ),
-      couple_workoutside_status = factor(
-        couple_workoutside_status,
-        levels = c(
-          "Neither spouse works outside",
-          "Husband only works outside",
-          "Wife only works outside",
-          "Both spouses work outside"
-        )
-      )
-    )
+  make_joint_binary_status(
+    df = df,
+    husband_var = workoutside_h,
+    wife_var = workoutside_w,
+    status_var_name = couple_workoutside_status,
+    label_neither = "Neither spouse works outside",
+    label_husband_only = "Husband only works outside",
+    label_wife_only = "Wife only works outside",
+    label_both = "Both spouses work outside"
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Joint husband-wife WFH-some status
+#
+# Output categories:
+#   - Neither spouse WFH at least sometimes
+#   - Husband only WFH at least sometimes
+#   - Wife only WFH at least sometimes
+#   - Both spouses WFH at least sometimes
+#
+# Notes:
+#   - Assumes wfh_some_h and wfh_some_w are coded 0/1
+#   - Rows with missing husband or wife wfh_some are dropped
+# -----------------------------------------------------------------------------
+make_joint_wfh_some_status <- function(df) {
+  make_joint_binary_status(
+    df = df,
+    husband_var = wfh_some_h,
+    wife_var = wfh_some_w,
+    status_var_name = couple_wfh_some_status,
+    label_neither = "Neither spouse WFH at least sometimes",
+    label_husband_only = "Husband only WFH at least sometimes",
+    label_wife_only = "Wife only WFH at least sometimes",
+    label_both = "Both spouses WFH at least sometimes"
+  )
 }
 
 # -----------------------------------------------------------------------------
@@ -500,6 +565,71 @@ build_time_axis_lookup <- function(time_values,
 }
 
 # -----------------------------------------------------------------------------
+# Internal helper: build composition table for couple binary status over time
+#
+# Arguments:
+#   - df: couple-level long dataset
+#   - time_var: time aggregation variable (e.g. wave, year)
+#   - time_scale:
+#       "covid_wave"
+#       "future_wave"
+#       "year"
+#   - joint_status_fn: function that adds the joint status variable
+#   - status_var: name of the joint status variable
+#   - status_levels: levels in the intended plotting order
+#
+# Returns:
+#   one row per time period x joint-status with:
+#     - N
+#     - share
+#     - time_label (for plotting)
+# -----------------------------------------------------------------------------
+make_binary_composition <- function(df,
+                                    time_var,
+                                    time_scale = c("covid_wave", "future_wave", "year"),
+                                    joint_status_fn,
+                                    status_var,
+                                    status_levels) {
+  time_scale <- match.arg(time_scale)
+  time_var <- rlang::ensym(time_var)
+  status_var <- rlang::ensym(status_var)
+  
+  time_values <- df %>%
+    dplyr::filter(!is.na(!!time_var)) %>%
+    dplyr::pull(!!time_var) %>%
+    as.character()
+  
+  axis_lookup <- build_time_axis_lookup(
+    time_values = time_values,
+    time_scale  = time_scale
+  )
+  
+  df %>%
+    joint_status_fn() %>%
+    dplyr::mutate(
+      time_value = as.character(!!time_var)
+    ) %>%
+    dplyr::count(time_value, !!status_var, name = "N") %>%
+    tidyr::complete(
+      time_value = axis_lookup$time_value,
+      !!status_var := factor(status_levels, levels = status_levels),
+      fill = list(N = 0)
+    ) %>%
+    dplyr::group_by(time_value) %>%
+    dplyr::mutate(
+      share = N / sum(N)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::left_join(axis_lookup, by = "time_value") %>%
+    dplyr::mutate(
+      time_label = factor(
+        time_label,
+        levels = axis_lookup$time_label
+      )
+    )
+}
+
+# -----------------------------------------------------------------------------
 # Build composition table for couple workoutside status over time
 #
 # Arguments:
@@ -519,9 +649,6 @@ build_time_axis_lookup <- function(time_values,
 make_workoutside_composition <- function(df,
                                          time_var,
                                          time_scale = c("covid_wave", "future_wave", "year")) {
-  time_scale <- match.arg(time_scale)
-  time_var <- rlang::ensym(time_var)
-  
   status_levels <- c(
     "Neither spouse works outside",
     "Husband only works outside",
@@ -529,71 +656,62 @@ make_workoutside_composition <- function(df,
     "Both spouses work outside"
   )
   
-  time_values <- df %>%
-    dplyr::filter(!is.na(!!time_var)) %>%
-    dplyr::pull(!!time_var) %>%
-    as.character()
-  
-  axis_lookup <- build_time_axis_lookup(
-    time_values = time_values,
-    time_scale  = time_scale
+  make_binary_composition(
+    df = df,
+    time_var = {{ time_var }},
+    time_scale = time_scale,
+    joint_status_fn = make_joint_workoutside_status,
+    status_var = couple_workoutside_status,
+    status_levels = status_levels
   )
-  
-  df %>%
-    make_joint_workoutside_status() %>%
-    dplyr::mutate(
-      time_value = as.character(!!time_var)
-    ) %>%
-    dplyr::count(time_value, couple_workoutside_status, name = "N") %>%
-    tidyr::complete(
-      time_value = axis_lookup$time_value,
-      couple_workoutside_status = factor(status_levels, levels = status_levels),
-      fill = list(N = 0)
-    ) %>%
-    dplyr::group_by(time_value) %>%
-    dplyr::mutate(
-      share = N / sum(N)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::left_join(axis_lookup, by = "time_value") %>%
-    dplyr::mutate(
-      time_label = factor(
-        time_label,
-        levels = axis_lookup$time_label
-      )
-    )
 }
 
 # -----------------------------------------------------------------------------
-# Plot couple workoutside composition over time
+# Build composition table for couple WFH-some status over time
+# -----------------------------------------------------------------------------
+make_wfh_some_composition <- function(df,
+                                      time_var,
+                                      time_scale = c("covid_wave", "future_wave", "year")) {
+  status_levels <- c(
+    "Neither spouse WFH at least sometimes",
+    "Husband only WFH at least sometimes",
+    "Wife only WFH at least sometimes",
+    "Both spouses WFH at least sometimes"
+  )
+  
+  make_binary_composition(
+    df = df,
+    time_var = {{ time_var }},
+    time_scale = time_scale,
+    joint_status_fn = make_joint_wfh_some_status,
+    status_var = couple_wfh_some_status,
+    status_levels = status_levels
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Internal helper: plot couple binary composition over time
 #
 # Arguments:
-#   - df: couple-level long dataset
-#   - time_var: aggregation variable (e.g. wave, year)
-#   - time_scale:
-#       "covid_wave"
-#       "future_wave"
-#       "year"
-#   - use_shares:
-#       TRUE  -> stacked bars of shares
-#       FALSE -> side-by-side bars of counts
-#
-# Notes:
-#   - Shares are stacked because they represent composition within each period
-#   - Counts are dodged because side-by-side bars are easier to compare in levels
+#   - composition_fn: function returning the composition dataset
+#   - fill_var: fill variable in the composition dataset
+#   - fill_lab: legend title
 # -----------------------------------------------------------------------------
-plot_workoutside_composition <- function(df,
-                                         time_var,
-                                         time_scale = c("covid_wave", "future_wave", "year"),
-                                         use_shares = TRUE,
-                                         x_lab = NULL,
-                                         y_lab = NULL,
-                                         title = NULL) {
+plot_binary_composition <- function(df,
+                                    time_var,
+                                    time_scale = c("covid_wave", "future_wave", "year"),
+                                    composition_fn,
+                                    fill_var,
+                                    use_shares = TRUE,
+                                    x_lab = NULL,
+                                    y_lab = NULL,
+                                    title = NULL) {
   time_scale <- match.arg(time_scale)
+  fill_var <- rlang::ensym(fill_var)
   
-  dd <- make_workoutside_composition(
-    df         = df,
-    time_var   = {{ time_var }},
+  dd <- composition_fn(
+    df = df,
+    time_var = {{ time_var }},
     time_scale = time_scale
   )
   
@@ -616,7 +734,7 @@ plot_workoutside_composition <- function(df,
     ggplot2::aes(
       x = time_label,
       y = .data[[y_var]],
-      fill = couple_workoutside_status
+      fill = !!fill_var
     )
   ) +
     {
@@ -646,4 +764,65 @@ plot_workoutside_composition <- function(df,
   }
   
   p
+}
+
+# -----------------------------------------------------------------------------
+# Plot couple workoutside composition over time
+#
+# Arguments:
+#   - df: couple-level long dataset
+#   - time_var: aggregation variable (e.g. wave, year)
+#   - time_scale:
+#       "covid_wave"
+#       "future_wave"
+#       "year"
+#   - use_shares:
+#       TRUE  -> stacked bars of shares
+#       FALSE -> side-by-side bars of counts
+#
+# Notes:
+#   - Shares are stacked because they represent composition within each period
+#   - Counts are dodged because side-by-side bars are easier to compare in levels
+# -----------------------------------------------------------------------------
+plot_workoutside_composition <- function(df,
+                                         time_var,
+                                         time_scale = c("covid_wave", "future_wave", "year"),
+                                         use_shares = TRUE,
+                                         x_lab = NULL,
+                                         y_lab = NULL,
+                                         title = NULL) {
+  plot_binary_composition(
+    df = df,
+    time_var = {{ time_var }},
+    time_scale = time_scale,
+    composition_fn = make_workoutside_composition,
+    fill_var = couple_workoutside_status,
+    use_shares = use_shares,
+    x_lab = x_lab,
+    y_lab = y_lab,
+    title = title
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Plot couple WFH-some composition over time
+# -----------------------------------------------------------------------------
+plot_wfh_some_composition <- function(df,
+                                      time_var,
+                                      time_scale = c("covid_wave", "future_wave", "year"),
+                                      use_shares = TRUE,
+                                      x_lab = NULL,
+                                      y_lab = NULL,
+                                      title = NULL) {
+  plot_binary_composition(
+    df = df,
+    time_var = {{ time_var }},
+    time_scale = time_scale,
+    composition_fn = make_wfh_some_composition,
+    fill_var = couple_wfh_some_status,
+    use_shares = use_shares,
+    x_lab = x_lab,
+    y_lab = y_lab,
+    title = title
+  )
 }

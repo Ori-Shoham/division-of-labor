@@ -1,0 +1,250 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% =============================================================================
+% Template: coauthor_descriptives_template.tex
+%
+% Purpose:
+%   Beamer template for a descriptive-results update to share with coauthors.
+%   The deck is designed to compile even if some figures or tables have not yet
+%   been generated: missing files are replaced with placeholders.
+%
+% Expected folders (relative to this .tex file):
+%   figures/
+%   tables/
+%
+% Main design choice:
+%   The core deck emphasizes the full sample, reserving couple-sample tables for
+%   an appendix / later discussion on within-household outcomes.
+% =============================================================================
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{appendixnumberbeamer}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{ifthen}
+
+% ---- Paths ------------------------------------------------------------------
+\newcommand{\figdir}{figures}
+\newcommand{\tabdir}{tables}
+
+% ---- Helper boxes for missing figures / tables ------------------------------
+\newcommand{\missingfigurebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.9);
+    \node[align=center, text width=9.6cm] at (5.4,2.95)
+    {\small Figure not found:\\[0.3em]\texttt{#1}};
+  \end{tikzpicture}%
+}
+
+\newcommand{\missingtablebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.1);
+    \node[align=center, text width=9.6cm] at (5.4,2.55)
+    {\small Table not found:\\[0.3em]\texttt{#1}};
+  \end{tikzpicture}%
+}
+
+\newcommand{\safeincludegraphics}[2][]{%
+  \IfFileExists{#2}{\includegraphics[#1]{#2}}{\missingfigurebox{#2}}%
+}
+
+\newcommand{\safetableinput}[1]{%
+  \IfFileExists{#1}{\input{#1}}{\missingtablebox{#1}}%
+}
+
+% ---- Title info -------------------------------------------------------------
+\title{COVID-19, Work Arrangements, and Household Division of Labor}
+\subtitle{Descriptive update for coauthor discussion}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+% =============================================================================
+% Title slide
+% =============================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =============================================================================
+% Roadmap
+% =============================================================================
+\begin{frame}{Roadmap}
+\begin{itemize}
+  \item Baseline grouping logic and descriptive sample overview
+  \item Short-run COVID labor-market disruptions in the full sample
+  \item Work outside versus work from home by baseline group
+  \item Longer-run descriptive patterns in main-study follow-up waves
+  \item Open questions for the empirical strategy discussion
+\end{itemize}
+\end{frame}
+
+% =============================================================================
+% Motivation / setup
+% =============================================================================
+\begin{frame}{Descriptive setup for discussion}
+\begin{itemize}
+  \item Current goal: summarize reduced descriptive facts before locking in the causal design.
+  \item Main source of heterogeneity is the baseline 2019 industry / occupation grouping.
+  \item At this stage, we mostly emphasize the full sample to see broad employment and work-arrangement trends.
+  \item Couple-only objects remain useful for later discussion of household outcomes, but are not the focus of the main descriptive deck.
+\end{itemize}
+\vspace{0.5em}
+\begin{block}{Variables we will likely treat differently in the structural / causal stage}
+\begin{itemize}
+  \item Baseline group / industry / occupation = pre-determined exposure.
+  \item Work outside and WFH-some = realized work-arrangement margins.
+  \item Time use, labor supply, earnings, health, and family outcomes = downstream outcomes.
+\end{itemize}
+\end{block}
+\end{frame}
+
+% =============================================================================
+% Baseline sample / group table
+% =============================================================================
+\begin{frame}{Sample composition for later couple analysis (appendix-style reminder)}
+\small
+\centering
+\safetableinput{\tabdir/sample_table_3x3_all.tex}
+\vspace{0.5em}
+
+\footnotesize
+This is not the main focus of the descriptive deck, but it is useful to keep the eventual couple-analysis sample in view.
+\end{frame}
+
+% =============================================================================
+% April 2020 snapshot
+% =============================================================================
+\begin{frame}{April 2020 snapshot: work status and furlough by baseline group}
+\begin{columns}[T,onlytextwidth]
+  \column{0.49\textwidth}
+  \centering
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/work_status_april20_groups_perc.png}
+
+  \column{0.49\textwidth}
+  \centering
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/furlough_april20_groups_perc.png}
+\end{columns}
+\end{frame}
+
+% =============================================================================
+% Worked at all / hours
+% =============================================================================
+\begin{frame}{Short-run employment disruption: did people work at all?}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/worked_at_all_groups_overtime.png}
+\end{frame}
+
+\begin{frame}{Short-run intensive margin: hours worked by baseline group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/hours_groups_overtime.png}
+\end{frame}
+
+% =============================================================================
+% Work outside / WFH some
+% =============================================================================
+\begin{frame}{Work arrangement margin I: working outside the home}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_groups.png}
+\end{frame}
+
+\begin{frame}{Work arrangement margin II: working from home at least sometimes}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_groups.png}
+\end{frame}
+
+\begin{frame}{Distribution of WFH intensity by baseline group}
+\centering
+\safeincludegraphics[width=0.96\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_groups_overtime.png}
+\end{frame}
+
+% =============================================================================
+% Longer-run follow-up
+% =============================================================================
+\begin{frame}{Longer-run follow-up: working outside by baseline group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_workoutside_by_group_industry_based_wave_main.png}
+\end{frame}
+
+\begin{frame}{Longer-run follow-up: WFH at least sometimes by baseline group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_wfh_some_by_group_industry_based_wave_main.png}
+\end{frame}
+
+\begin{frame}{Longer-run follow-up: weekly hours by baseline group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_jbhrs_by_group_industry_based_wave_main.png}
+\end{frame}
+
+% =============================================================================
+% Optional follow-up outcomes
+% =============================================================================
+\begin{frame}{Optional descriptive extension: employment status by sex}
+\centering
+\safeincludegraphics[width=0.96\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_jbstat_facet_sex_wave_main.png}
+\end{frame}
+
+\begin{frame}{Optional descriptive extension: mental health by sex (yearly)}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_scghq1_dv_by_sex_year_main.png}
+\end{frame}
+
+% =============================================================================
+% Discussion slide
+% =============================================================================
+\begin{frame}{Questions for coauthor discussion}
+\begin{enumerate}
+  \item Which descriptive margins are most informative for the eventual design: employment, work outside, WFH, hours, earnings, or family outcomes?
+  \item Do the baseline group patterns look strong enough to motivate a reduced-form design built around predetermined exposure?
+  \item Should the main descriptive narrative emphasize:
+    \begin{itemize}
+      \item sector shutdown versus key-worker contrast,
+      \item work-outside versus WFH margin,
+      \item or a spouse-level joint-treatment framing from the start?
+    \end{itemize}
+  \item Which outcomes should be in the first pass of the main paper tables once we move beyond descriptives?
+\end{enumerate}
+\end{frame}
+
+% =============================================================================
+% Appendix
+% =============================================================================
+\appendix
+
+\begin{frame}{Appendix: detailed group version of work outside}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Appendix: detailed group version of WFH-some}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Appendix: couple sample child composition}
+\small
+\centering
+\safetableinput{\tabdir/sample_table_youngest_child_binned_all.tex}
+\end{frame}
+
+\begin{frame}{Appendix: couple workoutside composition over time}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_workoutside_covid_wave_share.pdf}
+\end{frame}
+
+\begin{frame}{Appendix: couple WFH-some composition over time}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_wfh_some_covid_wave_share.pdf}
+\end{frame}
+
+\end{document}

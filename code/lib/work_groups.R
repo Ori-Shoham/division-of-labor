@@ -187,6 +187,80 @@ make_workoutside_covid <- function(sempderived, hours, wah) {
 
 
 # -----------------------------------------------------------------------------
+# COVID work-from-home-some indicator
+#
+# Logic:
+#   - missing/invalid employment -> NA
+#   - not working / zero hours -> 0
+#   - always/often/sometimes WFH -> 1
+#   - never WFH -> 0
+# -----------------------------------------------------------------------------
+make_wfh_some_covid <- function(sempderived, hours, wah) {
+  dplyr::case_when(
+    is.na(sempderived) ~ NA_real_,
+    sempderived < 0 ~ NA_real_,
+    is.na(hours) ~ NA_real_,
+    hours <= 0 ~ 0,
+    wah %in% 1:3 ~ 1,
+    wah == 4 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+
+# -----------------------------------------------------------------------------
+# Future-outcomes work-from-home-some indicator
+#
+# Inputs:
+#   jbstat : labour-market status
+#            1 employed
+#            2 self-employed
+#
+#   jbhrs  : usual weekly hours worked
+#
+#   jbpl   : work location
+#            1 at home
+#            2 employer premises
+#            3 driving / travelling around
+#            4 one or more other places
+#
+#   jbwah  : working at home frequency
+#            1 always
+#            2 often
+#            3 sometimes
+#            4 never
+#
+# Logic:
+#   - if employment status missing -> NA
+#   - if not employed/self-employed -> 0
+#   - if hours missing -> NA
+#   - if zero or negative hours -> 0
+#   - if jbpl==1 (works at home) -> 1
+#   - else if jbwah is observed, use it directly:
+#       always/often/sometimes -> 1
+#       never -> 0
+#   - else if only jbpl is observed and indicates a non-home workplace -> 0
+#
+# This variable is intentionally constructed directly from jbpl/jbwah rather
+# than from the harmonized wfh_code so that adding wfh_some does not alter the
+# existing workoutside series.
+# -----------------------------------------------------------------------------
+make_wfh_some_future <- function(jbstat, jbhrs, jbpl, jbwah) {
+  dplyr::case_when(
+    is.na(jbstat) ~ NA_real_,
+    !(jbstat %in% c(1, 2)) ~ 0,
+    is.na(jbhrs) ~ NA_real_,
+    jbhrs <= 0 ~ 0,
+    !is.na(jbpl) & jbpl == 1 ~ 1,
+    jbwah %in% 1:3 ~ 1,
+    jbwah == 4 ~ 0,
+    !is.na(jbpl) & jbpl %in% 2:4 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+
+# -----------------------------------------------------------------------------
 # Future-outcomes workoutside
 #
 # Inputs:

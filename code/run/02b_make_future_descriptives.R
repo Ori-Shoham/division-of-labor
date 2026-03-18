@@ -8,6 +8,7 @@
 #   - Uses 2019 baseline where appropriate.
 #   - Does NOT use 2019 baseline for WFH-related outcomes:
 #       * workoutside
+#       * wfh_some
 #       * wfh_cat
 # =============================================================================
 
@@ -63,6 +64,7 @@ NUMERIC_ZERO_IF_NOT_WORKING <- c(
 
 HEADLINE_NUMERIC_OUTCOMES <- c(
   "workoutside",
+  "wfh_some",
   "jbhrs",
   "jbot",
   "paygu_dv",
@@ -99,6 +101,7 @@ TIME_AGGS_MAIN <- c("wave", "year")
 
 YM_NUMERIC_OUTCOMES <- c(
   "workoutside",
+  "wfh_some",
   "jbhrs",
   "paygu_dv",
   "fimnlabgrs_dv",
@@ -114,6 +117,7 @@ YM_CATEGORICAL_OUTCOMES <- c(
 
 NO_BASELINE_VARS <- c(
   "workoutside",
+  "wfh_some",
   "wfh_cat"
 )
 

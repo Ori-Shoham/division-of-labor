@@ -79,6 +79,13 @@ build_covid_long_panel <- function(
       hours = dplyr::if_else(sempderived == 4 & is.na(hours), -8, hours),
       wah   = dplyr::if_else(sempderived == 4 & is.na(wah),   -8, wah),
       
+      # Generic COVID work-from-home-some indicator
+      wfh_some = make_wfh_some_covid(
+        sempderived = sempderived,
+        hours = hours,
+        wah = wah
+      ),
+      
       # Generic COVID workoutside
       workoutside = make_workoutside_covid(
         sempderived = sempderived,

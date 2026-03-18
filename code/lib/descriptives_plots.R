@@ -15,7 +15,7 @@
 #   - Expects df with columns:
 #       wave, industry (string), occupation (string) from SOC/SIC joins,
 #       group_industry_based, group_industry_based_detailed,
-#       hours, sempderived, furlough, wah, workoutside
+#       hours, sempderived, furlough, wah, workoutside, wfh_some
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -372,6 +372,55 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
       scale_y_continuous(labels = scales::percent_format()) +
       labs(color = NULL, shape = NULL, x = NULL, y = "% Work outside last week",
            title = "Work outside (January–February 2020 to September 2021)") +
+      theme(legend.position = "bottom",
+            axis.text.x = element_text(angle = 90, hjust = 1))
+  }
+  
+  ggsave(out_file, p, path = fig_path, width = 12, height = 8)
+  p
+}
+
+# -----------------------------------------------------------------------------
+# WFH-some over time (axis short labels, title full)
+# -----------------------------------------------------------------------------
+plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
+  
+  wl <- wave_labels()
+  
+  if (is.null(by)) {
+    
+    dd <- df %>%
+      filter(wave != "2019") %>%
+      group_by(wave) %>%
+      summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
+      left_join(wl, by = "wave")
+    
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = wfh_some)) +
+      geom_point() +
+      theme_minimal() +
+      scale_y_continuous(labels = scales::percent_format()) +
+      labs(x = NULL, y = "% Work from home at least sometimes last week",
+           title = "Work from home at least sometimes (January–February 2020 to September 2021)") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+  } else {
+    
+    stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
+    
+    dd <- df %>%
+      filter(wave != "2019") %>%
+      group_by(wave, .data[[by]]) %>%
+      summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
+      left_join(wl, by = "wave")
+    
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = wfh_some, color = .data[[by]], shape = .data[[by]])) +
+      geom_point() +
+      theme_minimal() +
+      scale_y_continuous(labels = scales::percent_format()) +
+      labs(color = NULL, shape = NULL, x = NULL, y = "% Work from home at least sometimes last week",
+           title = "Work from home at least sometimes (January–February 2020 to September 2021)") +
       theme(legend.position = "bottom",
             axis.text.x = element_text(angle = 90, hjust = 1))
   }

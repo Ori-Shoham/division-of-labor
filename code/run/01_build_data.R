@@ -246,6 +246,12 @@ df_future_long <- df_future_long %>%
   dplyr::mutate(
     wfh_code = tmp_wfh$wfh_code,
     wfh_cat  = tmp_wfh$wfh_cat,
+    wfh_some = make_wfh_some_future(
+      jbstat = jbstat,
+      jbhrs  = jbhrs,
+      jbpl   = jbpl,
+      jbwah  = jbwah
+    ),
     health_sf = combine_health(sf1, scsf1),
     
     health_sf = factor(
