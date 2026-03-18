@@ -19,6 +19,7 @@
 #       * future_outcomes_couple_long_lmo.rds
 #       * future_outcomes_couple_wide_lmo.rds
 #       * s2019_baseline_couplelevel_plus_lmo.rds
+#   - future outcomes can include J/K main-wave data from March 2020 onward
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -210,13 +211,14 @@ cat("COVID couple-level panel saved to: ",
     file.path(der_path, "df_sample_long_covid_couplelevel.rds"), "\n", sep = "")
 
 # =============================================================================
-# Step 5: Future outcomes L–O
+# Step 5: Future outcomes J–O (as configured)
 # =============================================================================
-cat("\n--- Step 5: Build future outcomes (L/M/N or L–O as configured) ---\n")
+cat("\n--- Step 5: Build future outcomes (configured main-study waves from March 2020 onward) ---\n")
 
 df_future_long <- build_future_outcomes_long(
   path_main    = path_main,
-  future_waves = future_waves
+  future_waves = future_waves,
+  min_ym       = future_outcomes_start
 )
 
 # Add indicators comparing later partner status to baseline partner

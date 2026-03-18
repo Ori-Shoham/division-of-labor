@@ -2,10 +2,11 @@
 # File: code/lib/future_outcomes.R
 #
 # Purpose:
-#   Load UKHLS main waves L–O outcomes and family structure at each wave.
+#   Load UKHLS main-wave future outcomes and family structure at each wave.
 #   - Outcomes from INDRESP
 #   - Family structure from EGOALT + INDALL (same construction as baseline)
 #   - Keeps interview year/month
+#   - Supports adding J/K main-study interviews from March 2020 onward
 #
 # Also computes baseline-fixed couple evolution:
 #   still_with_base_partner:
@@ -105,11 +106,22 @@ load_main_wave_with_family <- function(path_main, prefix) {
   df %>% dplyr::left_join(df_family, by = "pidp")
 }
 
-build_future_outcomes_long <- function(path_main, future_waves) {
+build_future_outcomes_long <- function(path_main, future_waves, min_ym = NULL) {
+  
   dfs <- lapply(future_waves, \(w) load_main_wave_with_family(path_main, w))
   dfs <- dfs[!sapply(dfs, is.null)]
   if (length(dfs) == 0) stop("No future wave files found.")
-  dplyr::bind_rows(dfs)
+  
+  out <- dplyr::bind_rows(dfs)
+  
+  # When J/K are included as future-outcome waves, keep only post-February-2020
+  # interviews so the future-outcomes branch starts after the pre-COVID baseline.
+  if (!is.null(min_ym)) {
+    out <- out %>%
+      dplyr::filter(!is.na(ym), ym >= min_ym)
+  }
+  
+  out
 }
 
 add_baseline_couple_evolution <- function(df_future_long, df_baseline) {

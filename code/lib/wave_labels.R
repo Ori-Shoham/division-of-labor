@@ -69,6 +69,8 @@ covid_wave_label_lookup <- function() {
 # Future/main-study wave labels
 #
 # Current convention in the project:
+#   j -> Wave 10
+#   k -> Wave 11
 #   l -> Wave 12
 #   m -> Wave 13
 #   n -> Wave 14
@@ -78,22 +80,30 @@ covid_wave_label_lookup <- function() {
 # -----------------------------------------------------------------------------
 future_wave_label_lookup <- function() {
   tibble::tibble(
-    wave = c("l", "m", "n", "o", "12", "13", "14", "15"),
+    wave = c("j", "k", "l", "m", "n", "o", "10", "11", "12", "13", "14", "15"),
     wave_label_short = c(
+      "Wave 10",
+      "Wave 11",
       "Wave 12",
       "Wave 13",
       "Wave 14",
       "Wave 15",
+      "Wave 10",
+      "Wave 11",
       "Wave 12",
       "Wave 13",
       "Wave 14",
       "Wave 15"
     ),
     wave_label_full = c(
+      "Wave 10",
+      "Wave 11",
       "Wave 12",
       "Wave 13",
       "Wave 14",
       "Wave 15",
+      "Wave 10",
+      "Wave 11",
       "Wave 12",
       "Wave 13",
       "Wave 14",
