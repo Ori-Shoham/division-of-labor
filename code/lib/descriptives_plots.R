@@ -645,14 +645,15 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
 plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
 
   wl <- wave_labels()
+
   if (is.null(by)) {
-    
+
     dd <- df %>%
       filter(wave != "2019") %>%
       group_by(wave) %>%
       summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
-    
+
     p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                         y = wfh_some)) +
       geom_point() +
@@ -661,9 +662,9 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
       labs(x = NULL, y = "% Work from home at least sometimes last week",
            title = "Work from home at least sometimes (January–February 2020 to September 2021)") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
+
   } else {
-    
+
     stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
 
     dd <- df %>%
