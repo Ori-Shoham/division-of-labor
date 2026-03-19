@@ -29,13 +29,28 @@ suppressPackageStartupMessages({
 })
 
 # -----------------------------------------------------------------------------
+# Internal helper: valid baseline analytic sample
+#
+# Rules:
+#   - employed / self-employed at baseline
+#   - non-missing baseline industry and occupation
+#   - negative SIC / SOC codes are treated as missing
+# -----------------------------------------------------------------------------
+filter_valid_baseline_workers <- function(df) {
+  df %>%
+    dplyr::filter(
+      base_jbstat %in% 1:2
+    )
+}
+
+# -----------------------------------------------------------------------------
 # Baseline person-level samples
 # -----------------------------------------------------------------------------
 build_samples_2019 <- function(df_baseline, pidp_in_covid = NULL) {
   
-  # All baseline workers
+  # All baseline workers with valid baseline industry + occupation
   s2019_all <- df_baseline %>%
-    dplyr::filter(base_jbstat %in% 1:2)
+    filter_valid_baseline_workers()
   
   # Baseline couples among baseline workers
   s2019_couples <- s2019_all %>%
@@ -90,6 +105,7 @@ merge_future_wide_into_samples <- function(samples, df_future_wide) {
 #
 # Rules:
 #   - baseline worker sample only (base_jbstat in 1:2)
+#   - must have valid baseline SIC and SOC
 #   - must have a baseline partner
 #   - must have reciprocal partner link
 #   - one partner male and the other female
@@ -98,8 +114,8 @@ build_baseline_couple_roster <- function(df_baseline, pidp_in_covid = NULL) {
   
   # Keep baseline-eligible individuals with a baseline partner link
   x <- df_baseline %>%
+    filter_valid_baseline_workers() %>%
     dplyr::filter(
-      base_jbstat %in% 1:2,
       !is.na(base_partner_pidp),
       base_partner_rel %in% c(1, 2, 3)
     ) %>%

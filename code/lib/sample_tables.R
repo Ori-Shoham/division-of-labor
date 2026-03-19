@@ -45,30 +45,42 @@ prep_sample_table_vars <- function(df) {
     dplyr::mutate(
       wife_group_3 = factor(
         group_industry_based_w,
-        levels = c("shutdown sector", "key worker", "other")
+        levels = c(
+          "shutdown sector",
+          "key worker",
+          "other",
+          "missing industry / occupation"
+        )
       ),
       husband_group_3 = factor(
         group_industry_based_h,
-        levels = c("shutdown sector", "key worker", "other")
+        levels = c(
+          "shutdown sector",
+          "key worker",
+          "other",
+          "missing industry / occupation"
+        )
       ),
       wife_group_5 = factor(
         group_industry_based_detailed_w,
         levels = c(
           "shutdown sector",
-          "key worker - health and social services",
+          "key worker - health\n and social services",
           "key worker - education",
-          "key worker - public safety",
-          "other"
+          "key worker - public safety\n and essential gvt. services",
+          "other",
+          "missing industry / occupation"
         )
       ),
       husband_group_5 = factor(
         group_industry_based_detailed_h,
         levels = c(
           "shutdown sector",
-          "key worker - health and social services",
+          "key worker - health\n and social services",
           "key worker - education",
-          "key worker - public safety",
-          "other"
+          "key worker - public safety\n and essential gvt. services",
+          "other",
+          "missing industry / occupation"
         )
       ),
       youngest_child_2019 = base_age_youngest_child_w
@@ -98,7 +110,7 @@ collapse_to_unique_couples <- function(df) {
 make_crosstab <- function(df, row_var, col_var) {
   row_var <- rlang::ensym(row_var)
   col_var <- rlang::ensym(col_var)
-  
+
   df %>%
     dplyr::count(!!row_var, !!col_var, name = "N") %>%
     tidyr::complete(!!row_var, !!col_var, fill = list(N = 0)) %>%
@@ -139,12 +151,12 @@ make_child_age_table_exact <- function(df) {
     dplyr::arrange(sort_num) %>%
     dplyr::select(-sort_num) %>%
     dplyr::rename(`Youngest child age in 2019` = youngest_child_age_cat)
-  
+
   total_row <- tibble::tibble(
     `Youngest child age in 2019` = "Total couples",
     N = nrow(df)
   )
-  
+
   dplyr::bind_rows(out, total_row)
 }
 
@@ -184,12 +196,12 @@ make_child_age_table_binned <- function(df) {
     dplyr::mutate(
       `Youngest child age in 2019` = as.character(`Youngest child age in 2019`)
     )
-  
+
   total_row <- tibble::tibble(
     `Youngest child age in 2019` = "Total couples",
     N = nrow(df)
   )
-  
+
   dplyr::bind_rows(out, total_row)
 }
 
@@ -205,18 +217,18 @@ make_child_age_table_binned <- function(df) {
 # -----------------------------------------------------------------------------
 combine_three_count_tables <- function(df_a, df_b, df_c,
                                        sample_names = c("Baseline", "COVID", "Future")) {
-  
+
   key_name <- names(df_a)[1]
-  
+
   out_a <- df_a %>%
     dplyr::rename(!!sample_names[1] := N)
-  
+
   out_b <- df_b %>%
     dplyr::rename(!!sample_names[2] := N)
-  
+
   out_c <- df_c %>%
     dplyr::rename(!!sample_names[3] := N)
-  
+
   out_a %>%
     dplyr::left_join(out_b, by = key_name) %>%
     dplyr::left_join(out_c, by = key_name) %>%
@@ -245,7 +257,7 @@ df_to_latex_tabular <- function(df,
   if (is.null(align)) {
     align <- paste0("l", paste(rep("r", ncol(df) - 1), collapse = ""))
   }
-  
+
   kable_args <- list(
     x         = df,
     format    = "latex",
@@ -256,13 +268,13 @@ df_to_latex_tabular <- function(df,
     col.names = col_names,
     linesep   = ""
   )
-  
+
   if (!is.null(digits)) {
     kable_args$digits <- digits
   }
-  
+
   out <- do.call(knitr::kable, kable_args)
-  
+
   as.character(out)
 }
 
@@ -282,7 +294,7 @@ write_latex_table <- function(df,
                               align = NULL,
                               escape = FALSE,
                               digits = NULL) {
-  
+
   tex <- df_to_latex_tabular(
     df        = df,
     align     = align,
@@ -290,15 +302,15 @@ write_latex_table <- function(df,
     escape    = escape,
     col_names = names(df)
   )
-  
+
   header <- ""
-  
+
   if (!is.null(title)) {
     header <- paste0(header, "\\textbf{", title, "}\\\\\n")
   }
-  
+
   out <- paste0(header, tex)
-  
+
   writeLines(out, con = file)
   invisible(file)
 }
@@ -318,7 +330,7 @@ write_three_panel_table <- function(df_a, df_b, df_c,
                                     align = NULL,
                                     escape = FALSE,
                                     digits = NULL) {
-  
+
   tex_a <- df_to_latex_tabular(
     df_a,
     align = align,
@@ -340,29 +352,29 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     escape = escape,
     col_names = names(df_c)
   )
-  
+
   strip_tabular <- function(x) {
-    x <- gsub("\\\\begin\\{tabular\\}\\{[^}]+\\}", "", x)
-    x <- gsub("\\\\end\\{tabular\\}", "", x)
+    x <- gsub("\\begin\{tabular\}\{[^}]+\}", "", x)
+    x <- gsub("\\end\{tabular\}", "", x)
     trimws(x)
   }
-  
+
   get_spec <- function(x) {
-    stringr::str_match(x, "\\\\begin\\{tabular\\}\\{([^}]+)\\}")[, 2]
+    stringr::str_match(x, "\\begin\{tabular\}\{([^}]+)\}")[, 2]
   }
-  
+
   strip_rules <- function(x) {
-    x <- gsub("^\\\\toprule\\s*", "", x)
-    x <- gsub("\\s*\\\\bottomrule\\s*$", "", x)
+    x <- gsub("^\\toprule\s*", "", x)
+    x <- gsub("\s*\\bottomrule\s*$", "", x)
     x
   }
-  
+
   spec <- get_spec(tex_a)
-  
+
   body_a <- strip_rules(strip_tabular(tex_a))
   body_b <- strip_rules(strip_tabular(tex_b))
   body_c <- strip_rules(strip_tabular(tex_c))
-  
+
   panel_line <- function(title, ncol) {
     paste0(
       "\\addlinespace[0.5em]\n",
@@ -370,9 +382,9 @@ write_three_panel_table <- function(df_a, df_b, df_c,
       "\\addlinespace[0.25em]\n"
     )
   }
-  
+
   ncol_out <- ncol(df_a)
-  
+
   table_body <- paste0(
     "\\begin{tabular}{", spec, "}\n",
     "\\toprule\n",
@@ -385,15 +397,15 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     "\\bottomrule\n",
     "\\end{tabular}\n"
   )
-  
+
   header <- ""
-  
+
   if (!is.null(title)) {
     header <- paste0(header, "\\textbf{", title, "}\\\\\n")
   }
-  
+
   out <- paste0(header, table_body)
-  
+
   writeLines(out, con = file)
   invisible(file)
 }
@@ -439,14 +451,14 @@ make_joint_binary_status <- function(df,
   husband_var <- rlang::ensym(husband_var)
   wife_var <- rlang::ensym(wife_var)
   status_var_name <- rlang::as_string(rlang::ensym(status_var_name))
-  
+
   status_levels <- c(
     label_neither,
     label_husband_only,
     label_wife_only,
     label_both
   )
-  
+
   out <- df %>%
     dplyr::filter(
       !is.na(!!husband_var),
@@ -461,7 +473,7 @@ make_joint_binary_status <- function(df,
         TRUE ~ NA_character_
       )
     )
-  
+
   out[[status_var_name]] <- factor(out$status_value, levels = status_levels)
   out$status_value <- NULL
   out
@@ -537,30 +549,30 @@ make_joint_wfh_some_status <- function(df) {
 build_time_axis_lookup <- function(time_values,
                                    time_scale = c("covid_wave", "future_wave", "year")) {
   time_scale <- match.arg(time_scale)
-  
+
   time_values <- unique(as.character(time_values))
   time_values <- time_values[!is.na(time_values)]
-  
+
   if (time_scale == "covid_wave") {
     wl <- covid_wave_label_lookup() %>%
       dplyr::transmute(
         time_value = as.character(wave),
         time_label = wave_label_short
       )
-    
+
     return(wl %>% dplyr::filter(time_value %in% time_values))
   }
-  
+
   if (time_scale == "future_wave") {
     wl <- future_wave_label_lookup() %>%
       dplyr::transmute(
         time_value = as.character(wave),
         time_label = wave_label_short
       )
-    
+
     return(wl %>% dplyr::filter(time_value %in% time_values))
   }
-  
+
   tibble::tibble(
     time_value = as.character(sort(unique(as.numeric(time_values)))),
     time_label = as.character(sort(unique(as.numeric(time_values))))
@@ -596,17 +608,17 @@ make_binary_composition <- function(df,
   time_scale <- match.arg(time_scale)
   time_var <- rlang::ensym(time_var)
   status_var <- rlang::ensym(status_var)
-  
+
   time_values <- df %>%
     dplyr::filter(!is.na(!!time_var)) %>%
     dplyr::pull(!!time_var) %>%
     as.character()
-  
+
   axis_lookup <- build_time_axis_lookup(
     time_values = time_values,
     time_scale  = time_scale
   )
-  
+
   df %>%
     joint_status_fn() %>%
     dplyr::mutate(
@@ -658,7 +670,7 @@ make_workoutside_composition <- function(df,
     "Wife only works outside",
     "Both spouses work outside"
   )
-  
+
   make_binary_composition(
     df = df,
     time_var = {{ time_var }},
@@ -681,7 +693,7 @@ make_wfh_some_composition <- function(df,
     "Wife only WFH at least sometimes",
     "Both spouses WFH at least sometimes"
   )
-  
+
   make_binary_composition(
     df = df,
     time_var = {{ time_var }},
@@ -711,19 +723,19 @@ plot_binary_composition <- function(df,
                                     title = NULL) {
   time_scale <- match.arg(time_scale)
   fill_var <- rlang::ensym(fill_var)
-  
+
   dd <- composition_fn(
     df = df,
     time_var = {{ time_var }},
     time_scale = time_scale
   )
-  
+
   y_var <- if (use_shares) "share" else "N"
-  
+
   if (is.null(y_lab)) {
     y_lab <- if (use_shares) "Share of couples" else "Number of couples"
   }
-  
+
   if (is.null(x_lab)) {
     x_lab <- dplyr::case_when(
       time_scale == "covid_wave"  ~ "COVID study wave",
@@ -731,7 +743,7 @@ plot_binary_composition <- function(df,
       time_scale == "year"        ~ "Calendar year"
     )
   }
-  
+
   p <- ggplot2::ggplot(
     dd,
     ggplot2::aes(
@@ -761,11 +773,11 @@ plot_binary_composition <- function(df,
       legend.position = "bottom",
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
     )
-  
+
   if (use_shares) {
     p <- p + ggplot2::scale_y_continuous(labels = scales::percent_format())
   }
-  
+
   p
 }
 

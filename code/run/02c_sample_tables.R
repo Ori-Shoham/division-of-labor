@@ -121,7 +121,6 @@ write_three_panel_table(
     "Panel B. COVID sample",
     "Panel C. Future sample"
   ),
-  title = "Joint distribution of spouses by industry group",
   file = file.path(tab_path, "sample_table_3x3_all.tex")
 )
 
@@ -166,7 +165,6 @@ write_three_panel_table(
     "Panel B. COVID sample",
     "Panel C. Future sample"
   ),
-  title = "Joint distribution of spouses by detailed industry group",
   file = file.path(tab_path, "sample_table_5x5_all.tex")
 )
 

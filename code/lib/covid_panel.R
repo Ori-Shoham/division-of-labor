@@ -34,9 +34,12 @@ build_covid_long_panel <- function(
   
   # Filter to current COVID analysis sample:
   #  - working in baseline main survey: base_jbstat in 1:2
+  #  - non-missing, non-negative baseline SIC and SOC
   #  - observed in COVID: any variable with prefix "c" is non-missing
   df_sample <- df_ind_panel %>%
-    dplyr::filter(base_jbstat %in% 1:2) %>%
+    dplyr::filter(
+      base_jbstat %in% 1:2
+    ) %>%
     dplyr::filter(rowSums(!is.na(dplyr::across(starts_with("c")))) > 0) %>%
     # Wide -> long by wave prefix
     tidyr::pivot_longer(

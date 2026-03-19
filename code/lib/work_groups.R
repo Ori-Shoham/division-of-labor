@@ -21,10 +21,24 @@
 # Baseline-based group definitions
 # -----------------------------------------------------------------------------
 add_baseline_work_groups <- function(df) {
-  
+
   df %>%
     dplyr::mutate(
-      
+
+      # -----------------------------------------------------------------------
+      # Baseline SIC / SOC validity
+      #
+      # We treat missing and negative values as invalid / unknown baseline
+      # industry-occupation information. Rather than dropping these observations,
+      # we keep them in the data and assign them to an explicit "missing
+      # industry / occupation" category in the group variables used downstream.
+      # -----------------------------------------------------------------------
+      baseline_group_info_ok =
+        !is.na(base_jbsic07_cc) &
+        !is.na(base_jbsoc10_cc) &
+        base_jbsic07_cc >= 0 &
+        base_jbsoc10_cc >= 0,
+
       # -----------------------------------------------------------------------
       # Shutdown sector definition
       #
@@ -44,67 +58,72 @@ add_baseline_work_groups <- function(df) {
       # These sectors experienced the strongest legal restrictions during
       # early COVID lockdowns and therefore represent "shutdown sectors".
       # -----------------------------------------------------------------------
-      shutdown_sec = dplyr::if_else(
-        base_jbsic07_cc %in% c(55, 56, 79, 90, 91, 92, 93, 96),
-        1, 0
+      shutdown_sec = dplyr::case_when(
+        !baseline_group_info_ok ~ NA_real_,
+        base_jbsic07_cc %in% c(55, 56, 79, 90, 91, 92, 93, 96) ~ 1,
+        TRUE ~ 0
       ),
-      
-      
+
+
       # -----------------------------------------------------------------------
       # Baseline key worker definitions
       #
       # These follow a simplified version of the UK "essential worker"
       # classification combining industry (SIC) and occupation (SOC).
       # -----------------------------------------------------------------------
-      
+
       # Health and social services
       keyworker_health_social =
-        dplyr::if_else(
-          
+        dplyr::case_when(
+
+          !baseline_group_info_ok ~ NA_real_,
+
           # SIC 86: Human health activities (hospitals, medical practices)
           base_jbsic07_cc == 86 |
-            
+
             # SOC 124  Health services and public health managers
             # SOC 221  Medical practitioners
             # SOC 222  Psychologists
             # SOC 223  Nurses
             # SOC 321  Paramedics
             base_jbsoc10_cc %in% c(124, 221, 222, 223, 321) |
-            
+
             # SOC 118  Health and social services managers
             # when working in SIC 86–88 (health or social care)
             (base_jbsoc10_cc == 118 & base_jbsic07_cc %in% 86:88) |
-            
+
             # SOC 614  Nursing auxiliaries and assistants
             # working in public administration or health sectors
-            (base_jbsoc10_cc == 614 & base_jbsic07_cc %in% c(84, 86:88)),
-          
-          1, 0
+            (base_jbsoc10_cc == 614 & base_jbsic07_cc %in% c(84, 86:88)) ~ 1,
+
+          TRUE ~ 0
         ),
-      
-      
+
+
       # -----------------------------------------------------------------------
       # Education key workers
       # -----------------------------------------------------------------------
       keyworker_education =
-        dplyr::if_else(
-          
+        dplyr::case_when(
+
+          !baseline_group_info_ok ~ NA_real_,
+
           # SIC 85: Education
           base_jbsic07_cc %in% c(85) |
-            
+
             # SOC 323  Teaching assistants
             # SOC 612  Childcare and related personal services
             # SOC 623  Teaching and educational professionals
             # when working in public administration (schools run by local gov)
             (base_jbsoc10_cc %in% c(323, 612, 623) & base_jbsic07_cc == 84) |
-            
+
             # SOC 231  Teaching professionals
-            (base_jbsoc10_cc == 231),
-          
-          1, 0
+            (base_jbsoc10_cc == 231) ~ 1,
+
+          TRUE ~ 0
         ),
-      
-      
+
+
       # -----------------------------------------------------------------------
       # Public safety and essential government services
       #
@@ -116,44 +135,51 @@ add_baseline_work_groups <- function(df) {
       #          Treated as essential infrastructure during lockdown.
       # -----------------------------------------------------------------------
       keyworker_public_safety =
-        dplyr::if_else(
+        dplyr::case_when(
+          !baseline_group_info_ok ~ NA_real_,
           base_jbsoc10_cc == 331 |
             base_jbsic07_cc %in% c(
               53   # Postal and courier activities
-            ),
-          1, 0
+            ) ~ 1,
+          TRUE ~ 0
         ),
-      
+
       # Combined key worker indicator
-      keyworker_my_def = pmax(
-        keyworker_health_social,
-        keyworker_education,
-        keyworker_public_safety
+      keyworker_my_def = dplyr::case_when(
+        !baseline_group_info_ok ~ NA_real_,
+        TRUE ~ pmax(
+          keyworker_health_social,
+          keyworker_education,
+          keyworker_public_safety
+        )
       ),
-      
-      
+
+
       # -----------------------------------------------------------------------
       # Grouping variables used in analysis
       # -----------------------------------------------------------------------
-      
+
       # Self-reported classification from the COVID module
       # (if those variables are present in the dataset)
       group_self_report = dplyr::case_when(
+        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         "keyworker" %in% names(.) && "keyworksector" %in% names(.) &&
           (keyworker == 1 | keyworksector %in% 1:8) ~ "key worker",
         TRUE ~ "other"
       ),
-      
+
       # Industry / occupation based classification
       group_industry_based = dplyr::case_when(
+        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         keyworker_my_def == 1 ~ "key worker",
         TRUE ~ "other"
       ),
-      
+
       # More detailed key worker breakdown
       group_industry_based_detailed = dplyr::case_when(
+        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         keyworker_health_social == 1 ~ "key worker - health\n and social services",
         keyworker_education == 1 ~ "key worker - education",
