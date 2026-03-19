@@ -47,14 +47,32 @@ MIN_N_DEFAULT <- 25
   )
 )
 
+.numeric_overtime_specs <- list(
+  list(var = "howlng",
+       stem = "howlng",
+       y_lab = "Housework hours",
+       title = "Housework hours over time"),
+  list(var = "timechcare",
+       stem = "timechcare",
+       y_lab = "Childcare / home-schooling hours",
+       title = "Childcare / home-schooling hours over time")
+)
+
+.binary_childcare_specs <- list(
+  list(var = "workchsch",
+       stem = "workchsch"),
+  list(var = "workchsch2",
+       stem = "workchsch2")
+)
+
 # =============================================================================
 # SECTION A: Industry plots (April / May)
 # =============================================================================
 for (spec in .dataset_specs) {
-  
+
   df <- spec$df
   suffix <- spec$suffix
-  
+
   # ---- Worked at all (counts + perc) ----------------------------------------
   for (wave_info in list(
     list(wave = "ca", tag = "april20"),
@@ -77,7 +95,7 @@ for (spec in .dataset_specs) {
       )
     }
   }
-  
+
   # ---- Work status (counts + perc) ------------------------------------------
   for (wave_info in list(
     list(wave = "ca", tag = "april20"),
@@ -100,7 +118,7 @@ for (spec in .dataset_specs) {
       )
     }
   }
-  
+
   # ---- Furlough (April; percent) --------------------------------------------
   plot_furlough_bar(
     df = df,
@@ -110,7 +128,7 @@ for (spec in .dataset_specs) {
     out_file = paste0("furlough_april20_ind_perc", suffix, ".png"),
     fig_path = fig_path
   )
-  
+
   # ---- WFH (April + May; percent) -------------------------------------------
   for (wave_info in list(
     list(wave = "ca", tag = "april20"),
@@ -131,13 +149,13 @@ for (spec in .dataset_specs) {
 # SECTION B: Group plots (April/May) + Over-time plots
 # =============================================================================
 for (spec in .dataset_specs) {
-  
+
   df <- spec$df
   suffix <- spec$suffix
-  
+
   # ---- April/May grouped bar plots ------------------------------------------
   for (grp in .group_specs) {
-    
+
     # Worked at all
     for (wave_info in list(
       list(wave = "ca", tag = "april20"),
@@ -160,7 +178,7 @@ for (spec in .dataset_specs) {
         )
       }
     }
-    
+
     # Work status
     for (wave_info in list(
       list(wave = "ca", tag = "april20"),
@@ -183,7 +201,7 @@ for (spec in .dataset_specs) {
         )
       }
     }
-    
+
     # Furlough (April only)
     plot_furlough_bar(
       df = df,
@@ -193,7 +211,7 @@ for (spec in .dataset_specs) {
       out_file = paste0("furlough_april20_", grp$stem, "_perc", suffix, ".png"),
       fig_path = fig_path
     )
-    
+
     # WFH (April + May)
     for (wave_info in list(
       list(wave = "ca", tag = "april20"),
@@ -209,9 +227,9 @@ for (spec in .dataset_specs) {
       )
     }
   }
-  
+
   # ---- Over-time plots -------------------------------------------------------
-  
+
   # Worked-at-all over time
   for (grp in .group_specs) {
     plot_overtime_worked(
@@ -221,7 +239,7 @@ for (spec in .dataset_specs) {
       fig_path = fig_path
     )
   }
-  
+
   # Hours over time
   for (grp in .group_specs) {
     plot_overtime_hours(
@@ -231,7 +249,34 @@ for (spec in .dataset_specs) {
       fig_path = fig_path
     )
   }
-  
+
+  # Additional continuous time-use plots
+  for (num_spec in .numeric_overtime_specs) {
+    if (!num_spec$var %in% names(df)) next
+
+    plot_covid_numeric_overtime(
+      df = df,
+      var = num_spec$var,
+      y_lab = num_spec$y_lab,
+      title = num_spec$title,
+      by = NULL,
+      out_file = paste0(num_spec$stem, "_overtime", suffix, ".png"),
+      fig_path = fig_path
+    )
+
+    for (grp in .group_specs) {
+      plot_covid_numeric_overtime(
+        df = df,
+        var = num_spec$var,
+        y_lab = num_spec$y_lab,
+        title = paste0(num_spec$title, ", by ", grp$by),
+        by = grp$by,
+        out_file = paste0(num_spec$stem, "_overtime_", grp$stem, suffix, ".png"),
+        fig_path = fig_path
+      )
+    }
+  }
+
   # Work outside over time (overall + grouped)
   plot_workoutside_overtime(
     df = df,
@@ -247,7 +292,7 @@ for (spec in .dataset_specs) {
       fig_path = fig_path
     )
   }
-  
+
   # WFH-some over time (overall + grouped)
   plot_wfh_some_overtime(
     df = df,
@@ -263,7 +308,7 @@ for (spec in .dataset_specs) {
       fig_path = fig_path
     )
   }
-  
+
   # WFH intensity over time (faceted bars; grouped)
   for (grp in .group_specs) {
     plot_wfh_overtime_facets(
@@ -273,7 +318,65 @@ for (spec in .dataset_specs) {
       fig_path = fig_path
     )
   }
-  
+
+  # Furlough over time: same categories as April/May conventions
+  plot_furlough_overtime_facets(
+    df = df,
+    by = NULL,
+    out_file = paste0("furlough_overtime", suffix, ".png"),
+    fig_path = fig_path
+  )
+  for (grp in .group_specs) {
+    plot_furlough_overtime_facets(
+      df = df,
+      by = grp$by,
+      out_file = paste0("furlough_overtime_", grp$stem, suffix, ".png"),
+      fig_path = fig_path
+    )
+  }
+
+  # Work schedule adapted because of childcare / home schooling
+  for (bin_spec in .binary_childcare_specs) {
+    if (!bin_spec$var %in% names(df)) next
+
+    plot_workchsch_overtime(
+      df = df,
+      var = bin_spec$var,
+      by = NULL,
+      out_file = paste0(bin_spec$stem, "_overtime", suffix, ".png"),
+      fig_path = fig_path
+    )
+
+    for (grp in .group_specs) {
+      plot_workchsch_overtime(
+        df = df,
+        var = bin_spec$var,
+        by = grp$by,
+        out_file = paste0(bin_spec$stem, "_overtime_", grp$stem, suffix, ".png"),
+        fig_path = fig_path
+      )
+    }
+  }
+
+  # Childcare responsibility: couples sample with baseline children only
+  if (spec$name == "couples" && "husits_cv" %in% names(df)) {
+    plot_husits_cv_overtime(
+      df = df,
+      by = NULL,
+      out_file = paste0("husits_cv_overtime", suffix, ".png"),
+      fig_path = fig_path
+    )
+
+    for (grp in .group_specs) {
+      plot_husits_cv_overtime(
+        df = df,
+        by = grp$by,
+        out_file = paste0("husits_cv_overtime_", grp$stem, suffix, ".png"),
+        fig_path = fig_path
+      )
+    }
+  }
+
   # =============================================================================
   # Keyworker definition exploration
   #
@@ -344,7 +447,7 @@ for (spec in .dataset_specs) {
     out_file = paste0("keyworker_def_explore_industry_april20", suffix, ".png"),
     fig_path = fig_path
   )
-  
+
   plot_keyworker_definition_compare(
     df = df,
     wave_code = "cb",
@@ -355,7 +458,7 @@ for (spec in .dataset_specs) {
     out_file = paste0("keyworker_def_explore_industry_may20", suffix, ".png"),
     fig_path = fig_path
   )
-  
+
   plot_keyworker_definition_compare(
     df = df,
     wave_code = "cb",
@@ -380,7 +483,7 @@ for (spec in .dataset_specs) {
     out_file = paste0("keyworker_def_explore_occupation_april20", suffix, ".png"),
     fig_path = fig_path
   )
-  
+
   plot_keyworker_definition_compare(
     df = df,
     wave_code = "cb",
@@ -391,7 +494,7 @@ for (spec in .dataset_specs) {
     out_file = paste0("keyworker_def_explore_occupation_may20", suffix, ".png"),
     fig_path = fig_path
   )
-  
+
   plot_keyworker_definition_compare(
     df = df,
     wave_code = "cb",

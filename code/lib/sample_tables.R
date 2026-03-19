@@ -330,7 +330,7 @@ write_three_panel_table <- function(df_a, df_b, df_c,
                                     align = NULL,
                                     escape = FALSE,
                                     digits = NULL) {
-
+  
   tex_a <- df_to_latex_tabular(
     df_a,
     align = align,
@@ -352,29 +352,29 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     escape = escape,
     col_names = names(df_c)
   )
-
+  
   strip_tabular <- function(x) {
-    x <- gsub("\\begin\{tabular\}\{[^}]+\}", "", x)
-    x <- gsub("\\end\{tabular\}", "", x)
+    x <- gsub("\\\\begin\\{tabular\\}\\{[^}]+\\}", "", x)
+    x <- gsub("\\\\end\\{tabular\\}", "", x)
     trimws(x)
   }
-
+  
   get_spec <- function(x) {
-    stringr::str_match(x, "\\begin\{tabular\}\{([^}]+)\}")[, 2]
+    stringr::str_match(x, "\\\\begin\\{tabular\\}\\{([^}]+)\\}")[, 2]
   }
-
+  
   strip_rules <- function(x) {
-    x <- gsub("^\\toprule\s*", "", x)
-    x <- gsub("\s*\\bottomrule\s*$", "", x)
-    x
+    x <- gsub("^\\\\toprule\\s*", "", x)
+    x <- gsub("\\s*\\\\bottomrule\\s*$", "", x)
+    trimws(x)
   }
-
+  
   spec <- get_spec(tex_a)
-
+  
   body_a <- strip_rules(strip_tabular(tex_a))
   body_b <- strip_rules(strip_tabular(tex_b))
   body_c <- strip_rules(strip_tabular(tex_c))
-
+  
   panel_line <- function(title, ncol) {
     paste0(
       "\\addlinespace[0.5em]\n",
@@ -382,9 +382,9 @@ write_three_panel_table <- function(df_a, df_b, df_c,
       "\\addlinespace[0.25em]\n"
     )
   }
-
+  
   ncol_out <- ncol(df_a)
-
+  
   table_body <- paste0(
     "\\begin{tabular}{", spec, "}\n",
     "\\toprule\n",
@@ -397,15 +397,15 @@ write_three_panel_table <- function(df_a, df_b, df_c,
     "\\bottomrule\n",
     "\\end{tabular}\n"
   )
-
+  
   header <- ""
-
+  
   if (!is.null(title)) {
     header <- paste0(header, "\\textbf{", title, "}\\\\\n")
   }
-
+  
   out <- paste0(header, table_body)
-
+  
   writeLines(out, con = file)
   invisible(file)
 }
