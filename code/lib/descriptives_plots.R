@@ -10,6 +10,9 @@
 #     - WFH distribution: percent by industry or group (employed sample)
 #     - overtime/event-style lines for worked_at_all and hours
 #     - workoutside over time (overall and by groups)
+#     - additional COVID descriptives for housework, childcare, furlough over
+#       time, childcare responsibility, and work adaptation due to childcare /
+#       homeschooling
 #
 # Notes:
 #   - Expects df with columns:
@@ -53,6 +56,12 @@ clean_hours <- function(x) {
   x
 }
 
+clean_covid_numeric <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  x[x %in% c(-9, -8, -7, -2, -1)] <- NA_real_
+  x
+}
+
 # -----------------------------------------------------------------------------
 # Generic label helpers
 # -----------------------------------------------------------------------------
@@ -89,13 +98,52 @@ clean_hours <- function(x) {
   )
 }
 
+.husits_cv_cat <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  case_when(
+    x %in% c(-8, -2, -1, 8) ~ NA_character_,
+    x == 1 ~ "Always me",
+    x == 2 ~ "Usually me",
+    x == 3 ~ "Me and my partner about equally",
+    x == 4 ~ "Usually partner",
+    x == 5 ~ "Always partner",
+    x %in% c(6, 7, 9) ~ "Other people",
+    TRUE ~ NA_character_
+  )
+}
+
+.workchsch_cat <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  case_when(
+    x == 1 ~ "Yes",
+    x == 2 ~ "No",
+    TRUE ~ NA_character_
+  )
+}
+
+has_baseline_children <- function(df) {
+  child_candidates <- c(
+    "base_n_children",
+    "base_n_children_18_under",
+    "base_nchild_dv",
+    "base_ndepchl_dv"
+  )
+  child_var <- child_candidates[child_candidates %in% names(df)][1]
+
+  if (length(child_var) == 0 || is.na(child_var)) {
+    stop("No baseline child-count variable found for filtering husits_cv plots.")
+  }
+
+  clean_covid_numeric(df[[child_var]]) > 0
+}
+
 # -----------------------------------------------------------------------------
 # Worked at all (hours>0): bar / percent
 # -----------------------------------------------------------------------------
 plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, out_file, fig_path) {
-  
+
   stopifnot(by %in% c("industry", "group_industry_based", "group_industry_based_detailed"))
-  
+
   dd <- df %>%
     filter(wave == wave_code, sempderived >= 0) %>%
     mutate(hours = clean_hours(hours)) %>%
@@ -103,7 +151,7 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
     mutate(byvar = .data[[by]]) %>%
     add_count(byvar, name = "n_by_raw") %>%
     mutate(byvar = if_else(n_by_raw < min_n, "other", as.character(byvar)))
-  
+
   if (!perc) {
     p <- ggplot(dd, aes(x = forcats::fct_infreq(byvar),
                         fill = factor(hours > 0, levels = c(TRUE, FALSE),
@@ -113,11 +161,11 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
       labs(fill = "Worked at all last week", x = NULL,
            title = paste0("Worked last week, ", wave_full_label(wave_code))) +
       theme(legend.position = "bottom")
-    
+
     ggsave(out_file, p, path = fig_path, width = 12, height = 8)
     return(p)
   }
-  
+
   dd2 <- dd %>%
     group_by(byvar) %>%
     mutate(
@@ -126,7 +174,7 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
       by_lab = paste0(byvar, " (n=", n_by, ")")
     ) %>%
     ungroup()
-  
+
   p <- ggplot(dd2, aes(x = forcats::fct_reorder(by_lab, share_yes, .desc = TRUE),
                        fill = factor(hours > 0, levels = c(TRUE, FALSE),
                                      labels = c("Yes", "No")))) +
@@ -136,7 +184,7 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
     labs(fill = "Worked at all last week", x = NULL, y = NULL,
          title = paste0("Worked last week, ", wave_full_label(wave_code))) +
     theme(legend.position = "bottom")
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
@@ -145,9 +193,9 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
 # Work status (sempderived): bar / percent
 # -----------------------------------------------------------------------------
 plot_work_status_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, out_file, fig_path) {
-  
+
   stopifnot(by %in% c("industry", "group_industry_based", "group_industry_based_detailed"))
-  
+
   dd <- df %>%
     filter(wave == wave_code, !is.na(sempderived)) %>%
     mutate(byvar = .data[[by]]) %>%
@@ -156,25 +204,25 @@ plot_work_status_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, ou
       byvar = if_else(n_by_raw < min_n, "other", as.character(byvar)),
       status = .work_status(sempderived)
     )
-  
+
   if (!perc) {
     dd <- dd %>%
       mutate(status = factor(status,
                              levels = c("Employed", "Self-employed",
                                         "Both employed and self-employed",
                                         "Not employed", "Missing")))
-    
+
     p <- ggplot(dd, aes(x = forcats::fct_infreq(byvar), fill = status)) +
       geom_bar(position = position_stack(reverse = TRUE)) +
       coord_flip() +
       labs(fill = "Work status", x = NULL,
            title = paste0("Work status, ", wave_full_label(wave_code))) +
       theme(legend.position = "bottom")
-    
+
     ggsave(out_file, p, path = fig_path, width = 14, height = 8)
     return(p)
   }
-  
+
   dd2 <- dd %>%
     group_by(byvar) %>%
     mutate(
@@ -186,7 +234,7 @@ plot_work_status_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, ou
                                  "Both employed and self-employed", "Missing"))
     ) %>%
     ungroup()
-  
+
   p <- ggplot(dd2, aes(x = forcats::fct_reorder(by_lab, share_not, .desc = TRUE),
                        fill = status)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
@@ -195,7 +243,7 @@ plot_work_status_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, ou
     labs(fill = "Work status", x = NULL, y = NULL,
          title = paste0("Work status, ", wave_full_label(wave_code))) +
     theme(legend.position = "bottom")
-  
+
   ggsave(out_file, p, path = fig_path, width = 14, height = 8)
   p
 }
@@ -204,9 +252,9 @@ plot_work_status_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, ou
 # Furlough: percent by industry/group (employed sample)
 # -----------------------------------------------------------------------------
 plot_furlough_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
-  
+
   stopifnot(by %in% c("industry", "group_industry_based", "group_industry_based_detailed"))
-  
+
   dd <- df %>%
     filter(wave == wave_code, !is.na(sempderived), sempderived > 0) %>%
     mutate(byvar = .data[[by]]) %>%
@@ -224,7 +272,7 @@ plot_furlough_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path)
       furlough_cat = factor(furlough_cat, levels = c("Yes", "No", "Self- or not employed"))
     ) %>%
     ungroup()
-  
+
   p <- ggplot(dd, aes(x = forcats::fct_reorder(by_lab, share_yes, .desc = TRUE),
                       fill = furlough_cat)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
@@ -233,18 +281,100 @@ plot_furlough_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path)
     labs(fill = "Furloughed", x = NULL, y = NULL,
          title = paste0("Furlough, ", wave_full_label(wave_code))) +
     theme(legend.position = "bottom")
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
+}
+
+# -----------------------------------------------------------------------------
+# Furlough over time (stacked shares)
+#
+# Categories:
+#   - Yes
+#   - No
+#   - Self- or not employed
+#
+# Notes:
+#   - Uses sempderived + furlough
+#   - Mirrors April/May furlough logic
+# -----------------------------------------------------------------------------
+plot_furlough_overtime_facets <- function(df,
+                                          by = NULL,
+                                          out_file,
+                                          fig_path) {
+  
+  dd <- df %>%
+    dplyr::mutate(
+      furlough_cat = dplyr::case_when(
+        sempderived %in% c(1, 2, 3) & furlough == 1 ~ "Furloughed",
+        sempderived %in% c(1, 2, 3) & furlough == 2 ~ "Not furloughed",
+        TRUE ~ "Self- or not employed"
+      )
+    ) %>%
+    dplyr::filter(!is.na(furlough_cat))
+  
+  # shares within wave (and group if relevant)
+  if (is.null(by)) {
+    
+    dd_plot <- dd %>%
+      dplyr::count(wave, furlough_cat, name = "N") %>%
+      dplyr::group_by(wave) %>%
+      dplyr::mutate(share = N / sum(N)) %>%
+      dplyr::ungroup()
+    
+    p <- ggplot2::ggplot(
+      dd_plot,
+      ggplot2::aes(x = wave, y = share, fill = furlough_cat)
+    ) +
+      ggplot2::geom_col() +
+      ggplot2::scale_y_continuous(labels = scales::percent_format()) +
+      ggplot2::labs(
+        x = "Wave",
+        y = "Share",
+        fill = NULL
+      ) +
+      ggplot2::theme_minimal()
+    
+  } else {
+    
+    by_sym <- rlang::ensym(by)
+    
+    dd_plot <- dd %>%
+      dplyr::count(wave, !!by_sym, furlough_cat, name = "N") %>%
+      dplyr::group_by(wave, !!by_sym) %>%
+      dplyr::mutate(share = N / sum(N)) %>%
+      dplyr::ungroup()
+    
+    p <- ggplot2::ggplot(
+      dd_plot,
+      ggplot2::aes(x = wave, y = share, fill = furlough_cat)
+    ) +
+      ggplot2::geom_col() +
+      ggplot2::facet_wrap(vars(!!by_sym)) +
+      ggplot2::scale_y_continuous(labels = scales::percent_format()) +
+      ggplot2::labs(
+        x = "Wave",
+        y = "Share",
+        fill = NULL
+      ) +
+      ggplot2::theme_minimal()
+  }
+  
+  ggplot2::ggsave(
+    filename = file.path(fig_path, out_file),
+    plot = p,
+    width = 10,
+    height = 6
+  )
 }
 
 # -----------------------------------------------------------------------------
 # WFH distribution: percent by industry/group (employed sample)
 # -----------------------------------------------------------------------------
 plot_wfh_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
-  
+
   stopifnot(by %in% c("industry", "group_industry_based", "group_industry_based_detailed"))
-  
+
   dd <- df %>%
     filter(wave == wave_code, !is.na(sempderived), sempderived > 0) %>%
     mutate(byvar = .data[[by]]) %>%
@@ -262,7 +392,7 @@ plot_wfh_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
       wfh_cat = factor(wfh_cat, levels = c("Always", "Often", "Sometimes", "Never", "Not employed"))
     ) %>%
     ungroup()
-  
+
   p <- ggplot(dd, aes(x = forcats::fct_reorder(by_lab, share_always, .desc = FALSE),
                       fill = wfh_cat)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
@@ -271,7 +401,7 @@ plot_wfh_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
     labs(fill = "Work from home", x = NULL, y = NULL,
          title = paste0("Work from home, ", wave_full_label(wave_code))) +
     theme(legend.position = "bottom")
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
@@ -281,16 +411,16 @@ plot_wfh_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
 # -----------------------------------------------------------------------------
 plot_overtime_worked <- function(df, by, out_file, fig_path) {
   stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
-  
+
   wl <- wave_labels()
-  
+
   dd <- df %>%
     mutate(hours = clean_hours(hours)) %>%
     filter(!is.na(hours), sempderived >= 0, !is.na(.data[[by]])) %>%
     group_by(.data[[by]], wave) %>%
     summarise(work = mean(hours > 0), .groups = "drop") %>%
     left_join(wl, by = "wave")
-  
+
   p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                       y = work, color = .data[[by]])) +
     geom_point() +
@@ -300,16 +430,16 @@ plot_overtime_worked <- function(df, by, out_file, fig_path) {
          title = "Worked last week (2019–September 2021)") +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 90, hjust = 1))
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
 
 plot_overtime_hours <- function(df, by, out_file, fig_path) {
   stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
-  
+
   wl <- wave_labels()
-  
+
   dd <- df %>%
     mutate(hours = clean_hours(hours)) %>%
     filter(!is.na(hours), sempderived >= 0, !is.na(.data[[by]])) %>%
@@ -317,7 +447,7 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
     group_by(.data[[by]], wave) %>%
     summarise(work_hours = mean(hours), .groups = "drop") %>%
     left_join(wl, by = "wave")
-  
+
   p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                       y = work_hours, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
@@ -326,8 +456,137 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
          title = "Hours worked last week (2019–September 2021)") +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 90, hjust = 1))
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
+  p
+}
+
+# -----------------------------------------------------------------------------
+# Generic COVID numeric over-time plots
+# -----------------------------------------------------------------------------
+plot_covid_numeric_overtime <- function(df, var, y_lab, title, by = NULL, out_file, fig_path) {
+
+  if (!is.null(by)) {
+    stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
+  }
+
+  wl <- wave_labels()
+
+  dd <- df %>%
+    mutate(value = clean_covid_numeric(.data[[var]])) %>%
+    filter(!is.na(value), wave != "2019")
+
+  if (is.null(by)) {
+    dd <- dd %>%
+      group_by(wave) %>%
+      summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") %>%
+      left_join(wl, by = "wave")
+
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = mean_value)) +
+      geom_line(group = 1) +
+      geom_point() +
+      theme_minimal() +
+      labs(x = NULL, y = y_lab, title = title) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  } else {
+    dd <- dd %>%
+      filter(!is.na(.data[[by]])) %>%
+      group_by(wave, .data[[by]]) %>%
+      summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") %>%
+      left_join(wl, by = "wave")
+
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = mean_value,
+                        color = .data[[by]],
+                        shape = .data[[by]])) +
+      geom_line(aes(group = .data[[by]])) +
+      geom_point() +
+      theme_minimal() +
+      labs(x = NULL, y = y_lab, color = NULL, shape = NULL, title = title) +
+      theme(
+        legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, hjust = 1)
+      )
+  }
+
+  ggsave(out_file, p, path = fig_path, width = 12, height = 8)
+  p
+}
+
+# -----------------------------------------------------------------------------
+# Generic COVID categorical distribution over time
+#   - overall: stacked percent bars over time
+#   - grouped: stacked percent bars over time, faceted by group
+# -----------------------------------------------------------------------------
+plot_covid_categorical_overtime <- function(df,
+                                            var,
+                                            recode_fn,
+                                            fill_lab,
+                                            title,
+                                            by = NULL,
+                                            filter_fn = NULL,
+                                            out_file,
+                                            fig_path) {
+
+  if (!is.null(by)) {
+    stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
+  }
+
+  wl <- wave_labels()
+
+  dd <- df
+  if (!is.null(filter_fn)) {
+    dd <- filter_fn(dd)
+  }
+
+  dd <- dd %>%
+    mutate(cat = recode_fn(.data[[var]])) %>%
+    filter(!is.na(cat), wave != "2019")
+
+  if (is.null(by)) {
+    dd <- dd %>%
+      group_by(wave, cat) %>%
+      summarise(n = n(), .groups = "drop_last") %>%
+      mutate(share = n / sum(n)) %>%
+      ungroup() %>%
+      left_join(wl, by = "wave")
+
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = share,
+                        fill = cat)) +
+      geom_col(position = "fill") +
+      scale_y_continuous(labels = scales::percent_format()) +
+      theme_minimal() +
+      labs(x = NULL, y = NULL, fill = fill_lab, title = title) +
+      theme(
+        legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, hjust = 1)
+      )
+  } else {
+    dd <- dd %>%
+      filter(!is.na(.data[[by]])) %>%
+      group_by(wave, facet_group = .data[[by]], cat) %>%
+      summarise(n = n(), .groups = "drop_last") %>%
+      mutate(share = n / sum(n)) %>%
+      ungroup() %>%
+      left_join(wl, by = "wave")
+
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                        y = share,
+                        fill = cat)) +
+      geom_col(position = "fill") +
+      facet_wrap(~ facet_group, scales = "fixed") +
+      scale_y_continuous(labels = scales::percent_format()) +
+      theme_minimal() +
+      labs(x = NULL, y = NULL, fill = fill_lab, title = title) +
+      theme(
+        legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, hjust = 1)
+      )
+  }
+
+  ggsave(out_file, p, path = fig_path, width = 14, height = 9)
   p
 }
 
@@ -335,17 +594,17 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
 # workoutside over time (axis short labels, title full)
 # -----------------------------------------------------------------------------
 plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
-  
+
   wl <- wave_labels()
-  
+
   if (is.null(by)) {
-    
+
     dd <- df %>%
       filter(wave != "2019") %>%
       group_by(wave) %>%
       summarise(workoutside = mean(workoutside, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
-    
+
     p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                         y = workoutside)) +
       geom_point() +
@@ -354,17 +613,17 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
       labs(x = NULL, y = "% Work outside last week",
            title = "Work outside (January–February 2020 to September 2021)") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
+
   } else {
-    
+
     stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
-    
+
     dd <- df %>%
       filter(wave != "2019") %>%
       group_by(wave, .data[[by]]) %>%
       summarise(workoutside = mean(workoutside, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
-    
+
     p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                         y = workoutside, color = .data[[by]], shape = .data[[by]])) +
       geom_point() +
@@ -375,7 +634,7 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
       theme(legend.position = "bottom",
             axis.text.x = element_text(angle = 90, hjust = 1))
   }
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
@@ -384,17 +643,17 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
 # WFH-some over time (axis short labels, title full)
 # -----------------------------------------------------------------------------
 plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
-  
+
   wl <- wave_labels()
-  
+
   if (is.null(by)) {
-    
+
     dd <- df %>%
       filter(wave != "2019") %>%
       group_by(wave) %>%
       summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
-    
+
     p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                         y = wfh_some)) +
       geom_point() +
@@ -403,17 +662,17 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
       labs(x = NULL, y = "% Work from home at least sometimes last week",
            title = "Work from home at least sometimes (January–February 2020 to September 2021)") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
+
   } else {
-    
+
     stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
-    
+
     dd <- df %>%
       filter(wave != "2019") %>%
       group_by(wave, .data[[by]]) %>%
       summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
-    
+
     p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
                         y = wfh_some, color = .data[[by]], shape = .data[[by]])) +
       geom_point() +
@@ -424,7 +683,7 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
       theme(legend.position = "bottom",
             axis.text.x = element_text(angle = 90, hjust = 1))
   }
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
@@ -434,12 +693,12 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
 # -----------------------------------------------------------------------------
 
 plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
-  
+
   # by must be one of the group variables
   stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
-  
+
   wl <- wave_labels()
-  
+
   dd <- df %>%
     # Match your original: drop 2019, keep employed sample
     filter(wave != "2019", !is.na(sempderived), sempderived > 0) %>%
@@ -461,7 +720,7 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
       # keep consistent ordering in stacks
       wfh_cat = factor(wfh_cat, levels = c("Always", "Often", "Sometimes", "Never", "Not employed"))
     )
-  
+
   p <- ggplot(dd, aes(x = wave_lab_short, fill = wfh_cat)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
     facet_grid(cols = vars(.data[[by]])) +
@@ -476,11 +735,57 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
       legend.position = "bottom",
       axis.text.x = element_text(angle = 90, hjust = 1)
     )
-  
+
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
 }
 
+
+plot_husits_cv_overtime <- function(df, by = NULL, out_file, fig_path) {
+
+  if (!is.null(by)) {
+    stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
+  }
+
+  plot_covid_categorical_overtime(
+    df = df,
+    var = "husits_cv",
+    recode_fn = .husits_cv_cat,
+    fill_lab = "Childcare responsibility",
+    title = "Who mainly looks after childcare?",
+    by = by,
+    filter_fn = function(x) x %>% dplyr::filter(has_baseline_children(.)),
+    out_file = out_file,
+    fig_path = fig_path
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Work adaptation due to childcare / home schooling over time
+# -----------------------------------------------------------------------------
+plot_workchsch_overtime <- function(df, var, by = NULL, out_file, fig_path) {
+
+  stopifnot(var %in% c("workchsch", "workchsch2"))
+  if (!is.null(by)) {
+    stopifnot(by %in% c("group_industry_based", "group_industry_based_detailed"))
+  }
+
+  title <- dplyr::case_when(
+    var == "workchsch" ~ "Adapted paid-work schedule because of childcare / home schooling",
+    var == "workchsch2" ~ "Adapted paid-work schedule because of childcare / home schooling in last 4 weeks"
+  )
+
+  plot_covid_categorical_overtime(
+    df = df,
+    var = var,
+    recode_fn = .workchsch_cat,
+    fill_lab = "Adapted work schedule",
+    title = title,
+    by = by,
+    out_file = out_file,
+    fig_path = fig_path
+  )
+}
 # -----------------------------------------------------------------------------
 # Keyworker definition comparison plots
 #
@@ -509,7 +814,9 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
 #   - For group-based plots:
 #       * keep original vertical-bar style
 # -----------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# Keyworker definition comparison plots
+# -----------------------------------------------------------------------------
 plot_keyworker_definition_compare <- function(
     df,
     wave_code,
@@ -520,7 +827,7 @@ plot_keyworker_definition_compare <- function(
     out_file,
     fig_path
 ) {
-  
+
   stopifnot(wave_code %in% c("ca", "cb"))
   stopifnot(by %in% c(
     "group_industry_based",
@@ -528,13 +835,13 @@ plot_keyworker_definition_compare <- function(
     "industry",
     "occupation"
   ))
-  
+
   # Keep all positive sempderived states, including 4 = not employed.
   # This matches the original exploratory figures.
   dd <- df %>%
     dplyr::filter(wave == wave_code, sempderived > 0) %>%
     dplyr::mutate(byvar = .data[[by]])
-  
+
   # Bundle small industries / occupations into "other"
   if (by %in% c("industry", "occupation")) {
     dd <- dd %>%
@@ -543,18 +850,18 @@ plot_keyworker_definition_compare <- function(
         byvar = dplyr::if_else(n_by_raw < min_n, "other", as.character(byvar))
       )
   }
-  
+
   # Helper: whether this plot should be horizontal
   is_wide_cat <- by %in% c("industry", "occupation")
-  
+
   # Put legend at bottom for flipped plots, right otherwise
   legend_pos <- if (is_wide_cat) "bottom" else "right"
-  
+
   # ---------------------------------------------------------------------------
   # April 2020: binary self-reported key worker status from `keyworker`
   # ---------------------------------------------------------------------------
   if (wave_code == "ca") {
-    
+
     dd <- dd %>%
       dplyr::mutate(
         keyworker_slf = dplyr::case_when(
@@ -568,7 +875,7 @@ plot_keyworker_definition_compare <- function(
           levels = c("Yes", "No", "Not employed", "Missing")
         )
       )
-    
+
     # Order bars by descending self-reported keyworker share
     if (order_desc) {
       dd <- dd %>%
@@ -599,7 +906,7 @@ plot_keyworker_definition_compare <- function(
         ) %>%
         dplyr::ungroup()
     }
-    
+
     p <- ggplot(dd, aes(x = by_lab, fill = keyworker_slf)) +
       geom_bar(position = position_fill(reverse = TRUE)) +
       scale_y_continuous(labels = scales::percent_format()) +
@@ -622,11 +929,11 @@ plot_keyworker_definition_compare <- function(
         axis.text.x = if (is_wide_cat) element_blank() else element_text(angle = 90, hjust = 1),
         axis.text.y = if (is_wide_cat) element_text(size = 9) else element_text()
       )
-    
+
     if (is_wide_cat) {
       p <- p + coord_flip()
     }
-    
+
     ggsave(
       out_file, p, path = fig_path,
       width = if (is_wide_cat) 14 else 12,
@@ -634,12 +941,12 @@ plot_keyworker_definition_compare <- function(
     )
     return(p)
   }
-  
+
   # ---------------------------------------------------------------------------
   # May 2020: binary self-reported key worker status from `keyworksector`
   # ---------------------------------------------------------------------------
   if (!detailed_fill) {
-    
+
     dd <- dd %>%
       dplyr::mutate(
         keyworker_slf = dplyr::case_when(
@@ -653,7 +960,7 @@ plot_keyworker_definition_compare <- function(
           levels = c("Yes", "No", "Not employed", "Missing")
         )
       )
-    
+
     if (order_desc) {
       dd <- dd %>%
         dplyr::group_by(byvar) %>%
@@ -683,7 +990,7 @@ plot_keyworker_definition_compare <- function(
         ) %>%
         dplyr::ungroup()
     }
-    
+
     p <- ggplot(dd, aes(x = by_lab, fill = keyworker_slf)) +
       geom_bar(position = position_fill(reverse = TRUE)) +
       scale_y_continuous(labels = scales::percent_format()) +
@@ -706,11 +1013,11 @@ plot_keyworker_definition_compare <- function(
         axis.text.x = if (is_wide_cat) element_blank() else element_text(angle = 90,hjust = 1),
         axis.text.y = if (is_wide_cat) element_text(size = 9) else element_text()
       )
-    
+
     if (is_wide_cat) {
       p <- p + coord_flip()
     }
-    
+
     ggsave(
       out_file, p, path = fig_path,
       width = if (is_wide_cat) 14 else 12,
@@ -718,7 +1025,7 @@ plot_keyworker_definition_compare <- function(
     )
     return(p)
   }
-  
+
   # ---------------------------------------------------------------------------
   # May 2020: detailed self-reported keywork sector from `keyworksector`
   # ---------------------------------------------------------------------------
@@ -754,7 +1061,7 @@ plot_keyworker_definition_compare <- function(
         )
       )
     )
-  
+
   # For the detailed fill version, order by the share who are in any
   # positive key-worker sector (rather than "Not key worker" / "Missing").
   if (order_desc) {
@@ -786,7 +1093,7 @@ plot_keyworker_definition_compare <- function(
       ) %>%
       dplyr::ungroup()
   }
-  
+
   p <- ggplot(dd, aes(x = by_lab, fill = keyworker_slf)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
     scale_y_continuous(labels = scales::percent_format()) +
@@ -809,11 +1116,11 @@ plot_keyworker_definition_compare <- function(
       axis.text.x = if (is_wide_cat) element_blank() else element_text(angle = 90, hjust = 1),
       axis.text.y = if (is_wide_cat) element_text(size = 9) else element_text()
     )
-  
+
   if (is_wide_cat) {
     p <- p + coord_flip()
   }
-  
+
   ggsave(
     out_file, p, path = fig_path,
     width = if (is_wide_cat) 14 else 12,

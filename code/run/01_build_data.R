@@ -19,7 +19,6 @@
 #       * future_outcomes_couple_long_lmo.rds
 #       * future_outcomes_couple_wide_lmo.rds
 #       * s2019_baseline_couplelevel_plus_lmo.rds
-#   - future outcomes can include J/K main-wave data from March 2020 onward
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -85,6 +84,18 @@ saveRDS(df_baseline, file.path(der_path, "baseline.rds"))
 
 cat("Baseline saved to: ", file.path(der_path, "baseline.rds"), "\n", sep = "")
 
+# Analytic baseline restriction used throughout downstream samples:
+#   - employed / self-employed at baseline
+#   - observed baseline SIC and SOC
+#   - negative SIC/SOC values treated as missing
+df_baseline_analytic <- df_baseline %>%
+  dplyr::filter(
+    base_jbstat %in% 1:2
+  )
+
+cat("Analytic baseline rows (valid baseline worker + SIC/SOC): ",
+    nrow(df_baseline_analytic), "\n", sep = "")
+
 # =============================================================================
 # Step 2: COVID wide (ca–ci)
 # =============================================================================
@@ -102,7 +113,7 @@ cat("COVID wide saved to: ", file.path(der_path, "covid_all_wide.rds"), "\n", se
 cat("\n--- Step 3: Build COVID long panel ---\n")
 
 df_sample_long_covid <- build_covid_long_panel(
-  df_baseline   = df_baseline,
+  df_baseline   = df_baseline_analytic,
   df_covid_wide = df_covid_wide,
   SOC           = SOC,
   SIC           = SIC,
@@ -138,7 +149,7 @@ pidp_in_covid <- df_sample_long_covid %>%
 cat("\n--- Step 4: Build baseline-defined person-level analytic samples ---\n")
 
 samples <- build_samples_2019(
-  df_baseline,
+  df_baseline_analytic,
   pidp_in_covid = pidp_in_covid
 )
 
@@ -157,7 +168,7 @@ cat("\n--- Step 4b: Build couple roster and couple-level samples ---\n")
 # Build one-row-per-couple roster using baseline partner links only
 # Restrict to heterosexual baseline couples (one male, one female)
 couple_roster <- build_baseline_couple_roster(
-  df_baseline   = df_baseline,
+  df_baseline   = df_baseline_analytic,
   pidp_in_covid = pidp_in_covid
 )
 
@@ -171,7 +182,7 @@ cat("Baseline couple roster saved to: ",
     file.path(samples_path, "baseline_couple_roster.rds"), "\n", sep = "")
 
 s2019_baseline_couplelevel <- build_baseline_couple_dataset(
-  df_baseline = df_baseline,
+  df_baseline = df_baseline_analytic,
   roster      = couple_roster
 )
 
@@ -211,14 +222,14 @@ cat("COVID couple-level panel saved to: ",
     file.path(der_path, "df_sample_long_covid_couplelevel.rds"), "\n", sep = "")
 
 # =============================================================================
-# Step 5: Future outcomes J–O (as configured)
+# Step 5: Future outcomes L–O
 # =============================================================================
-cat("\n--- Step 5: Build future outcomes (configured main-study waves from March 2020 onward) ---\n")
+cat("\n--- Step 5: Build future outcomes (L/M/N or L–O as configured) ---\n")
 
 df_future_long <- build_future_outcomes_long(
   path_main    = path_main,
   future_waves = future_waves,
-  min_ym       = future_outcomes_start
+  min_ym = future_outcomes_start
 )
 
 # Add indicators comparing later partner status to baseline partner
@@ -227,10 +238,18 @@ df_future_long <- add_baseline_couple_evolution(
   df_baseline
 )
 
+# Restrict future outcomes to the analytic baseline sample before attaching
+# baseline-defined groups and covariates.
+df_future_long <- df_future_long %>%
+  dplyr::semi_join(
+    df_baseline_analytic %>% dplyr::select(pidp),
+    by = "pidp"
+  )
+
 # Add baseline variables before constructing baseline-based groups
 df_future_long <- df_future_long %>%
   dplyr::left_join(
-    df_baseline %>%
+    df_baseline_analytic %>%
       dplyr::select(
         pidp,
         starts_with("base_"),
