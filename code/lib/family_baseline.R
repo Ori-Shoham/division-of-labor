@@ -60,11 +60,11 @@ build_family_data <- function(path_main, prefix) {
   egoalt_path <- file.path(path_main, paste0(prefix, "_egoalt.dta"))
   indall_path <- file.path(path_main, paste0(prefix, "_indall.dta"))
   
-  indall <- haven::read_dta(indall_path) %>%
+  indall <- read_dta_clean(indall_path) %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_"))) %>%
     dplyr::select(pidp, age_dv)
   
-  egoalt <- haven::read_dta(egoalt_path) %>%
+  egoalt <- read_dta_clean(egoalt_path) %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_"))) %>%
     dplyr::select(pidp, apidp, relationship_dv)
   
@@ -171,7 +171,7 @@ clean_baseline_wave <- function(path_main, prefix) {
     paste0(prefix, "_intdaty_dv")
   )
   
-  haven::read_dta(file_path) %>%
+  read_dta_clean(file_path) %>%
     dplyr::select(any_of(cols_to_keep)) %>%
     dplyr::left_join(df_family, by = "pidp") %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)

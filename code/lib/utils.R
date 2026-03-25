@@ -100,3 +100,41 @@ make_yearly_summary <- function(df_person_year, vars) {
       .groups = "drop"
     )
 }
+
+# -----------------------------------------------------------------------------
+# Normalize haven-labelled columns right after import
+# -----------------------------------------------------------------------------
+
+normalize_labelled_vector <- function(x) {
+  # Convert haven labelled vectors to ordinary R vectors while preserving
+  # the underlying coded values used throughout this project.
+  if (inherits(x, "haven_labelled") || inherits(x, "haven_labelled_spss")) {
+    x <- haven::zap_missing(x)
+    x <- haven::zap_labels(x)
+    
+    # Keep numeric storage for UKHLS/Stata coded variables
+    if (is.double(x) || is.integer(x)) {
+      return(as.numeric(x))
+    }
+    
+    # Fall back to character if needed
+    return(as.character(x))
+  }
+  
+  x
+}
+
+normalize_labelled_df <- function(df) {
+  dplyr::mutate(
+    df,
+    dplyr::across(
+      .cols = everything(),
+      .fns  = normalize_labelled_vector
+    )
+  )
+}
+
+read_dta_clean <- function(path) {
+  haven::read_dta(path) %>%
+    normalize_labelled_df()
+}
