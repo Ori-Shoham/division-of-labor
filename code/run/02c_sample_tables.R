@@ -97,9 +97,9 @@ subset_specs <- list(
     suffix = "_child_u10",
     label = "couples with youngest child age 10 or under in 2019",
     panel_titles = c(
-      "Panel A. Baseline couples: youngest child <= 10",
-      "Panel B. COVID sample: youngest child <= 10",
-      "Panel C. Future sample: youngest child <= 10"
+      "Panel A. Baseline couples: youngest child $\\leq$ 10",
+      "Panel B. COVID sample: youngest child $\\leq$ 10",
+      "Panel C. Future sample: youngest child $\\leq$ 10"
     ),
     tab_base = tab_base_all %>% subset_couples_with_young_child_2019(max_age = 10),
     tab_covid = tab_covid_all %>% subset_couples_with_young_child_2019(max_age = 10),
