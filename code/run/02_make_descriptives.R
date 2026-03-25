@@ -48,8 +48,8 @@ MIN_N_DEFAULT <- 25
 )
 
 .numeric_overtime_specs <- list(
-  list(var = "howlng",
-       stem = "howlng",
+  list(var = "howlng_cv",
+       stem = "howlng_Cv",
        y_lab = "Housework hours",
        title = "Housework hours over time"),
   list(var = "timechcare",

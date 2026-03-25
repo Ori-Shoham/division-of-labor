@@ -145,7 +145,7 @@ plot_worked_at_all_bar <- function(df, wave_code, by, min_n = 25, perc = FALSE, 
   stopifnot(by %in% c("industry", "group_industry_based", "group_industry_based_detailed"))
 
   dd <- df %>%
-    filter(wave == wave_code, sempderived >= 0) %>%
+    filter(wave == wave_code, as.numeric(sempderived) >= 0) %>%
     mutate(hours = clean_hours(hours)) %>%
     filter(!is.na(hours)) %>%
     mutate(byvar = .data[[by]]) %>%
@@ -422,11 +422,11 @@ plot_overtime_worked <- function(df, by, out_file, fig_path) {
     left_join(wl, by = "wave")
 
   p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
-                      y = work, color = .data[[by]])) +
+                      y = work, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
     theme_minimal() +
     scale_y_continuous(labels = scales::percent_format()) +
-    labs(color = NULL, x = NULL, y = "Worked at all last week",
+    labs(color = NULL, shape = NULL, x = NULL, y = "Worked at all last week",
          title = "Worked last week (2019–September 2021)") +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 90, hjust = 1))
@@ -442,7 +442,7 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
 
   dd <- df %>%
     mutate(hours = clean_hours(hours)) %>%
-    filter(!is.na(hours), sempderived >= 0, !is.na(.data[[by]])) %>%
+    filter(!is.na(hours), as.numeric(sempderived) >= 0, !is.na(.data[[by]])) %>%
     mutate(hours = if_else(hours == -8, 0, hours)) %>%
     group_by(.data[[by]], wave) %>%
     summarise(work_hours = mean(hours), .groups = "drop") %>%
@@ -452,7 +452,7 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
                       y = work_hours, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
     theme_minimal() +
-    labs(color = NULL, x = NULL, y = "Hours worked last week",
+    labs(color = NULL, sahpe = NULL, x = NULL, y = "Hours worked last week",
          title = "Hours worked last week (2019–September 2021)") +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 90, hjust = 1))
@@ -701,10 +701,10 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
 
   dd <- df %>%
     # Match your original: drop 2019, keep employed sample
-    filter(wave != "2019", !is.na(sempderived), sempderived > 0) %>%
+    filter(wave != "2019", !is.na(sempderived), as.numeric(sempderived) > 0) %>%
     mutate(
       wfh_cat = case_when(
-        sempderived %in% c(4) ~ "Not employed",
+        as.numeric(sempderived) %in% c(4) ~ "Not employed",
         wah == 1 ~ "Always",
         wah == 2 ~ "Often",
         wah == 3 ~ "Sometimes",
@@ -839,7 +839,7 @@ plot_keyworker_definition_compare <- function(
   # Keep all positive sempderived states, including 4 = not employed.
   # This matches the original exploratory figures.
   dd <- df %>%
-    dplyr::filter(wave == wave_code, sempderived > 0) %>%
+    dplyr::filter(wave == wave_code, as.numeric(sempderived) > 0) %>%
     dplyr::mutate(byvar = .data[[by]])
 
   # Bundle small industries / occupations into "other"
@@ -867,7 +867,7 @@ plot_keyworker_definition_compare <- function(
         keyworker_slf = dplyr::case_when(
           keyworker == 1 ~ "Yes",
           keyworker == 2 ~ "No",
-          sempderived == 4 ~ "Not employed",
+          as.numeric(sempderived) == 4 ~ "Not employed",
           TRUE ~ "Missing"
         ),
         keyworker_slf = factor(
@@ -952,7 +952,7 @@ plot_keyworker_definition_compare <- function(
         keyworker_slf = dplyr::case_when(
           keyworksector %in% 1:8 ~ "Yes",
           keyworksector == 9 ~ "No",
-          sempderived == 4 ~ "Not employed",
+          as.numeric(sempderived) == 4 ~ "Not employed",
           TRUE ~ "Missing"
         ),
         keyworker_slf = factor(
@@ -1041,7 +1041,7 @@ plot_keyworker_definition_compare <- function(
         keyworksector == 7 ~ "Transport",
         keyworksector == 8 ~ "Utilities, communications and financial services",
         keyworksector == 9 ~ "Not key worker",
-        sempderived == 4 ~ "Not employed",
+        as.numeric(sempderived) == 4 ~ "Not employed",
         TRUE ~ "Missing"
       ),
       keyworker_slf = factor(

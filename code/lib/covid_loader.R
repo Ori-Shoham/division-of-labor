@@ -14,7 +14,7 @@ load_covid_wave <- function(path_covid, wave_prefix) {
   fpath <- file.path(path_covid, filename)
   if (!file.exists(fpath)) return(NULL)
   
-  data <- haven::read_dta(fpath)
+  data <- read_dta_clean(fpath)
   
   # COVID variable meanings:
   #   furlough       : furlough status
@@ -41,7 +41,7 @@ load_covid_wave <- function(path_covid, wave_prefix) {
     paste0(wave_prefix, "_blwah"),
     paste0(wave_prefix, "_sempderived"),
     paste0(wave_prefix, "_wah"),
-    paste0(wave_prefix, "_howlng"),
+    paste0(wave_prefix, "_howlng_cv"),
     paste0(wave_prefix, "_keyworker"),
     paste0(wave_prefix, "_keyworksector"),
     paste0(wave_prefix, "_timechcare"),

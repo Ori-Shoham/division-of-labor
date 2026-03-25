@@ -1,0 +1,27 @@
+\begin{table}
+\centering
+\caption{\textit{Workoutside} in April 2020}
+\centering
+\begin{tabular}[t]{lccccc}
+\toprule
+  & A & B & C & D & E\\
+\midrule
+Intercept & \num{0.346}*** & \num{0.316}*** & \num{0.276}** & \num{0.294} & \num{0.319}*\\
+ & (\num{0.028}) & (\num{0.006}) & (\num{0.136}) & (\num{0.236}) & (\num{0.173})\\
+Key – education &  & \num{-0.030}** & \num{-0.008} & \num{-0.006} & \num{0.009}\\
+ &  & (\num{0.014}) & (\num{0.014}) & (\num{0.026}) & (\num{0.017})\\
+Shutdown sector &  & \num{-0.143}*** & \num{-0.146}*** & \num{-0.105}*** & \num{-0.144}***\\
+ &  & (\num{0.016}) & (\num{0.016}) & (\num{0.031}) & (\num{0.019})\\
+\midrule
+Num.Obs. & \num{9737} & \num{9737} & \num{9659} & \num{4143} & \num{5516}\\
+R2 & \num{0.165} & \num{0.081} & \num{0.100} & \num{0.081} & \num{0.124}\\
+Industry FE & $\checkmark$ &  &  &  & \\
+Occupation FE & $\checkmark$ &  &  &  & \\
+Age controls &  &  & $\checkmark$ & $\checkmark$ & $\checkmark$\\
+Education controls &  &  & $\checkmark$ & $\checkmark$ & $\checkmark$\\
+Sample & All & All & All & Males & Females\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}Robust standard errors in parentheses.}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01.}\\
+\end{tabular}
+\end{table}

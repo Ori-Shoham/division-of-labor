@@ -21,174 +21,132 @@
 # Baseline-based group definitions
 # -----------------------------------------------------------------------------
 add_baseline_work_groups <- function(df) {
-
+  
   df %>%
     dplyr::mutate(
-
-      # -----------------------------------------------------------------------
-      # Baseline SIC / SOC validity
-      #
-      # We treat missing and negative values as invalid / unknown baseline
-      # industry-occupation information. Rather than dropping these observations,
-      # we keep them in the data and assign them to an explicit "missing
-      # industry / occupation" category in the group variables used downstream.
-      # -----------------------------------------------------------------------
-      baseline_group_info_ok =
-        !is.na(base_jbsic07_cc) &
-        !is.na(base_jbsoc10_cc) &
-        base_jbsic07_cc >= 0 &
-        base_jbsoc10_cc >= 0,
-
-      # -----------------------------------------------------------------------
-      # Shutdown sector definition
-      #
-      # Based on sectors that were forced to close during lockdown
-      # (following IFS classification).
-      #
-      # SIC 2007 codes:
-      # 55  Accommodation
-      # 56  Food and beverage service activities
-      # 79  Travel agency, tour operator and reservation services
-      # 90  Creative, arts and entertainment activities
-      # 91  Libraries, archives, museums and other cultural activities
-      # 92  Gambling and betting activities
-      # 93  Sports activities and amusement and recreation activities
-      # 96  Other personal service activities (e.g. hairdressing, beauty)
-      #
-      # These sectors experienced the strongest legal restrictions during
-      # early COVID lockdowns and therefore represent "shutdown sectors".
-      # -----------------------------------------------------------------------
+      
+      # Clean baseline SIC / SOC separately
+      base_sic_clean = dplyr::if_else(
+        !is.na(base_jbsic07_cc) & base_jbsic07_cc >= 0,
+        base_jbsic07_cc,
+        NA_real_
+      ),
+      base_soc_clean = dplyr::if_else(
+        !is.na(base_jbsoc10_cc) & base_jbsoc10_cc >= 0,
+        base_jbsoc10_cc,
+        NA_real_
+      ),
+      
+      has_valid_sic = !is.na(base_sic_clean),
+      has_valid_soc = !is.na(base_soc_clean),
+      
+      # "both valid" can still be useful downstream for diagnostics
+      baseline_group_info_ok = has_valid_sic & has_valid_soc,
+      
+      # Shutdown sector: determinable from SIC alone
       shutdown_sec = dplyr::case_when(
-        !baseline_group_info_ok ~ NA_real_,
-        base_jbsic07_cc %in% c(55, 56, 79, 90, 91, 92, 93, 96) ~ 1,
-        TRUE ~ 0
+        has_valid_sic & base_sic_clean %in% c(55, 56, 79, 90, 91, 92, 93, 96) ~ 1,
+        has_valid_sic ~ 0,
+        TRUE ~ NA_real_
       ),
-
-
-      # -----------------------------------------------------------------------
-      # Baseline key worker definitions
-      #
-      # These follow a simplified version of the UK "essential worker"
-      # classification combining industry (SIC) and occupation (SOC).
-      # -----------------------------------------------------------------------
-
-      # Health and social services
-      keyworker_health_social =
-        dplyr::case_when(
-
-          !baseline_group_info_ok ~ NA_real_,
-
-          # SIC 86: Human health activities (hospitals, medical practices)
-          base_jbsic07_cc == 86 |
-
-            # SOC 124  Health services and public health managers
-            # SOC 221  Medical practitioners
-            # SOC 222  Psychologists
-            # SOC 223  Nurses
-            # SOC 321  Paramedics
-            base_jbsoc10_cc %in% c(124, 221, 222, 223, 321) |
-
-            # SOC 118  Health and social services managers
-            # when working in SIC 86–88 (health or social care)
-            (base_jbsoc10_cc == 118 & base_jbsic07_cc %in% 86:88) |
-
-            # SOC 614  Nursing auxiliaries and assistants
-            # working in public administration or health sectors
-            (base_jbsoc10_cc == 614 & base_jbsic07_cc %in% c(84, 86:88)) ~ 1,
-
-          TRUE ~ 0
-        ),
-
-
-      # -----------------------------------------------------------------------
-      # Education key workers
-      # -----------------------------------------------------------------------
-      keyworker_education =
-        dplyr::case_when(
-
-          !baseline_group_info_ok ~ NA_real_,
-
-          # SIC 85: Education
-          base_jbsic07_cc %in% c(85) |
-
-            # SOC 323  Teaching assistants
-            # SOC 612  Childcare and related personal services
-            # SOC 623  Teaching and educational professionals
-            # when working in public administration (schools run by local gov)
-            (base_jbsoc10_cc %in% c(323, 612, 623) & base_jbsic07_cc == 84) |
-
-            # SOC 231  Teaching professionals
-            (base_jbsoc10_cc == 231) ~ 1,
-
-          TRUE ~ 0
-        ),
-
-
-      # -----------------------------------------------------------------------
-      # Public safety and essential government services
-      #
-      # SOC 331: Protective service occupations
-      #          (police officers, firefighters, prison service officers)
-      #
-      # SIC 53 : Postal and courier activities
-      #          (Royal Mail, parcel delivery, logistics operators)
-      #          Treated as essential infrastructure during lockdown.
-      # -----------------------------------------------------------------------
-      keyworker_public_safety =
-        dplyr::case_when(
-          !baseline_group_info_ok ~ NA_real_,
-          base_jbsoc10_cc == 331 |
-            base_jbsic07_cc %in% c(
-              53   # Postal and courier activities
-            ) ~ 1,
-          TRUE ~ 0
-        ),
-
-      # Combined key worker indicator
+      
+      # Health / social care
+      keyworker_health_social = dplyr::case_when(
+        has_valid_sic & base_sic_clean == 86 ~ 1,
+        has_valid_soc & base_soc_clean %in% c(124, 221, 222, 223, 321) ~ 1,
+        has_valid_soc & has_valid_sic &
+          base_soc_clean == 118 & base_sic_clean %in% 86:88 ~ 1,
+        has_valid_soc & has_valid_sic &
+          base_soc_clean == 614 & base_sic_clean %in% c(84, 86:88) ~ 1,
+        
+        # unambiguous negatives from SIC alone
+        has_valid_sic & base_sic_clean %in% c(86, 87, 88) ~ 0,
+        has_valid_sic & base_sic_clean == 84 ~ 0,
+        
+        # unambiguous negatives from SOC alone
+        has_valid_soc & base_soc_clean %in% c(118, 124, 221, 222, 223, 321, 614) ~ 0,
+        
+        # if at least one dimension observed and none of the ambiguity-triggering
+        # partial cases applies, classify as 0
+        (has_valid_sic | has_valid_soc) ~ 0,
+        
+        TRUE ~ NA_real_
+      ),
+      
+      # Education / childcare
+      keyworker_education = dplyr::case_when(
+        has_valid_sic & base_sic_clean == 85 ~ 1,
+        has_valid_soc & base_soc_clean == 231 ~ 1,
+        has_valid_soc & has_valid_sic &
+          base_soc_clean %in% c(323, 612, 623) & base_sic_clean == 84 ~ 1,
+        
+        # negatives where ambiguous interaction cases are ruled out
+        has_valid_soc & base_soc_clean == 231 ~ 1,
+        has_valid_sic & base_sic_clean == 85 ~ 1,
+        has_valid_soc & base_soc_clean %in% c(323, 612, 623) & has_valid_sic ~ 0,
+        has_valid_sic & base_sic_clean == 84 & has_valid_soc ~ 0,
+        
+        (has_valid_sic | has_valid_soc) ~ 0,
+        
+        TRUE ~ NA_real_
+      ),
+      
+      # Public safety / other essential
+      keyworker_public_safety = dplyr::case_when(
+        has_valid_soc & base_soc_clean == 331 ~ 1,
+        has_valid_sic & base_sic_clean == 53 ~ 1,
+        has_valid_sic | has_valid_soc ~ 0,
+        TRUE ~ NA_real_
+      ),
+      
+      # Combined key worker indicator:
+      # if any subgroup is 1 => 1
+      # if all observed subgroups are 0 and none are NA => 0
+      # otherwise NA
       keyworker_my_def = dplyr::case_when(
-        !baseline_group_info_ok ~ NA_real_,
-        TRUE ~ pmax(
-          keyworker_health_social,
-          keyworker_education,
-          keyworker_public_safety
-        )
+        keyworker_health_social == 1 |
+          keyworker_education == 1 |
+          keyworker_public_safety == 1 ~ 1,
+        
+        !is.na(keyworker_health_social) &
+          !is.na(keyworker_education) &
+          !is.na(keyworker_public_safety) &
+          keyworker_health_social == 0 &
+          keyworker_education == 0 &
+          keyworker_public_safety == 0 ~ 0,
+        
+        TRUE ~ NA_real_
       ),
-
-
-      # -----------------------------------------------------------------------
-      # Grouping variables used in analysis
-      # -----------------------------------------------------------------------
-
-      # Self-reported classification from the COVID module
-      # (if those variables are present in the dataset)
+      
       group_self_report = dplyr::case_when(
-        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         "keyworker" %in% names(.) && "keyworksector" %in% names(.) &&
           (keyworker == 1 | keyworksector %in% 1:8) ~ "key worker",
+        is.na(shutdown_sec) ~ "missing industry / occupation",
         TRUE ~ "other"
       ),
-
-      # Industry / occupation based classification
+      
       group_industry_based = dplyr::case_when(
-        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         keyworker_my_def == 1 ~ "key worker",
+        is.na(shutdown_sec) | is.na(keyworker_my_def) ~ "missing industry / occupation",
         TRUE ~ "other"
       ),
-
-      # More detailed key worker breakdown
+      
       group_industry_based_detailed = dplyr::case_when(
-        !baseline_group_info_ok ~ "missing industry / occupation",
         shutdown_sec == 1 ~ "shutdown sector",
         keyworker_health_social == 1 ~ "key worker - health\n and social services",
         keyworker_education == 1 ~ "key worker - education",
         keyworker_public_safety == 1 ~ "key worker - public safety\n and essential gvt. services",
+        is.na(shutdown_sec) |
+          is.na(keyworker_health_social) |
+          is.na(keyworker_education) |
+          is.na(keyworker_public_safety) ~ "missing industry / occupation",
         TRUE ~ "other"
       )
-    )
+    ) %>%
+    dplyr::select(-base_sic_clean, -base_soc_clean, -has_valid_sic, -has_valid_soc)
 }
-
 
 # -----------------------------------------------------------------------------
 # COVID workoutside

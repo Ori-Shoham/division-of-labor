@@ -83,7 +83,7 @@ load_main_wave_indresp <- function(path_main, prefix) {
     paste0(prefix, "_intdaty_dv")
   )
   
-  haven::read_dta(f) %>%
+  read_dta_clean(f) %>%
     dplyr::select(any_of(cols_to_keep)) %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp) %>%
     dplyr::mutate(
