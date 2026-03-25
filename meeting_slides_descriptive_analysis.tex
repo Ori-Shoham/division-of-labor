@@ -63,7 +63,7 @@
 
 % ---- Title info -------------------------------------------------------------
 \title{COVID-19, Work Arrangements, and Household Division of Labor}
-\subtitle{Descriptive update for coauthor discussion}
+\subtitle{Sample and descriptive analysis}
 \author{Ori Nahshon Shoham}
 \date{\today}
 
@@ -157,21 +157,25 @@
       \item then wave I.
     \end{itemize}
   \item Baseline variables include demographics, employment, earnings, industry (SIC), occupation (SOC), work-from-home information, and family structure.
-  \item Sample restricted to employed/self employed individuals with non-missing industry and occupation
+  \item Sample restricted to employed/self employed individuals (missing industry and occupation are flagged but not excluded)
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Baseline group definitions used in the descriptives}
+\begin{frame}{Baseline group definitions used in the descriptives} \label{group_defs}
 \begin{itemize}
   \item All grouping variables are based on \textbf{baseline coarse industry and occupation codes}.
   \item Shutdown sectors follow the \textbf{IFS definition}.
-  \item Key-worker groups follow \textbf{clear-cut ONS-based definitions} using combinations of industry and occupation.
+  \item Key-worker groups use only \textbf{clear-cut} cases based on \textbf{ONS definitions} using combinations of industry and occupation.
   \item We use two versions:
     \begin{itemize}
       \item \textbf{3-group version:} shutdown / key worker / other.
       \item \textbf{5-group version:} shutdown / health / education-childcare / other essential / other.
     \end{itemize}
-  \item Appendix slides list the exact SIC and SOC conditions used in the code.
+  \item Exact definitions:
+    \hyperlink{ifs-shutdown-sec}{\beamerbutton{Shutdown}}
+    \hyperlink{health-keyworker-sec}{\beamerbutton{Health}}
+    \hyperlink{edu-keyworker-sec}{\beamerbutton{Education / childcare}}
+    \hyperlink{other-keyworker-sec}{\beamerbutton{Other essential}}
 \end{itemize}
 \end{frame}
 
@@ -181,7 +185,7 @@
     \begin{itemize}
       \item is employed,
       \item has positive working hours,
-      \item and is classified as not working from home at all.
+      \item and is classified as not always working from home.
     \end{itemize}
   \item The rule uses workplace / work-from-home information from the survey and is only constructed at survey waves where WFH questions are asked.
 \end{itemize}
@@ -204,7 +208,7 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Sample composition}
+\begin{frame}{Sample composition} \label{sample_comp_all}
 \centering
 
 \begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
@@ -212,20 +216,25 @@
 \end{adjustbox}
 
 \vspace{0.3em}
-
+\hyperlink{sample_comp_all_detailed}{\beamerbutton{detailed groups}}
 \end{frame}
 
-\begin{frame}{Sample composition - detailed}
+\begin{frame}{Couple sample child composition} \label{child_age_dist}
+\small
+\centering
+\safetableinput{\tabdir/sample_table_youngest_child_binned_all.tex}
+\end{frame}
+
+\begin{frame}{Sample composition - parnets to children under 10} \label{sample_comp_all}
 \centering
 
 \begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
-\safetableinput{\tabdir/sample_table_5x5_all.tex}
+\safetableinput{\tabdir/sample_table_3x3_all_child_u10.tex}
 \end{adjustbox}
 
 \vspace{0.3em}
-
+\hyperlink{sample_comp_all_detailed}{\beamerbutton{detailed groups}}
 \end{frame}
-
 % =============================================================================
 % April 2020 snapshot
 % =============================================================================
@@ -325,9 +334,9 @@
 % =============================================================================
 \appendix
 
-\begin{frame}{Appendix: exact shutdown-sector definition}
+\begin{frame}{Appendix: exact shutdown-sector definition} \label{ifs-shutdown-sec}
 \begin{itemize}
-  \item Shutdown sector is defined using baseline SIC (coarse industry) codes.
+  \item Shutdown sector is defined using baseline SIC (coarse industry) codes  based  on IFS definitions.
   \item Exact rule:
   \[
     \texttt{base\_jbsic07\_cc} \in \{55,56,79,90,91,92,93,96\}
@@ -344,10 +353,13 @@
       \item 96 = Other personal service activities
     \end{itemize}
   \item These are the sectors treated as ``shutdown'' in the baseline grouping.
+  \item Retail is excluded as we cannot distinguish essential vs.\ non-essential retail at the SIC resolution available in the data.
 \end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}{Appendix: exact health key-worker definition}
+\begin{frame}{Appendix: exact health key-worker definition} \label{health-keyworker-sec}
 \begin{itemize}
   \item Health / social-care key worker if \textbf{any} of the following hold:
     \begin{enumerate}
@@ -371,9 +383,11 @@
       \item SOC 614 = Caring personal services
     \end{itemize}
 \end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}{Appendix: exact education / childcare key-worker definition}
+\begin{frame}{Appendix: exact education / childcare key-worker definition} \label{edu-keyworker-sec}
 \begin{itemize}
   \item Education / childcare key worker if \textbf{any} of the following hold:
     \begin{enumerate}
@@ -391,9 +405,11 @@
       \item SOC 623 = Elementary cleaning and related occupations
     \end{itemize}
 \end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
 \end{frame}
 
-\begin{frame}{Appendix: exact other-essential key-worker definition}
+\begin{frame}{Appendix: exact other-essential key-worker definition} \label{other-keyworker-sec}
 \begin{itemize}
   \item Other-essential key worker if \textbf{either} of the following hold:
     \begin{enumerate}
@@ -406,6 +422,8 @@
       \item SIC 53 = Postal and courier activities
     \end{itemize}
 \end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
 \end{frame}
 
 \begin{frame}{Appendix: how the 3-group and 5-group variables are assigned}
@@ -433,6 +451,17 @@
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Appendix: Sample composition - detailed} \label{sample_comp_all_detailed}
+\centering
+
+\begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
+\safetableinput{\tabdir/sample_table_5x5_all.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\hyperlink{sample_comp_all}{\beamerbutton{back}}
+\end{frame}
+
 \begin{frame}{Appendix: detailed group version of work outside}
 \centering
 \safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
@@ -443,11 +472,7 @@
 \safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
 \end{frame}
 
-\begin{frame}{Appendix: couple sample child composition}
-\small
-\centering
-\safetableinput{\tabdir/sample_table_youngest_child_binned_all.tex}
-\end{frame}
+
 
 \begin{frame}{Appendix: couple workoutside composition over time}
 \centering
