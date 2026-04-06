@@ -1,0 +1,128 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{setspace}
+\PassOptionsToPackage{natbib=true}{biblatex}
+\usepackage[english]{babel}
+\usepackage[style=authoryear,maxcitenames=2,maxbibnames=99,uniquelist=false,firstinits=true,doi=false,isbn=false,url=false,eprint=false,bibencoding=utf8]{biblatex}
+\AtEveryBibitem{\clearlist{language}}
+\DeclareFieldFormat[article]{number}{\mkbibparens{#1}}
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map{
+      \step[fieldsource=issue, fieldtarget=number]
+    }
+  }
+}
+\addbibresource{dol.bib}
+\usepackage[hidelinks]{hyperref}\usepackage{titling}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.22em}
+\setstretch{1.0}
+\setlength{\textfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\floatsep}{4pt plus 1pt minus 2pt}
+\setlength{\intextsep}{6pt plus 1pt minus 2pt}
+\pretitle{\begin{center}\Large\bfseries}
+\posttitle{\par\end{center}\vspace{-0.7em}}
+\preauthor{\begin{center}\normalsize}
+\postauthor{\par\end{center}\vspace{-0.8em}}
+\predate{}
+\postdate{}
+
+\title{Division of Labor in the Household and Gender Inequality}
+\author{Oren Danieli, Itay Saporta-Eksten, and Analia Schlosser}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Background}
+
+The prolonged reserve mobilization following the Swords of Iron war has imposed a large and unequal shock on households in Israel. In many families, one spouse, most often the father, was called to reserve duty while the other remained at home to absorb a much larger share of childcare, household responsibilities, and labor-market adjustment. In some periods, disruptions to educational frameworks further increased the burden on families. In a smaller but especially informative set of cases, the mother was mobilized, generating a sharp reversal in the usual allocation of paid work and childcare. Recent evidence shows that the labor-market burden of reserve duty rose sharply after October 2023 and that part of this burden was borne indirectly by spouses and households with children \citep{portal2024burden,portal2024compensation}.
+
+This raises the key question: does the division of labor in the household have a causal effect on gender gaps? Although gender wage gaps narrowed during the twentieth century \citep{goldin2014grand}, they have plateaued in recent cohorts at still-high levels \citep{arellano2024one}. Research shows that most of the gender gap arises from labor market segregation, as women and men sort into different occupations \citep{blau2016gender} and firms \citep{card2016bargaining}. Moreover, studies from multiple countries document a motherhood penalty: gender segregation and wage gaps emerge sharply after the birth of the first child \citep{kleven2019children}. A leading hypothesis is that these persistent gaps are driven by the division of labor within households, as women tend to assume greater childcare responsibilities while men prioritize paid work.
+
+Because the war is still recent, it is too early to study its long-run household effects directly. We therefore begin with an earlier natural experiment that also imposed large and plausibly exogenous changes in household labor division: the COVID-19 pandemic. Pandemic restrictions, work-from-home mandates, and furlough policies forced parents of young children to reorganize childcare and home production. Studying these forced reallocations will provide an early indication of the longer-run effects that may now emerge in reserve-duty households. More broadly, this setting allows us to study a question of general interest well beyond the Israeli context: whether changes in household specialization can causally shape long-run gender inequality.
+
+\section*{Institutional Details}
+
+Our first setting is the institutional environment created by COVID-19. In Israel, restrictions varied sharply across sectors. \textit{Essential} sectors were allowed to operate with limited disruption, including health services, banking, and utilities. \textit{Not allowed} sectors were forced to shut down, including non-essential businesses with high contagion risk such as beauty salons and fitness centers. \textit{Non-essential} sectors were not fully shut down but faced strict limits on in-office work, prompting a large-scale shift to remote work.
+
+For households with young children, these regulations often generated a sudden and atypical division of labor. The key cases are couples in which one spouse continued working outside the home because they were classified as essential, while the other spouse was furloughed, prevented from working on site, or shifted mainly to home-based work. Nursing, for example, is a female-dominated occupation that was classified as essential, so mothers employed as nurses often continued working while their partners remained at home with the children.
+
+Among the possible household shocks created by COVID-19, our main focus is the reversal of household roles: cases in which the mother continued working outside the home while the father spent more time at home and took on more childcare. This treatment is especially informative because it most directly tests whether moving away from conventional specialization can reduce gender inequality, and therefore has the broadest general interest. Figure \ref{fig:DOL} illustrates the magnitude of this shock in Israeli data.
+
+\begin{figure}[t]
+  \centering
+  \captionsetup[sub]{skip=2pt,font=small}
+  \small
+
+  \begin{subfigure}[t]{0.48\textwidth}
+    \vspace{0pt}
+    \centering
+    \IfFileExists{grants/Sapir/HHmom.pdf}{%
+      \includegraphics[width=\linewidth,height=27ex,clip]{grants/Sapir/HHmom.pdf}%
+    }{%
+      \fbox{\parbox[c][19ex][c]{0.92\linewidth}{\centering Placeholder for \texttt{HHmom.pdf}}}%
+    }
+    \caption{Households with Only Wife Working}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+    \vspace{0pt}
+    \centering
+    \begin{tabular}{p{0.56\linewidth}@{\hskip 4pt}c}
+      \toprule
+      \textbf{Treatment type} & \textbf{Number, Jan 2020} \\
+      \midrule
+      Female essential,     & \multirow{2}{*}{27,989} \\
+      male non-essential    &                         \\
+      Female non-essential, & \multirow{2}{*}{8,523}  \\
+      male not allowed      &                         \\
+      Female essential,     & \multirow{2}{*}{2,849}  \\
+      male not allowed      &                         \\
+      Control: both parents & \multirow{2}{*}{87,546} \\
+      non-essential workers &                         \\
+      \bottomrule
+    \end{tabular}
+    \caption{Treatment Status based on January 2020}
+  \end{subfigure}
+
+  \caption{Number of Households with Children Under Age 6}
+  \vspace{-1.0ex}
+  \label{fig:DOL}
+\end{figure}
+
+\section*{Data}
+
+For the COVID design, we will combine administrative and survey data from three countries. For Israel, we will use administrative data based on tax records and the population registry, which provide near-universe information on employment, earnings, household composition, marriage, and fertility. Our core sample will consist of two-parent households with young children, especially children under age six, for whom childcare demands are especially high.
+
+We will complement the Israeli administrative data with panel surveys from the United Kingdom and Germany: the UK Household Longitudinal Survey and the Socio-Economic Panel. These countries also experienced cross-sector variation in COVID policy that can be used for identification \citep{hancke2021similar}. Both surveys include time-use and household-production measures, allowing us to observe changes in the division of labor directly and to test whether temporary reallocations persisted beyond the pandemic. In a second stage, conditional on data availability, we will extend the Israeli analysis to households directly exposed to reserve duty during the war.
+
+\section*{Methodology}
+
+We will estimate an event-study difference-in-differences model, using spouses' pre-COVID industries and occupations in January 2020 to define treatment and comparison groups. The main treatment groups are households in which the female is an essential worker, households in which the male works in a sector that was not allowed to operate, and households exposed to both margins simultaneously. In these households, it is likely that by April 2020 the female became the main provider while the male became more responsible for childcare and home production. The comparison group consists of households in which both spouses faced similar restrictions.
+
+Writing $Treat_i^g$ as an indicator for belonging to treatment group $g$, the reduced-form equation is
+\begin{equation}
+\label{eq:simple_DID}
+Y_{it}=\beta_t^g Treat_i^g + \eta_t X_{it} + \gamma_t + \delta_i + \epsilon_{it},
+\end{equation}
+where $X_{it}$ are control variables and $\gamma_t$ and $\delta_i$ are month and household fixed effects. The coefficients of interest are $\beta_t^g$, which trace the effect of the treatment over time and allow us to assess pre-trends and persistence. We will also examine the opposite treatment of intensified gender roles, when women are left with children, which is the more common situation in reserve-duty households.
+
+We will study both labor-market and family outcomes. In the survey data, we will examine childcare, housework, market work, and leisure. In the administrative data, we will estimate effects on employment, earnings, occupation, firm characteristics, fertility, and divorce. We will also use pre-pandemic exposure to essential-work rules, furloughs, and work-from-home mandates as instruments for changes in household labor division itself.
+
+A key concern is that COVID may affect workers in essential industries through channels other than household labor division, such as stress or trauma among hospital workers. We will address this concern with placebo tests using households with older children, specifications focused on essential industries less likely to be affected by such channels, such as utilities, and cross-country comparisons with the UK and Germany. In the reserve-duty design, a concern is that service may affect outcomes through channels other than the household division of labor, including direct effects of service itself. Precisely because the COVID and reserve-duty designs face very different threats to identification, comparing them will provide an important robustness check on our conclusions.
+
+\newpage
+%\section*{References}
+
+\printbibliography
+
+\end{document}
