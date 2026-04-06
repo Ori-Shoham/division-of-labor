@@ -73,7 +73,7 @@ CHILD_SUBSETS <- c("all", "u10", "11_17")
 COVID_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
-  "howlng",
+  "howlng_cv",
   "timechcare"
 )
 

@@ -182,7 +182,7 @@ couple_plot_var_label <- function(var) {
   dplyr::case_when(
     var == "workoutside"   ~ "Working outside the home",
     var == "wfh_some"      ~ "Working from home at least sometimes",
-    var == "howlng"        ~ "Housework hours",
+    var == "howlng_cv"        ~ "Housework hours",
     var == "timechcare"    ~ "Childcare / home-schooling hours",
     var == "jbhrs"         ~ "Weekly hours worked",
     var == "paygu_dv"      ~ "Gross monthly pay",
@@ -196,7 +196,7 @@ couple_plot_var_stem <- function(var) {
   dplyr::case_when(
     var == "workoutside"   ~ "workoutside",
     var == "wfh_some"      ~ "wfh_any",
-    var == "howlng"        ~ "housework_hours",
+    var == "howlng_cv"     ~ "housework_hours",
     var == "timechcare"    ~ "childcare_hours",
     var == "jbhrs"         ~ "weekly_hours",
     var == "paygu_dv"      ~ "gross_monthly_pay",
@@ -212,7 +212,7 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
   }
   
   dplyr::case_when(
-    var == "howlng"        ~ "Hours",
+    var == "howlng_cv"        ~ "Hours",
     var == "timechcare"    ~ "Hours",
     var == "jbhrs"         ~ "Hours",
     var == "paygu_dv"      ~ "Amount",
@@ -312,7 +312,7 @@ covid_count_outcome_vars <- function() {
   c(
     "workoutside",
     "wfh_some",
-    "howlng",
+    "howlng_cv",
     "timechcare"
   )
 }

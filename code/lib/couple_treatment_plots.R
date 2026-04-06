@@ -179,7 +179,7 @@ plot_future_treatment_group_counts <- function(
       y = "Number of couples",
       color = NULL,
       shape = NULL,
-      title = paste("Couple counts over time |", treatment_var, "| agg:", agg)
+      title = paste("Couple counts over time |", treatment_var)
     ) +
     theme_couple_facets()
   
@@ -269,8 +269,6 @@ plot_covid_spouse_treatment_overtime <- function(
       shape = NULL,
       title = paste(
         couple_plot_var_label(var),
-        "over time |",
-        treatment_var,
         "| child subset:", child_subset
       )
     ) +
@@ -352,10 +350,7 @@ plot_covid_spouse_treatment_childgrid <- function(
       color = NULL,
       shape = NULL,
       title = paste(
-        couple_plot_var_label(var),
-        "over time |",
-        treatment_var,
-        "| child-group comparison"
+        couple_plot_var_label(var)
       )
     ) +
     theme_couple_facets()
@@ -463,9 +458,7 @@ plot_future_spouse_treatment_numeric <- function(
       shape = NULL,
       title = paste(
         couple_plot_var_label(var),
-        "|", treatment_var,
-        "| child subset:", child_subset,
-        "| agg:", agg
+        "| child subset:", child_subset
       )
     ) +
     theme_couple_facets()
@@ -487,6 +480,120 @@ plot_future_spouse_treatment_numeric <- function(
   p
 }
 
+
+plot_future_spouse_treatment_childgrid <- function(
+    df,
+    var,
+    treatment_var,
+    agg = c("wave", "year"),
+    out_file,
+    fig_path
+) {
+  agg <- match.arg(agg)
+  
+  stopifnot(var %in% names(df))
+  stopifnot(treatment_var %in% names(df))
+  
+  zero_if_not_working <- var %in% c(
+    "jbhrs",
+    "jbot",
+    "basrate",
+    "paygu_dv",
+    "fimnlabgrs_dv",
+    "fimngrs_dv"
+  )
+  
+  include_baseline_2019 <- !(var %in% c("workoutside", "wfh_some", "wfh_cat"))
+  
+  # Same logic: encode child group + spouse + treatment into one grouping var
+  # before calling the summarization helper.
+  dd <- df %>%
+    filter_couples_for_child_grid() %>%
+    add_treatment_group_label(treatment_var = treatment_var) %>%
+    dplyr::filter(
+      !is.na(treatment_group),
+      !is.na(spouse),
+      !is.na(child_group_plot),
+      !is.na(spouse_pidp)
+    ) %>%
+    dplyr::rename(pidp = spouse_pidp) %>%
+    dplyr::mutate(
+      child_spouse_treat_group = paste(
+        child_group_plot,
+        spouse,
+        treatment_group,
+        sep = " || "
+      )
+    )
+  
+  prep <- .prepare_future_numeric_mean_data(
+    df = dd,
+    var = var,
+    by = "child_spouse_treat_group",
+    agg = agg,
+    include_baseline_2019 = include_baseline_2019,
+    baseline_var = paste0("base_", var),
+    zero_if_not_working = zero_if_not_working,
+    employment_var = "jbstat",
+    exclude_2025 = TRUE
+  )
+  
+  dd_plot <- prep$data %>%
+    tidyr::separate(
+      col = group,
+      into = c("child_group_plot", "spouse", "treatment_group"),
+      sep = " \\|\\| ",
+      remove = TRUE
+    ) %>%
+    dplyr::mutate(
+      spouse = factor(spouse, levels = c("wife", "husband")),
+      child_group_plot = factor(
+        child_group_plot,
+        levels = c("Young kids: 0-10", "Older kids: 11-17")
+      )
+    )
+  
+  p <- ggplot(
+    dd_plot,
+    aes(
+      x = time,
+      y = mean_y,
+      color = treatment_group,
+      shape = treatment_group,
+      group = treatment_group
+    )
+  ) +
+    geom_line(na.rm = TRUE) +
+    geom_point(size = 2.0, na.rm = TRUE) +
+    facet_grid(child_group_plot ~ spouse, scales = "fixed") +
+    theme_minimal() +
+    labs(
+      x = NULL,
+      y = couple_plot_var_units(var, is_binary = prep$is_binary),
+      color = NULL,
+      shape = NULL,
+      title = paste(
+        couple_plot_var_label(var)
+      )
+    ) +
+    theme_couple_facets()
+  
+  p <- .apply_time_labels(p, dd_plot, agg = agg)
+  
+  if (prep$is_binary) {
+    p <- p + scale_y_continuous(labels = scales::percent_format())
+  }
+  
+  ggsave(
+    filename = out_file,
+    plot = p,
+    path = fig_path,
+    width = 13,
+    height = 9
+  )
+  
+  p
+}
 # -----------------------------------------------------------------------------
 # Expand couple-level data into sample facets for count plots
 #
