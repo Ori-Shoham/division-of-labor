@@ -378,6 +378,7 @@ add_couple_baseline_treatments <- function(df_couple) {
         TRUE                                              ~ 0
       )
     ) 
+}
 
 # -----------------------------------------------------------------------------
 # Build COVID couple-level long panel
