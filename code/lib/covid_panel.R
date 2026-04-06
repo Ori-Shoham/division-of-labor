@@ -64,7 +64,8 @@ build_covid_long_panel <- function(
       hours = blhours,
       wah = blwah
     ) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>% 
+    select(pidp, wave, sempderived, hours, wah, starts_with("base"), starts_with("group"), starts_with("key"), shutdown_sec)
   
   df_2019 <- df_sample %>%
     dplyr::group_by(pidp) %>%
@@ -74,7 +75,8 @@ build_covid_long_panel <- function(
       sempderived = base_jbstat,
       hours = base_jbhrs
     ) %>%
-    dplyr::ungroup()
+    dplyr::ungroup()%>% 
+    select(pidp, wave, sempderived, hours, wah, starts_with("base"), starts_with("group"), starts_with("key"), shutdown_sec)
   
   df_sample_long <- dplyr::bind_rows(df_2019, df_precovid, df_sample) %>%
     dplyr::mutate(

@@ -19,6 +19,7 @@
 #       * future_outcomes_couple_long_lmo.rds
 #       * future_outcomes_couple_wide_lmo.rds
 #       * s2019_baseline_couplelevel_plus_lmo.rds
+#   - adds baseline couple treatment flags and child-age subgroup flags
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -184,7 +185,8 @@ cat("Baseline couple roster saved to: ",
 s2019_baseline_couplelevel <- build_baseline_couple_dataset(
   df_baseline = df_baseline_analytic,
   roster      = couple_roster
-)
+) %>%
+  add_couple_baseline_treatments()
 
 saveRDS(
   s2019_baseline_couplelevel,
@@ -211,7 +213,21 @@ cat("COVID-observed couple roster saved to: ",
 df_covid_couple_long <- build_covid_couple_long(
   df_covid_long = df_sample_long_covid,
   roster        = couple_roster
-)
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel %>%
+      dplyr::select(
+        couple_id,
+        youngest_child_2019,
+        has_child_u10_2019,
+        has_child_11_17_2019,
+        child_age_group_2019,
+        treat_wife_key_notedu_husb_not_or_edu,
+        treat_wife_key_notedu_any,
+        treat_husb_shutdown_wife_not
+      ),
+    by = "couple_id"
+  )
 
 saveRDS(
   df_covid_couple_long,
@@ -310,7 +326,21 @@ cat("\n--- Step 5b: Build couple-level future outcomes long ---\n")
 df_future_couple_long <- build_future_couple_long(
   df_future_long = df_future_long,
   roster         = couple_roster
-)
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel %>%
+      dplyr::select(
+        couple_id,
+        youngest_child_2019,
+        has_child_u10_2019,
+        has_child_11_17_2019,
+        child_age_group_2019,
+        treat_wife_key_notedu_husb_not_or_edu,
+        treat_wife_key_notedu_any,
+        treat_husb_shutdown_wife_not
+      ),
+    by = "couple_id"
+  )
 
 saveRDS(
   df_future_couple_long,
@@ -371,7 +401,21 @@ cat("\n--- Step 6b: Build couple-level future outcomes wide ---\n")
 df_future_couple_wide <- build_future_couple_wide(
   df_future_wide = df_future_wide,
   roster         = couple_roster
-)
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel %>%
+      dplyr::select(
+        couple_id,
+        youngest_child_2019,
+        has_child_u10_2019,
+        has_child_11_17_2019,
+        child_age_group_2019,
+        treat_wife_key_notedu_husb_not_or_edu,
+        treat_wife_key_notedu_any,
+        treat_husb_shutdown_wife_not
+      ),
+    by = "couple_id"
+  )
 
 saveRDS(
   df_future_couple_wide,

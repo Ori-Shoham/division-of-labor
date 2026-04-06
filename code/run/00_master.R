@@ -24,6 +24,7 @@ RUN_CHECK_INPUTS        <- TRUE
 RUN_BUILD_DATA          <- TRUE
 RUN_DESCRIPTIVES        <- TRUE
 RUN_FUTURE_DESCRIPTIVES <- TRUE
+RUN_COUPLE_TREATMENT_DESCRIPTIVES <- TRUE
 RUN_SAMPLE_TABLES       <- TRUE
 RUN_MODELS              <- TRUE
 RUN_LASSO               <- TRUE
@@ -90,6 +91,11 @@ if (RUN_SAMPLE_TABLES) {
   message("\n==================== Stage 2c: Sample tables =============")
   run_stage("code/run/02c_sample_tables.R")
   if (STOP_AFTER_EACH) stop("Stopped after Stage 2c (as requested).")
+}
+if (RUN_COUPLE_TREATMENT_DESCRIPTIVES) {
+  message("\n==================== Stage 2d: Couple treatment descriptives =============")
+  run_stage("code/run/02d_make_couple_treatment_descriptives.R")
+  if (STOP_AFTER_EACH) stop("Stopped after Stage 2d (as requested).")
 }
 # =============================================================================
 # Stage 3: Regression tables

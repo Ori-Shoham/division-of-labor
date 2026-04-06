@@ -304,14 +304,20 @@ plot_furlough_overtime_facets <- function(df,
                                           fig_path) {
   
   dd <- df %>%
+    
     dplyr::mutate(
       furlough_cat = dplyr::case_when(
-        sempderived %in% c(1, 2, 3) & furlough == 1 ~ "Furloughed",
-        sempderived %in% c(1, 2, 3) & furlough == 2 ~ "Not furloughed",
-        TRUE ~ "Self- or not employed"
+        sempderived %in% c(1, 3) & furlough == 1 ~ "Furloughed",
+        sempderived %in% c(1, 3) & furlough == 2 ~ "Not furloughed",
+        sempderived %in% c(2, 4) ~ "Self- or not employed",
+        T ~ NA_character_
       )
-    ) %>%
+    ) %>% 
+    group_by(wave) %>% 
+    filter(!all(is.na(furlough_cat))) %>%
+    ungroup() %>% 
     dplyr::filter(!is.na(furlough_cat))
+
   
   # shares within wave (and group if relevant)
   if (is.null(by)) {
@@ -383,6 +389,9 @@ plot_wfh_bar <- function(df, wave_code, by, min_n = 25, out_file, fig_path) {
       byvar = if_else(n_by_raw < min_n, "other", as.character(byvar)),
       wfh_cat = .wfh_cat(sempderived, wah)
     ) %>%
+    group_by(wave) %>% 
+    filter(!all(is.na(wfh_cat))) %>%
+    ungroup() %>% 
     filter(!is.na(wfh_cat)) %>%
     group_by(byvar) %>%
     mutate(
@@ -474,6 +483,9 @@ plot_covid_numeric_overtime <- function(df, var, y_lab, title, by = NULL, out_fi
 
   dd <- df %>%
     mutate(value = clean_covid_numeric(.data[[var]])) %>%
+    group_by(wave) %>% 
+    filter(!all(is.na(value))) %>%
+    ungroup() %>% 
     filter(!is.na(value), wave != "2019")
 
   if (is.null(by)) {
@@ -542,6 +554,9 @@ plot_covid_categorical_overtime <- function(df,
 
   dd <- dd %>%
     mutate(cat = recode_fn(.data[[var]])) %>%
+    group_by(wave) %>% 
+    filter(!all(is.na(cat))) %>%
+    ungroup() %>% 
     filter(!is.na(cat), wave != "2019")
 
   if (is.null(by)) {
