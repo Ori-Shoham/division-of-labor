@@ -1,0 +1,96 @@
+SOC,occupation
+-9,missing
+-8,inapplicable
+-7,proxy respondent
+-2,refusal
+-1,don't know
+111,Chief Executives and Senior Officials
+112,Production Managers and Directors
+113,Functional Managers and Directors
+115,Financial Institution Managers and Directors
+116,Managers and Directors in Transport and Logistics
+117,Senior Officers in Protective Services
+118,Health and Social Services Managers and Directors
+119,Managers and Directors in Retail and Wholesale
+121,Managers and Proprietors in Agriculture Related Services
+122,Managers and Proprietors in Hospitality and Leisure Services
+124,Managers and Proprietors in Health and Care Services
+125,Managers and Proprietors in Other Services
+211,Natural and Social Science Professionals
+212,Engineering Professionals
+213,Information Technology and Telecommunications Professionals
+214,Conservation and Environment Professionals
+215,Research and Development Managers
+221,Health Professionals
+222,Therapy Professionals
+223,Nursing and Midwifery Professionals
+231,Teaching and Educational Professionals
+241,Legal Professionals
+242,"Business, Research and Administrative Professionals"
+243,"Architects, Town Planners and Surveyors"
+244,Welfare Professionals
+245,Librarians and Related Professionals
+246,Quality and Regulatory Professionals
+247,Media Professionals
+311,"Science, Engineering and Production Technicians"
+312,Draughtspersons and Related Architectural Technicians
+313,Information Technology Technicians
+321,Health Associate Professionals
+323,Welfare and Housing Associate Professionals
+331,Protective Service Occupations
+341,"Artistic, Literary and Media Occupations"
+342,Design Occupations
+344,Sports and Fitness Occupations
+351,Transport Associate Professionals
+352,Legal Associate Professionals
+353,"Business, Finance and Related Associate Professionals"
+354,"Sales, Marketing and Related Associate Professionals"
+355,Conservation and Environmental Associate Professionals
+356,Public Services and Other Associate Professionals
+411,Administrative Occupations: Government and Related Organisations
+412,Administrative Occupations: Finance
+413,Administrative Occupations: Records
+415,Other Administrative Occupations
+416,Administrative Occupations: Office Managers and Supervisors
+421,Secretarial and Related Occupations
+511,Agricultural and Related Trades
+521,"Metal Forming, Welding and Related Trades"
+522,"Metal Machining, Fitting and Instrument Making Trades"
+523,Vehicle Trades
+524,Electrical and Electronic Trades
+525,"Skilled Metal, Electrical and Electronic Trades Supervisors"
+531,Construction and Building Trades
+532,Building Finishing Trades
+533,Construction and Building Trades Supervisors
+541,Textiles and Garments Trades
+542,Printing Trades
+543,Food Preparation and Hospitality Trades
+544,Other Skilled Trades
+612,Childcare and Related Personal Services
+613,Animal Care and Control Services
+614,Caring Personal Services
+621,Leisure and Travel Services
+622,Hairdressers and Related Services
+623,Housekeeping and Related Services
+624,Cleaning and Housekeeping Managers and Supervisors
+711,Sales Assistants and Retail Cashiers
+712,Sales Related Occupations
+713,Sales Supervisors
+721,Customer Service Occupations
+722,Customer Service Managers and Supervisors
+811,Process Operatives
+812,Plant and Machine Operatives
+813,Assemblers and Routine Operatives
+814,Construction Operatives
+821,Road Transport Drivers
+822,Mobile Machine Drivers and Operatives
+823,Other Drivers and Transport Operatives
+911,Elementary Agricultural Occupations
+912,Elementary Construction Occupations
+913,Elementary Process Plant Occupations
+921,Elementary Administration Occupations
+923,Elementary Cleaning Occupations
+924,Elementary Security Occupations
+925,Elementary Sales Occupations
+926,Elementary Storage Occupations
+927,Other Elementary Services Occupations

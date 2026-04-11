@@ -1,0 +1,562 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% =============================================================================
+% Template: coauthor_descriptives_template.tex
+%
+% Purpose:
+%   Beamer template for a descriptive-results update to share with coauthors.
+%   The deck is designed to compile even if some figures or tables have not yet
+%   been generated: missing files are replaced with placeholders.
+%
+% Expected folders (relative to this .tex file):
+%   figures/
+%   tables/
+%
+% Main design choice:
+%   The core deck emphasizes the full sample, reserving couple-sample tables for
+%   an appendix / later discussion on within-household outcomes.
+% =============================================================================
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{appendixnumberbeamer}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{ifthen}
+
+% ---- Paths ------------------------------------------------------------------
+\newcommand{\figdir}{figures}
+\newcommand{\tabdir}{tables}
+
+% ---- Helper boxes for missing figures / tables ------------------------------
+\newcommand{\missingfigurebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.9);
+    \node[align=center, text width=9.6cm] at (5.4,2.95)
+    {\small Figure not found:\\[0.3em]\ttfamily\detokenize{#1}};
+  \end{tikzpicture}%
+}
+
+\newcommand{\missingtablebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.1);
+    \node[align=center, text width=9.6cm] at (5.4,2.55)
+    {\small Table not found:\\[0.3em]\ttfamily\detokenize{#1}};
+  \end{tikzpicture}%
+}
+
+\newcommand{\safeincludegraphics}[2][]{%
+  \IfFileExists{#2}{\includegraphics[#1]{#2}}{\missingfigurebox{#2}}%
+}
+
+\newcommand{\safetableinput}[1]{%
+  \IfFileExists{#1}{\input{#1}}{\missingtablebox{#1}}%
+}
+
+% ---- Title info -------------------------------------------------------------
+\title{COVID-19, Work Arrangements, and Household Division of Labor}
+\subtitle{Sample and descriptive analysis}
+\author{Ori Nahshon Shoham}
+\date{\today}
+
+\begin{document}
+
+% =============================================================================
+% Title slide
+% =============================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =============================================================================
+% Roadmap
+% =============================================================================
+\begin{frame}{Roadmap}
+\begin{itemize}
+  \item Baseline grouping logic and descriptive sample overview
+  \item Short-run COVID labor-market disruptions in the full sample
+  \item Work outside versus work from home by baseline group
+  \item Longer-run descriptive patterns in main-study follow-up waves
+  \item Open questions for the empirical strategy discussion
+\end{itemize}
+\end{frame}
+
+% =============================================================================
+% Motivation / setup
+% =============================================================================
+\begin{frame}{Descriptive setup for discussion}
+\begin{itemize}
+  \item Current goal: summarize reduced descriptive facts before locking in the causal design.
+  \item Main source of heterogeneity is the baseline 2019 industry / occupation grouping.
+  \item At this stage, we mostly emphasize the full sample to see broad employment and work-arrangement trends.
+  \item Couple-only objects remain useful for later discussion of household outcomes, but are not the focus of the main descriptive deck.
+\end{itemize}
+\vspace{0.5em}
+\end{frame}
+
+% =============================================================================
+% Added explanation slides
+% =============================================================================
+\begin{frame}{Data sources and timeline}
+\begin{itemize}
+  \item UKHLS main survey (waves I--O) and UKHLS COVID study (waves CA--CI).
+  \item Baseline is built from 2019 interviews, prioritizing wave K, then J, then I.
+  \item COVID descriptives use the COVID-study panel.
+  \item Future outcomes use main-study follow-up waves J--O.
+  \item In the future-outcomes branch, we restrict to interviews from March 2020 onward.
+  \item Currently different points in time rely on a different set of respondents, no weighting yet for representativeness and attrition / partial response.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Samples used in the descriptives}
+\textbf{COVID sample}
+\begin{itemize}
+  \item Individuals in the baseline analytic sample who are observed in at least one COVID-study wave.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Couples sample}
+\begin{itemize}
+  \item Baseline couples defined using reciprocal partner identifiers.
+  \item Qualifying relationship types:
+    \begin{itemize}
+      \item married,
+      \item civil partnership,
+      \item cohabiting / living as a couple.
+    \end{itemize}
+  \item Restricted to opposite-sex couples.
+  \item Couple status is fixed at baseline.
+\end{itemize}
+
+\vspace{0.4em}
+
+\textbf{Future outcomes sample}
+\begin{itemize}
+  \item Individuals from the baseline sample linked to main-study waves J--O.
+  \item Restricted to interviews from March 2020 onward.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How the baseline is constructed}
+\begin{itemize}
+  \item Goal: define pre-COVID characteristics that are fixed before the pandemic shock.
+  \item Use the most recent interview in calendar year 2019:
+    \begin{itemize}
+      \item prefer wave K,
+      \item then wave J,
+      \item then wave I.
+    \end{itemize}
+  \item Baseline variables include demographics, employment, earnings, industry (SIC), occupation (SOC), work-from-home information, and family structure.
+  \item Sample restricted to employed / self-employed individuals (missing industry and occupation are flagged but not excluded).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Baseline group definitions used in the descriptives} \label{group_defs}
+\begin{itemize}
+  \item All grouping variables are based on \textbf{baseline coarse industry and occupation codes}.
+  \item Shutdown sectors follow the \textbf{IFS definition}.
+  \item Key-worker groups use only \textbf{clear-cut} cases based on \textbf{ONS definitions} using combinations of industry and occupation.
+  \item We use two versions:
+    \begin{itemize}
+      \item \textbf{3-group version:} shutdown / key worker / other.
+      \item \textbf{5-group version:} shutdown / health / education-childcare / other essential / other.
+    \end{itemize}
+  \item Exact definitions:
+    \hyperlink{ifs-shutdown-sec}{\beamerbutton{Shutdown}}
+    \hyperlink{health-keyworker-sec}{\beamerbutton{Health}}
+    \hyperlink{edu-keyworker-sec}{\beamerbutton{Education / childcare}}
+    \hyperlink{other-keyworker-sec}{\beamerbutton{Other essential}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Work outside home: exact descriptive rule}
+\begin{itemize}
+  \item \texttt{workoutside = 1} for someone who:
+    \begin{itemize}
+      \item is employed,
+      \item has positive working hours,
+      \item and is classified as not always working from home.
+    \end{itemize}
+  \item The rule uses workplace / work-from-home information from the survey and is only constructed at survey waves where WFH questions are asked.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Working from home at least sometimes}
+\begin{itemize}
+  \item \texttt{wfh\_some = 1} if the respondent reports working from home:
+    \begin{itemize}
+      \item always,
+      \item often,
+      \item or sometimes.
+    \end{itemize}
+  \item \texttt{wfh\_some = 0} if the respondent:
+    \begin{itemize}
+      \item never works from home,
+      \item or is not working.
+    \end{itemize}
+  \item This is meant to capture the extensive margin of any meaningful work from home.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Sample composition} \label{sample_comp_all}
+\centering
+
+\begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
+\safetableinput{\tabdir/sample_table_3x3_all.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\hyperlink{sample_comp_all_detailed}{\beamerbutton{detailed groups}}
+\end{frame}
+
+\begin{frame}{Couple sample child composition} \label{child_age_dist}
+\small
+\centering
+\safetableinput{\tabdir/sample_table_youngest_child_binned_all.tex}
+\end{frame}
+
+\begin{frame}{Sample composition -- parents to children under 10} \label{sample_comp_child_u10}
+\centering
+
+\begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
+\safetableinput{\tabdir/sample_table_3x3_all_child_u10.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\hyperlink{sample_comp_child_u10_detailed}{\beamerbutton{detailed groups}}
+\end{frame}
+
+% =============================================================================
+% April 2020 snapshot
+% =============================================================================
+\begin{frame}{April 2020 snapshot: work status by detailed group} \label{app_workstatus_april}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_detailed_groups_perc.png}
+
+\vspace{0.3em}
+\hyperlink{app_workstatus_may}{\beamerbutton{May}}
+\hspace{0.4em}
+\hyperlink{app_workstatus_couples}{\beamerbutton{Couples only}}
+\hspace{0.4em}
+\hyperlink{app_workstatus_industry}{\beamerbutton{By industry}}
+\end{frame}
+
+\begin{frame}{April 2020 snapshot: furlough by detailed group} \label{app_furlough_april}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_detailed_groups_perc.png}
+
+\vspace{0.3em}
+\hyperlink{app_furlough_overtime}{\beamerbutton{Over time}}
+\hspace{0.4em}
+\hyperlink{app_furlough_couples}{\beamerbutton{Couples only}}
+\hspace{0.4em}
+\hyperlink{app_furlough_industry}{\beamerbutton{By industry}}
+\end{frame}
+
+\begin{frame}{Self-reported key-worker status and type by detailed group}
+\begin{columns}[T,onlytextwidth]
+  \column{0.49\textwidth}
+  \centering
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/keyworker_def_explore_detailed_groups_april20.png}
+
+  \column{0.49\textwidth}
+  \centering
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/keywork_sector_def_explore_detailed_groups_may20.png}
+\end{columns}
+\end{frame}
+
+% =============================================================================
+% Worked at all / hours
+% =============================================================================
+\begin{frame}{Short-run employment disruption: did people work at all?}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/worked_at_all_detailed_groups_overtime.png}
+\end{frame}
+
+\begin{frame}{Short-run intensive margin: hours worked by detailed group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/hours_detailed_groups_overtime.png}
+\end{frame}
+
+% =============================================================================
+% Work outside / WFH some
+% =============================================================================
+\begin{frame}{Work arrangement margin I: working outside the home}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Work arrangement margin II: working from home at least sometimes}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Distribution of WFH intensity by detailed group}
+\centering
+\safeincludegraphics[width=0.96\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_detailed_groups_overtime.png}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Weekly childcare hours by detailed group (couples sample)}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/timechcare_overtime_detailed_groups_couples.png}
+\end{frame}
+
+\begin{frame}{Weekly house work hours by detailed group (couples sample)}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/howlng_overtime_detailed_groups_couples.png}
+\end{frame}
+% =============================================================================
+% Longer-run follow-up
+% =============================================================================
+\begin{frame}{Longer-run follow-up: working outside by detailed group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_workoutside_by_group_industry_based_detailed_year.png}
+\end{frame}
+
+\begin{frame}{Longer-run follow-up: WFH at least sometimes by detailed group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_wfh_some_by_group_industry_based_detailed_year.png}
+\end{frame}
+
+\begin{frame}{Longer-run follow-up: weekly work hours by detailed group}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_jbhrs_by_group_industry_based_detailed_year.png}
+\end{frame}
+
+
+
+% =============================================================================
+% Optional follow-up outcomes
+% =============================================================================
+
+
+
+
+
+% =============================================================================
+% Appendix
+% =============================================================================
+\appendix
+
+\begin{frame}{Appendix: exact shutdown-sector definition} \label{ifs-shutdown-sec}
+\begin{itemize}
+  \item Shutdown sector is defined using baseline SIC (coarse industry) codes based on IFS definitions.
+  \item Exact rule:
+  \[
+    \texttt{base\_jbsic07\_cc} \in \{55,56,79,90,91,92,93,96\}
+  \]
+  \item Code meanings:
+    \begin{itemize}
+      \item 55 = Accommodation
+      \item 56 = Food and beverage service activities
+      \item 79 = Travel agency, tour operator, reservation service
+      \item 90 = Creative, arts and entertainment activities
+      \item 91 = Libraries, archives, museums, and other cultural activities
+      \item 92 = Gambling and betting activities
+      \item 93 = Sports activities and amusement / recreation activities
+      \item 96 = Other personal service activities
+    \end{itemize}
+  \item These are the sectors treated as ``shutdown'' in the baseline grouping.
+  \item Retail is excluded as we cannot distinguish essential vs.\ non-essential retail at the SIC resolution available in the data.
+\end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: exact health key-worker definition} \label{health-keyworker-sec}
+\begin{itemize}
+  \item Health / social-care key worker if \textbf{any} of the following hold:
+    \begin{enumerate}
+      \item \texttt{base\_jbsic07\_cc = 86}
+      \item \texttt{base\_jbsoc10\_cc} $\in \{124,221,222,223,321\}$
+      \item \texttt{base\_jbsoc10\_cc = 118} \textbf{and} \texttt{base\_jbsic07\_cc} $\in \{86,87,88\}$
+      \item \texttt{base\_jbsoc10\_cc = 614} \textbf{and} \texttt{base\_jbsic07\_cc} $\in \{84,86,87,88\}$
+    \end{enumerate}
+  \item Main code meanings:
+    \begin{itemize}
+      \item SIC 86 = Human health activities
+      \item SIC 87 = Residential care activities
+      \item SIC 88 = Social work activities without accommodation
+      \item SIC 84 = Public administration and defence; compulsory social security
+      \item SOC 124 = Managers and proprietors in health and care services
+      \item SOC 221 = Health professionals
+      \item SOC 222 = Therapy professionals
+      \item SOC 223 = Nursing and midwifery professionals
+      \item SOC 321 = Health associate professionals
+      \item SOC 118 = Health and social services managers / directors
+      \item SOC 614 = Caring personal services
+    \end{itemize}
+\end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: exact education / childcare key-worker definition} \label{edu-keyworker-sec}
+\begin{itemize}
+  \item Education / childcare key worker if \textbf{any} of the following hold:
+    \begin{enumerate}
+      \item \texttt{base\_jbsic07\_cc = 85}
+      \item \texttt{base\_jbsoc10\_cc = 231}
+      \item \texttt{base\_jbsoc10\_cc} $\in \{323,612,623\}$ \textbf{and} \texttt{base\_jbsic07\_cc = 84}
+    \end{enumerate}
+  \item Main code meanings:
+    \begin{itemize}
+      \item SIC 85 = Education
+      \item SIC 84 = Public administration and defence; compulsory social security
+      \item SOC 231 = Teaching and educational professionals
+      \item SOC 323 = Teaching and other educational associate professionals
+      \item SOC 612 = Childcare and related personal services
+      \item SOC 623 = Elementary cleaning and related occupations
+    \end{itemize}
+\end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: exact other-essential key-worker definition} \label{other-keyworker-sec}
+\begin{itemize}
+  \item Other-essential key worker if \textbf{either} of the following hold:
+    \begin{enumerate}
+      \item \texttt{base\_jbsoc10\_cc = 331}
+      \item \texttt{base\_jbsic07\_cc = 53}
+    \end{enumerate}
+  \item Main code meanings:
+    \begin{itemize}
+      \item SOC 331 = Protective service occupations
+      \item SIC 53 = Postal and courier activities
+    \end{itemize}
+\end{itemize}
+
+\hyperlink{group_defs}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: how the 3-group and 5-group variables are assigned}
+\begin{itemize}
+  \item All grouping is based entirely on baseline 2019 information.
+  \item \textbf{3-group variable:}
+    \begin{itemize}
+      \item shutdown
+      \item key worker
+      \item other
+    \end{itemize}
+  \item \textbf{5-group variable:}
+    \begin{itemize}
+      \item shutdown
+      \item key worker -- health / social care
+      \item key worker -- education / childcare
+      \item key worker -- other essential
+      \item other
+    \end{itemize}
+  \item Hierarchy used in assignment:
+    \begin{itemize}
+      \item shutdown overrides key-worker status
+      \item key-worker status overrides other
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Appendix: Sample composition -- detailed} \label{sample_comp_all_detailed}
+\centering
+
+\begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
+\safetableinput{\tabdir/sample_table_5x5_all.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\hyperlink{sample_comp_all}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: Sample composition -- detailed, parents to children under 10} \label{sample_comp_child_u10_detailed}
+\centering
+
+\begin{adjustbox}{max width=\textwidth, max height=0.4\textheight}
+\safetableinput{\tabdir/sample_table_5x5_all_child_u10.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\hyperlink{sample_comp_child_u10}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: work status by detailed group, May 2020} \label{app_workstatus_may}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_may20_detailed_groups_perc.png}
+
+\vspace{0.3em}
+
+\hyperlink{app_workstatus_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: work status by detailed group, couples sample} \label{app_workstatus_couples}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_detailed_groups_perc_couples.png}
+
+\vspace{0.3em}
+\hyperlink{app_workstatus_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: work status by industry, April 2020} \label{app_workstatus_industry}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_ind_perc.png}
+
+\vspace{0.3em}
+\hyperlink{app_workstatus_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: furlough by detailed group, over time} \label{app_furlough_overtime}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_overtime_detailed_groups.png}
+
+\vspace{0.3em}
+\hyperlink{app_furlough_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: furlough by detailed group, couples sample} \label{app_furlough_couples}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_detailed_groups_perc_couples.png}
+
+\vspace{0.3em}
+\hyperlink{app_furlough_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: furlough by industry, April 2020} \label{app_furlough_industry}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_ind_perc.png}
+
+\vspace{0.3em}
+\hyperlink{app_furlough_april}{\beamerbutton{back}}
+\end{frame}
+
+\begin{frame}{Appendix: detailed group version of work outside}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Appendix: detailed group version of WFH-some}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
+\end{frame}
+
+\begin{frame}{Appendix: couple workoutside composition over time}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_workoutside_covid_wave_share.png}
+\end{frame}
+
+\begin{frame}{Appendix: couple WFH-some composition over time}
+\centering
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_wfh_some_covid_wave_share.png}
+\end{frame}
+
+\end{document}

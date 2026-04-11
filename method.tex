@@ -1,0 +1,139 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{enumitem}
+\usepackage{amsmath}
+\setlength{\topmargin}{-0.5in} \setlength{\textheight}{8.5in}
+\setlength{\oddsidemargin}{0.0in} \setlength{\evensidemargin}{0.0in}
+\setlength{\textwidth}{6.5in}
+\parindent=12pt
+\baselinestretch
+\begin{document}
+
+\section{Data}
+Our main source of data includes Israeli tax records, which include employment in each month, and annual wages. We also know the industry of each employer. We will use this to classify industries into essential and non-essential, where essential industries workers were typically allowed to exit the house for work during COVID. We will also combine this information with the education registry and registry of graduates from higher education institutions which will allow us to obtain detailed information on individuals' field of study and highest degree obtained. This will be used as a proxy for occupation to further predict essential worker and work from home status. \footnote{Need to discuss how we will generate this classification. Will we use the firms' survey as well?.}
+
+%AS: we can use the regulations + LFS + firms survey. We can predict for each employer and worker the likelihood of being defined as an essential worker and the likelihood of working from home. 
+%AS I think the regulations were more complicated, I think that employers could define a share of workers as "essential"
+
+%%AS another option 
+\section{Methodology}
+We will use a difference-in-differences strategy. We will only use heterosexual families whose oldest/youngest child is under age 5/10, where both partners were employed in Jan 2020.\footnote{Need to think about self-employed. OD is leaning towards dropping them.} 
+As a placebo, we will compare changes in employment patterns among single individuals and households with older children.
+
+%% AS: March is already Covid time. I would use those who worked on Jan and Feb 2020
+%% on March 12, schools and universities were closed by the government order, partially switching to distant teaching. (First covid case was officially confirmed in Israel on Feb 21 2020)
+
+
+By April 2020, during the first COVID wave, workers could fall into three categories. 
+\begin{enumerate}[start=0]
+    \item Not on payroll
+    \item Non-essential worker: on payroll in an industry that was not classified as essential
+    \item Essential worker
+\end{enumerate}
+
+Open points regarding the categorizations:
+\begin{itemize}
+    \item Can we identify within essential, a group which was very likely not to work from home (and is observed). For example: Doctors in hospitals. 
+    \item There is another category of "not-allowed". This was already documented for Israel. In next step -- can think about this "negative" treatment, which kept people home for sure.  
+\end{itemize}
+
+Since there are three states for each spouse, there are nine possible states for each couple. Our main treatment group includes couples in which the woman is an essential worker, while the man is not on the payroll (marked as W2M0). We can consider expanding the treatment group to also include men who are non-essential workers (W2M1). 
+
+The control group includes couples where both spouses are essential workers or both are non-essential workers (W1M1 and W2M2). The remaining 5 states (e.g., W0M0, W0M1, etc.) will not be used for the main analysis. 
+the status will be defined based on industry from 
+
+%AS: I think we would not pool W1M1 and W2M2 together. 
+%% AS: given that schools were closed already in March, we should define individuals status based on the industry and sector observed in Jan 2020
+
+We will run the event study regression:\footnote{this is not a staggered DiD as the event time is the same for everyone so I did not write the typicaly $\Sigma$} 
+\begin{equation} \label{eq:simple_DID}
+Y_{it}=\beta_tTreat_i+\eta_t X_{i}+\gamma_t+\delta_i+\epsilon_{it}
+\end{equation}
+
+Depending on the context, $t$ will be months or years. We will set April 2020 to $t=0$ and the rest of the periods will be defined relative to that month. We will include family fixed effects and time dummies. We will also control for non-parametrically for family characteristics (e.g., age, age of children, religion, ethnicity, immigration status, education, location) interacted with time. 
+The event study version of \eqref{eq:simple_DID} is given by:
+\begin{equation} \label{eq:simple_event}
+Y_{it}=\sum_{s=-q}^{p}\beta_{t+s}Treat_{i,t+s}+\eta_t X_{i}+\gamma_t+\delta_i+\epsilon_{it},
+\end{equation}
+where $p$ is the number of leads and $q$ the number of lags. $Treat_{i,t+s}$ is the indicator for treatment at time $t+s$. [[Itay: Note that this is exactly the same as the regression above which has index $t$ on the $beta$ and on the $y$. Sorry - missed that...]]
+With our monthly data, We can run this regression currently for 45 lags. I would add also 3 years of lead (so 36). 
+
+Another option is to match families based on the previous years, and estimate 
+
+$$Y_{it}=\beta_tTreat_i+\mu_{m(i),t}+\gamma_t+\delta_i$$
+
+
+The outcome variable $Y_t$ includes employment for both genders (separately), wages for both genders, total household income, birth of an additional child, divorce.\footnote{Do we have the data?}
+% AS: We have the data on fertility and divorce
+
+Note that the above discussion is about reduced form estimates. The treatment definitions could then be used as IV. 
+
+
+First attempt:
+
+We will define the main equation as follows:
+
+\begin{equation} \label{eq:simple_event}
+Y_{it}=\sum_{s=-q}^{p}\beta_{t+s}Treat_{i,t+s}+\eta_t X_{i}+\gamma_t+\delta_i+\epsilon_{it},
+\end{equation}
+where $p$ is the number of leads and $q$ the number of lags. $Treat_{i,t+s}$ is the indicator for treatment at time $t+s$. With our monthly data, We can run this regression currently for 45 lags. I would add also 3 years of lead (so 36). 
+We define $Treat_{i,t+s}$ as the interaction between Wife works outside and husbands is at home
+
+$workoutside = \beta_0+\beta_1 occupation and industries education+\epsilon_i$
+
+
+$$Y_{it}=\beta_0 + \beta_1 wifeworkedoutside +\beta_2 husbandwasathome +\mu_{m(i),t}+\gamma_t+\delta_i$$
+
+where $Y_{it}$ is earnings of the woman in 2024 (zero if she does not work)
+
+Next steps:
+
+sample: individuals who were working in 2019
+take snapshot of April 2020 and estimate the following model separately for men and women:
+
+$workoutside_i = \beta_0+\beta_1 Essential worker_i +\beta_2 shotdown industry_i+\beta_3 education_i + \beta_4 age_i +\beta_5 age^2_i+ \epsilon_i$
+
+where $workoutside_i=1$ if individual $i$ worked outside home in April 2020, zero otherwise (whether unemployed, in forlough, or working from home).
+
+Definition of workoutside: work=1 and did not respond always to work from home.
+
+\textbf{Outcomes}
+\begin{itemize}
+    \item Outcomes during covid: time spent with children, time home production
+    \item Outcomes post-covid: Work, earnings, hours, hourly wage, workoutside as defined before, work from home, married, divorced, any birth, time spent with children, time home production
+\end{itemize}
+
+
+
+\subsection{Data driven instruments}
+
+\section{Data driven approach}
+The alternative approach to identifying the treatment would be a data driven approach. This requires running a regression (LASSO -- can also be more sophisticated later, RF) of the "work outside" in April 2020 on the interactions of industry and occupations. 
+
+The sample for this LASSO should exclude the parents of children up to age 10.
+
+The prediction can be used as an instrument for work. Note that of course, when constructing the instrument at the observation level, the pre-covid occupation and industry should be used. 
+
+[[Adding controls (maybe later): Adding controls like gender could help alleviate concerns that the occupation level outcomes in 2020 are driven omitted variables which are correlated with industry and occupation (like gender composition). The controls will be added to the LASSO, but the prediction will be made for men. This will not work in RF -- instead, first can demean everything by gender and only then put in the RF.]]  
+
+Validation test:
+\begin{itemize}
+    \item Pre-trends in the outcomes. Show that there is no reduced form in the pre-period. 
+    \item Show that for couples without young kids in the post, there is first stage but no reduced form.
+    
+\end{itemize}
+
+\section{Main hypothesis}
+
+
+
+\section{Data descriptives}
+\begin{itemize}
+    \item sample: all workers in Jan 2020
+    \item Generate a table at the Lamas anaf level (3 digit) and in this table: column 1 is anaf (1a is anaf title), column 2 for essential/non-essential/not-allowed. column 3 is \% of female workers out of total female workers from Jan 2020.
+    \item add to the workers of Jan 2020 an indicator for essential/non-essential/not-allowed based on their anaf from Jan 2020
+    \item follow this workers to April 2020, define a dummy variable for work, and add the following 2 columns to the previous table
+    \item employment rate females in april 2020 (mean of work dummy), employment rate males in april 2020 (mean of work dummy)
+\end{itemize}
+
+\end{document}
