@@ -366,3 +366,26 @@ future_count_outcome_vars <- function() {
     "fimngrs_dv"
   )
 }
+
+# -----------------------------------------------------------------------------
+# Optional baseline-sample restriction for couple-treatment plots
+#
+# restriction options:
+#   NULL
+#   "husb_notkey_or_edu"
+# -----------------------------------------------------------------------------
+filter_couple_plot_restriction <- function(df, restriction = NULL) {
+  
+  if (is.null(restriction)) {
+    return(df)
+  }
+  
+  if (restriction == "husb_notkey_or_edu") {
+    return(
+      df %>%
+        dplyr::filter(sample_husb_notkey_or_edu == 1)
+    )
+  }
+  
+  stop("Unknown restriction: ", restriction)
+}

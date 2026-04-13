@@ -369,7 +369,15 @@ add_couple_baseline_treatments <- function(df_couple) {
         wife_is_keyworker_nonedu        ~ 1,
         TRUE                            ~ 0
       ),
-      
+      # -----------------------------------------------------------------------
+      # Restricted comparison sample for wife-based treatment figures:
+      # husband is either not a key worker or is an education key worker
+      # -----------------------------------------------------------------------
+      sample_husb_notkey_or_edu = dplyr::case_when(
+        is.na(husb_is_keyworker_any) | is.na(husb_is_keyworker_education) ~ NA_real_,
+        !husb_is_keyworker_any | husb_is_keyworker_education              ~ 1,
+        TRUE                                                              ~ 0
+      ),
       # ---- Treatment 2 -------------------------------------------------------
       # Husband shutdown; wife not shutdown.
       treat_husb_shutdown_wife_not = dplyr::case_when(

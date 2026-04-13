@@ -224,6 +224,7 @@ df_covid_couple_long <- build_covid_couple_long(
         child_age_group_2019,
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
+        sample_husb_notkey_or_edu,
         treat_husb_shutdown_wife_not
       ),
     by = "couple_id"
@@ -337,6 +338,7 @@ df_future_couple_long <- build_future_couple_long(
         child_age_group_2019,
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
+        sample_husb_notkey_or_edu,
         treat_husb_shutdown_wife_not
       ),
     by = "couple_id"
@@ -412,6 +414,7 @@ df_future_couple_wide <- build_future_couple_wide(
         child_age_group_2019,
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
+        sample_husb_notkey_or_edu,
         treat_husb_shutdown_wife_not
       ),
     by = "couple_id"

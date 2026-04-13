@@ -51,12 +51,14 @@ plot_covid_treatment_group_counts <- function(
     fig_path,
     outcome_vars = covid_count_outcome_vars(),
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   stopifnot(treatment_var %in% names(df))
   
   wl <- wave_labels()
-  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   dd <- df %>%
     filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
     dplyr::distinct(
@@ -135,13 +137,15 @@ plot_future_treatment_group_counts <- function(
     fig_path,
     outcome_vars = future_count_outcome_vars(),
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
   
   time_var <- agg
-  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   dd <- df %>%
     filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
     dplyr::distinct(
@@ -224,6 +228,7 @@ plot_covid_spouse_treatment_overtime <- function(
     out_file,
     fig_path,
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   child_subset <- match.arg(child_subset)
@@ -232,6 +237,9 @@ plot_covid_spouse_treatment_overtime <- function(
   stopifnot(treatment_var %in% names(df))
   
   wl <- wave_labels()
+  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
@@ -312,12 +320,16 @@ plot_covid_spouse_treatment_childgrid <- function(
     out_file,
     fig_path,
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   stopifnot(var %in% names(df))
   stopifnot(treatment_var %in% names(df))
   
   wl <- wave_labels()
+  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   
   dd <- df %>%
     filter_couples_for_child_grid() %>%
@@ -398,6 +410,7 @@ plot_future_spouse_treatment_numeric <- function(
     out_file,
     fig_path,
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   child_subset <- match.arg(child_subset)
@@ -416,6 +429,9 @@ plot_future_spouse_treatment_numeric <- function(
   )
   
   include_baseline_2019 <- !(var %in% c("workoutside", "wfh_some", "wfh_cat"))
+  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   
   # Build a combined group variable BEFORE calling the future helper,
   # because the helper returns aggregated data without pidp.
@@ -512,6 +528,7 @@ plot_future_spouse_treatment_childgrid <- function(
     out_file,
     fig_path,
     include_title = FALSE,
+    restriction = NULL,
     treated_label = NULL
 ) {
   agg <- match.arg(agg)
@@ -529,6 +546,9 @@ plot_future_spouse_treatment_childgrid <- function(
   )
   
   include_baseline_2019 <- !(var %in% c("workoutside", "wfh_some", "wfh_cat"))
+  
+  df <- df %>%
+    filter_couple_plot_restriction(restriction = restriction)
   
   # Same logic: encode child group + spouse + treatment into one grouping var
   # before calling the summarization helper.

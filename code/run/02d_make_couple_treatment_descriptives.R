@@ -30,6 +30,8 @@
 # Notes:
 #   - Future outcomes saved at both wave and year aggregation
 #   - Child-grid versions compare only 0-10 vs 11-17 child groups
+#   - Restricted wife-treatment variants limit the sample to couples where
+#     the husband is not a key worker or is in education
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -69,11 +71,16 @@ TREATMENT_VARS <- c(
 )
 
 TREATMENT_LABS <- list(
-  "Wife essential (not education),\nhusband not",
+  "Wife essential (not education),\nhusband not / education",
   NULL,
   NULL
 )
 names(TREATMENT_LABS) <- TREATMENT_VARS
+
+WIFE_TREATMENT_VARS <- c(
+  "treat_wife_key_notedu_husb_not_or_edu",
+  "treat_wife_key_notedu_any"
+)
 
 CHILD_SUBSETS <- c("all", "u10", "11_17")
 
@@ -94,6 +101,16 @@ FUTURE_OUTCOMES <- c(
 )
 
 FUTURE_AGGS <- c("wave", "year")
+
+# -----------------------------------------------------------------------------
+# Plot readability controls
+# -----------------------------------------------------------------------------
+AXIS_TEXT_SIZE   <- 12
+AXIS_TITLE_SIZE  <- 13
+STRIP_TEXT_SIZE  <- 12
+LEGEND_TEXT_SIZE <- 11
+LEGEND_TITLE_SIZE <- 11
+TITLE_SIZE       <- 14
 
 .has_data <- function(df, var) {
   var %in% names(df) && !all(is.na(df[[var]]))
@@ -123,8 +140,13 @@ for (tr in TREATMENT_VARS) {
           "_spousefacet.png"
         ),
         fig_path = fig_path,
-        treated_label = TREATMENT_LABS[[tr]]
-        
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
       )
     }
     
@@ -139,8 +161,65 @@ for (tr in TREATMENT_VARS) {
         tr,
         "_childgrid_spousecols.png"
       ),
-      fig_path = fig_path
+      fig_path = fig_path,
+      treated_label = TREATMENT_LABS[[tr]],
+      axis_text_size = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      legend_title_size = LEGEND_TITLE_SIZE,
+      title_size = TITLE_SIZE
     )
+    
+    # Restricted comparison sample for wife-based treatments only
+    if (tr %in% WIFE_TREATMENT_VARS) {
+      
+      for (child_subset in CHILD_SUBSETS) {
+        plot_covid_spouse_treatment_overtime(
+          df = df_covid_spouse,
+          var = v,
+          treatment_var = tr,
+          child_subset = child_subset,
+          restriction = "husb_notkey_or_edu",
+          out_file = paste0(
+            "covid_",
+            couple_plot_var_stem(v), "_wave_",
+            tr, "_",
+            child_subset,
+            "_spousefacet_husb_notkey_or_edu.png"
+          ),
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
+        )
+      }
+      
+      plot_covid_spouse_treatment_childgrid(
+        df = df_covid_spouse,
+        var = v,
+        treatment_var = tr,
+        restriction = "husb_notkey_or_edu",
+        out_file = paste0(
+          "covid_",
+          couple_plot_var_stem(v), "_wave_",
+          tr,
+          "_childgrid_spousecols_husb_notkey_or_edu.png"
+        ),
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+    }
   }
 }
 
@@ -171,7 +250,14 @@ for (tr in TREATMENT_VARS) {
             child_subset,
             "_spousefacet.png"
           ),
-          fig_path = fig_path
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
         )
       }
       
@@ -188,8 +274,69 @@ for (tr in TREATMENT_VARS) {
           tr,
           "_childgrid_spousecols.png"
         ),
-        fig_path = fig_path
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
       )
+      
+      # Restricted comparison sample for wife-based treatments only
+      if (tr %in% WIFE_TREATMENT_VARS) {
+        
+        for (child_subset in CHILD_SUBSETS) {
+          plot_future_spouse_treatment_numeric(
+            df = df_future_spouse,
+            var = v,
+            treatment_var = tr,
+            child_subset = child_subset,
+            agg = agg,
+            restriction = "husb_notkey_or_edu",
+            out_file = paste0(
+              "future_",
+              couple_plot_var_stem(v), "_",
+              agg, "_",
+              tr, "_",
+              child_subset,
+              "_spousefacet_husb_notkey_or_edu.png"
+            ),
+            fig_path = fig_path,
+            treated_label = TREATMENT_LABS[[tr]],
+            axis_text_size = AXIS_TEXT_SIZE,
+            axis_title_size = AXIS_TITLE_SIZE,
+            strip_text_size = STRIP_TEXT_SIZE,
+            legend_text_size = LEGEND_TEXT_SIZE,
+            legend_title_size = LEGEND_TITLE_SIZE,
+            title_size = TITLE_SIZE
+          )
+        }
+        
+        plot_future_spouse_treatment_childgrid(
+          df = df_future_spouse,
+          var = v,
+          treatment_var = tr,
+          agg = agg,
+          restriction = "husb_notkey_or_edu",
+          out_file = paste0(
+            "future_",
+            couple_plot_var_stem(v), "_",
+            agg, "_",
+            tr,
+            "_childgrid_spousecols_husb_notkey_or_edu.png"
+          ),
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
+        )
+      }
     }
   }
 }
@@ -209,8 +356,37 @@ for (tr in TREATMENT_VARS) {
       tr,
       "_samplefacets.png"
     ),
-    fig_path = fig_path
+    fig_path = fig_path,
+    treated_label = TREATMENT_LABS[[tr]],
+    axis_text_size = AXIS_TEXT_SIZE,
+    axis_title_size = AXIS_TITLE_SIZE,
+    strip_text_size = STRIP_TEXT_SIZE,
+    legend_text_size = LEGEND_TEXT_SIZE,
+    legend_title_size = LEGEND_TITLE_SIZE,
+    title_size = TITLE_SIZE
   )
+  
+  # Restricted count plots for wife-based treatments
+  if (tr %in% WIFE_TREATMENT_VARS) {
+    plot_covid_treatment_group_counts(
+      df = df_covid_couple,
+      treatment_var = tr,
+      restriction = "husb_notkey_or_edu",
+      out_file = paste0(
+        "covid_counts_wave_",
+        tr,
+        "_samplefacets_husb_notkey_or_edu.png"
+      ),
+      fig_path = fig_path,
+      treated_label = TREATMENT_LABS[[tr]],
+      axis_text_size = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      legend_title_size = LEGEND_TITLE_SIZE,
+      title_size = TITLE_SIZE
+    )
+  }
   
   # Future counts by wave and year
   for (agg in FUTURE_AGGS) {
@@ -224,8 +400,38 @@ for (tr in TREATMENT_VARS) {
         tr,
         "_samplefacets.png"
       ),
-      fig_path = fig_path
+      fig_path = fig_path,
+      treated_label = TREATMENT_LABS[[tr]],
+      axis_text_size = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      legend_title_size = LEGEND_TITLE_SIZE,
+      title_size = TITLE_SIZE
     )
+    
+    if (tr %in% WIFE_TREATMENT_VARS) {
+      plot_future_treatment_group_counts(
+        df = df_future_couple,
+        treatment_var = tr,
+        agg = agg,
+        restriction = "husb_notkey_or_edu",
+        out_file = paste0(
+          "future_counts_",
+          agg, "_",
+          tr,
+          "_samplefacets_husb_notkey_or_edu.png"
+        ),
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+    }
   }
 }
 
