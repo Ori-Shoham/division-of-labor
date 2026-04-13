@@ -68,6 +68,13 @@ TREATMENT_VARS <- c(
   "treat_husb_shutdown_wife_not"
 )
 
+TREATMENT_LABS <- list(
+  "Wife essential (not education),\nhusband not",
+  NULL,
+  NULL
+)
+names(TREATMENT_LABS) <- TREATMENT_VARS
+
 CHILD_SUBSETS <- c("all", "u10", "11_17")
 
 COVID_OUTCOMES <- c(
@@ -115,7 +122,9 @@ for (tr in TREATMENT_VARS) {
           child_subset,
           "_spousefacet.png"
         ),
-        fig_path = fig_path
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]]
+        
       )
     }
     

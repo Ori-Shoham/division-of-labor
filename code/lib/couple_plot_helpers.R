@@ -67,7 +67,7 @@ reshape_couple_long_to_spouse_long <- function(
       .cols = dplyr::all_of(husband_keep)
     ) %>%
     dplyr::mutate(
-      spouse = "husband",
+      spouse = "Husband",
       spouse_pidp = husband_pidp
     )
   
@@ -78,13 +78,13 @@ reshape_couple_long_to_spouse_long <- function(
       .cols = dplyr::all_of(wife_keep)
     ) %>%
     dplyr::mutate(
-      spouse = "wife",
+      spouse = "Wife",
       spouse_pidp = wife_pidp
     )
   
   dplyr::bind_rows(df_h, df_w) %>%
     dplyr::mutate(
-      spouse = factor(spouse, levels = c("wife", "husband"))
+      spouse = factor(spouse, levels = c("Wife", "Husband"))
     ) %>%
     dplyr::arrange(couple_id, spouse, dplyr::across(dplyr::any_of(c("wave", "ym", "year"))))
 }
@@ -135,43 +135,82 @@ filter_couples_for_child_grid <- function(df) {
 }
 
 # -----------------------------------------------------------------------------
-# Treatment variable label helper
+# Default treated/control labels by treatment variable
 # -----------------------------------------------------------------------------
-label_treatment_values <- function(x, treatment_var) {
+default_treated_label <- function(treatment_var) {
+  dplyr::case_when(
+    treatment_var == "treat_wife_key_notedu_husb_not_or_edu" ~
+      "Wife key (non-edu), husband not / edu",
+    treatment_var == "treat_wife_key_notedu_any" ~
+      "Wife key (non-edu)",
+    treatment_var == "treat_husb_shutdown_wife_not" ~
+      "Husband shutdown, wife not",
+    TRUE ~ "Treated"
+  )
+}
+
+default_untreated_label <- function(treatment_var) {
+  "All other couples"
+}
+
+# -----------------------------------------------------------------------------
+# Treatment variable label helper
+#
+# Order is always:
+#   1) treated
+#   2) untreated
+# -----------------------------------------------------------------------------
+label_treatment_values <- function(x,
+                                   treatment_var,
+                                   treated_label = NULL,
+                                   untreated_label = NULL) {
   if (is.numeric(x)) x <- as.integer(x)
+  
+  if (is.null(treated_label)) {
+    treated_label <- default_treated_label(treatment_var)
+  }
+  
+  if (is.null(untreated_label)) {
+    untreated_label <- default_untreated_label(treatment_var)
+  }
   
   dplyr::case_when(
     is.na(x) ~ NA_character_,
-    
-    treatment_var == "treat_wife_key_notedu_husb_not_or_edu" & x == 1 ~
-      "Wife key (non-edu), husband not / edu",
-    treatment_var == "treat_wife_key_notedu_husb_not_or_edu" & x == 0 ~
-      "All other couples",
-    
-    treatment_var == "treat_wife_key_notedu_any" & x == 1 ~
-      "Wife key (non-edu)",
-    treatment_var == "treat_wife_key_notedu_any" & x == 0 ~
-      "All other couples",
-    
-    treatment_var == "treat_husb_shutdown_wife_not" & x == 1 ~
-      "Husband shutdown, wife not",
-    treatment_var == "treat_husb_shutdown_wife_not" & x == 0 ~
-      "All other couples",
-    
-    TRUE ~ as.character(x)
+    x == 1   ~ treated_label,
+    x == 0   ~ untreated_label,
+    TRUE     ~ as.character(x)
   )
 }
 
 # -----------------------------------------------------------------------------
 # Add labeled treatment group for plotting
 # -----------------------------------------------------------------------------
-add_treatment_group_label <- function(df, treatment_var) {
+add_treatment_group_label <- function(df,
+                                      treatment_var,
+                                      treated_label = NULL,
+                                      untreated_label = NULL) {
   stopifnot(treatment_var %in% names(df))
+  
+  if (is.null(treated_label)) {
+    treated_label <- default_treated_label(treatment_var)
+  }
+  
+  if (is.null(untreated_label)) {
+    untreated_label <- default_untreated_label(treatment_var)
+  }
   
   df %>%
     dplyr::mutate(
-      treatment_group = label_treatment_values(.data[[treatment_var]], treatment_var),
-      treatment_group = factor(treatment_group)
+      treatment_group = label_treatment_values(
+        .data[[treatment_var]],
+        treatment_var = treatment_var,
+        treated_label = treated_label,
+        untreated_label = untreated_label
+      ),
+      treatment_group = factor(
+        treatment_group,
+        levels = c(treated_label, untreated_label)
+      )
     )
 }
 
@@ -182,7 +221,7 @@ couple_plot_var_label <- function(var) {
   dplyr::case_when(
     var == "workoutside"   ~ "Working outside the home",
     var == "wfh_some"      ~ "Working from home at least sometimes",
-    var == "howlng_cv"        ~ "Housework hours",
+    var == "howlng_cv"     ~ "Housework hours",
     var == "timechcare"    ~ "Childcare / home-schooling hours",
     var == "jbhrs"         ~ "Weekly hours worked",
     var == "paygu_dv"      ~ "Gross monthly pay",
@@ -212,9 +251,9 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
   }
   
   dplyr::case_when(
-    var == "howlng_cv"        ~ "Hours",
-    var == "timechcare"    ~ "Hours",
-    var == "jbhrs"         ~ "Hours",
+    var == "howlng_cv"     ~ "Weekly Hours",
+    var == "timechcare"    ~ "Weekly Hours",
+    var == "jbhrs"         ~ "Weekly Hours",
     var == "paygu_dv"      ~ "Amount",
     var == "fimnlabgrs_dv" ~ "Amount",
     var == "fimngrs_dv"    ~ "Amount",

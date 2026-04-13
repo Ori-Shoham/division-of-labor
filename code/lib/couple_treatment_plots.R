@@ -43,15 +43,15 @@ theme_couple_facets <- function() {
 # -----------------------------------------------------------------------------
 # Couple counts over time by treatment group: COVID waves
 #
-# Uses couple-level long data (one row per couple x wave), not spouse-long data.
-# Each couple is counted once per time point.
 # -----------------------------------------------------------------------------
 plot_covid_treatment_group_counts <- function(
     df,
     treatment_var,
     out_file,
     fig_path,
-    outcome_vars = covid_count_outcome_vars()
+    outcome_vars = covid_count_outcome_vars(),
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   stopifnot(treatment_var %in% names(df))
   
@@ -66,7 +66,10 @@ plot_covid_treatment_group_counts <- function(
       has_child_u10_2019,
       has_child_11_17_2019
     ) %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     expand_couple_samples_for_counts() %>%
     dplyr::filter(
       !is.na(treatment_group),
@@ -99,7 +102,7 @@ plot_covid_treatment_group_counts <- function(
       y = "Number of couples",
       color = NULL,
       shape = NULL,
-      title = paste("Couple counts over time |", treatment_var)
+      title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
     ) +
     theme_couple_facets()
   
@@ -130,7 +133,9 @@ plot_future_treatment_group_counts <- function(
     agg = c("wave", "year"),
     out_file,
     fig_path,
-    outcome_vars = future_count_outcome_vars()
+    outcome_vars = future_count_outcome_vars(),
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
@@ -148,7 +153,10 @@ plot_future_treatment_group_counts <- function(
       .keep_all = FALSE
     ) %>%
     dplyr::rename(time = .data[[time_var]]) %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     expand_couple_samples_for_counts() %>%
     dplyr::filter(
       !is.na(treatment_group),
@@ -179,7 +187,7 @@ plot_future_treatment_group_counts <- function(
       y = "Number of couples",
       color = NULL,
       shape = NULL,
-      title = paste("Couple counts over time |", treatment_var)
+      title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
     ) +
     theme_couple_facets()
   
@@ -214,7 +222,9 @@ plot_covid_spouse_treatment_overtime <- function(
     treatment_var,
     child_subset = c("all", "u10", "11_17"),
     out_file,
-    fig_path
+    fig_path,
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   child_subset <- match.arg(child_subset)
   
@@ -225,7 +235,10 @@ plot_covid_spouse_treatment_overtime <- function(
   
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     dplyr::mutate(
       value = if (couple_plot_is_binary(var)) {
         suppressWarnings(as.numeric(.data[[var]]))
@@ -267,10 +280,10 @@ plot_covid_spouse_treatment_overtime <- function(
       y = couple_plot_var_units(var, is_binary = couple_plot_is_binary(var)),
       color = NULL,
       shape = NULL,
-      title = paste(
+      title = if (include_title) paste(
         couple_plot_var_label(var),
         "| child subset:", child_subset
-      )
+      ) else NULL
     ) +
     theme_couple_facets()
   
@@ -297,7 +310,9 @@ plot_covid_spouse_treatment_childgrid <- function(
     var,
     treatment_var,
     out_file,
-    fig_path
+    fig_path,
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   stopifnot(var %in% names(df))
   stopifnot(treatment_var %in% names(df))
@@ -306,7 +321,10 @@ plot_covid_spouse_treatment_childgrid <- function(
   
   dd <- df %>%
     filter_couples_for_child_grid() %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     dplyr::mutate(
       value = if (couple_plot_is_binary(var)) {
         suppressWarnings(as.numeric(.data[[var]]))
@@ -349,9 +367,7 @@ plot_covid_spouse_treatment_childgrid <- function(
       y = couple_plot_var_units(var, is_binary = couple_plot_is_binary(var)),
       color = NULL,
       shape = NULL,
-      title = paste(
-        couple_plot_var_label(var)
-      )
+      title = if (include_title) couple_plot_var_label(var) else NULL
     ) +
     theme_couple_facets()
   
@@ -380,7 +396,9 @@ plot_future_spouse_treatment_numeric <- function(
     child_subset = c("all", "u10", "11_17"),
     agg = c("wave", "year"),
     out_file,
-    fig_path
+    fig_path,
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   child_subset <- match.arg(child_subset)
   agg <- match.arg(agg)
@@ -403,7 +421,10 @@ plot_future_spouse_treatment_numeric <- function(
   # because the helper returns aggregated data without pidp.
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     dplyr::filter(
       !is.na(treatment_group),
       !is.na(spouse),
@@ -434,7 +455,7 @@ plot_future_spouse_treatment_numeric <- function(
       remove = TRUE
     ) %>%
     dplyr::mutate(
-      spouse = factor(spouse, levels = c("wife", "husband"))
+      spouse = factor(spouse, levels = c("Wife", "Husband"))
     )
   
   p <- ggplot(
@@ -456,10 +477,10 @@ plot_future_spouse_treatment_numeric <- function(
       y = couple_plot_var_units(var, is_binary = prep$is_binary),
       color = NULL,
       shape = NULL,
-      title = paste(
+      title = if (include_title) paste(
         couple_plot_var_label(var),
         "| child subset:", child_subset
-      )
+      ) else NULL
     ) +
     theme_couple_facets()
   
@@ -480,14 +501,18 @@ plot_future_spouse_treatment_numeric <- function(
   p
 }
 
-
+# -----------------------------------------------------------------------------
+# Future numeric plot: child-group x spouse facet grid
+# -----------------------------------------------------------------------------
 plot_future_spouse_treatment_childgrid <- function(
     df,
     var,
     treatment_var,
     agg = c("wave", "year"),
     out_file,
-    fig_path
+    fig_path,
+    include_title = FALSE,
+    treated_label = NULL
 ) {
   agg <- match.arg(agg)
   
@@ -509,7 +534,10 @@ plot_future_spouse_treatment_childgrid <- function(
   # before calling the summarization helper.
   dd <- df %>%
     filter_couples_for_child_grid() %>%
-    add_treatment_group_label(treatment_var = treatment_var) %>%
+    add_treatment_group_label(
+      treatment_var = treatment_var,
+      treated_label = treated_label
+    ) %>%
     dplyr::filter(
       !is.na(treatment_group),
       !is.na(spouse),
@@ -546,7 +574,7 @@ plot_future_spouse_treatment_childgrid <- function(
       remove = TRUE
     ) %>%
     dplyr::mutate(
-      spouse = factor(spouse, levels = c("wife", "husband")),
+      spouse = factor(spouse, levels = c("Wife", "Husband")),
       child_group_plot = factor(
         child_group_plot,
         levels = c("Young kids: 0-10", "Older kids: 11-17")
@@ -572,9 +600,7 @@ plot_future_spouse_treatment_childgrid <- function(
       y = couple_plot_var_units(var, is_binary = prep$is_binary),
       color = NULL,
       shape = NULL,
-      title = paste(
-        couple_plot_var_label(var)
-      )
+      title = if (include_title) couple_plot_var_label(var) else NULL
     ) +
     theme_couple_facets()
   
