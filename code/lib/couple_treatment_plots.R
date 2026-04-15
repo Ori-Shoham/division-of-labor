@@ -17,12 +17,21 @@ suppressPackageStartupMessages({
 # -----------------------------------------------------------------------------
 # Theme tweak for clearer facet separation while staying close to theme_minimal
 # -----------------------------------------------------------------------------
-theme_couple_facets <- function() {
+theme_couple_facets <- function(axis_text_size = 12,
+                                axis_title_size = 13,
+                                strip_text_size = 12,
+                                legend_text_size = 11,
+                                legend_title_size = 11,
+                                title_size = 14) {
   ggplot2::theme(
     legend.position = "bottom",
-    axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
+    axis.text.x = ggplot2::element_text(
+      angle = 90, hjust = 1, size = axis_text_size
+    ),
+    axis.text.y = ggplot2::element_text(size = axis_text_size),
+    axis.title.x = ggplot2::element_text(size = axis_title_size),
+    axis.title.y = ggplot2::element_text(size = axis_title_size),
     
-    # clearer separation between facets
     panel.spacing = grid::unit(0.9, "lines"),
     panel.border = ggplot2::element_rect(
       colour = "grey75",
@@ -30,19 +39,24 @@ theme_couple_facets <- function() {
       linewidth = 0.6
     ),
     
-    # keep strip styling light / close to current look
     strip.background = ggplot2::element_rect(
       fill = "grey96",
       colour = "grey75",
       linewidth = 0.6
     ),
-    strip.text = ggplot2::element_text(face = "plain")
+    strip.text = ggplot2::element_text(
+      face = "plain",
+      size = strip_text_size
+    ),
+    
+    legend.text = ggplot2::element_text(size = legend_text_size),
+    legend.title = ggplot2::element_text(size = legend_title_size),
+    plot.title = ggplot2::element_text(size = title_size)
   )
 }
 
 # -----------------------------------------------------------------------------
 # Couple counts over time by treatment group: COVID waves
-#
 # -----------------------------------------------------------------------------
 plot_covid_treatment_group_counts <- function(
     df,
@@ -52,13 +66,21 @@ plot_covid_treatment_group_counts <- function(
     outcome_vars = covid_count_outcome_vars(),
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   stopifnot(treatment_var %in% names(df))
   
   wl <- wave_labels()
+  
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
+  
   dd <- df %>%
     filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
     dplyr::distinct(
@@ -106,7 +128,14 @@ plot_covid_treatment_group_counts <- function(
       shape = NULL,
       title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   ggsave(
     filename = out_file,
@@ -138,14 +167,22 @@ plot_future_treatment_group_counts <- function(
     outcome_vars = future_count_outcome_vars(),
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
   
   time_var <- agg
+  
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
+  
   dd <- df %>%
     filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
     dplyr::distinct(
@@ -193,7 +230,14 @@ plot_future_treatment_group_counts <- function(
       shape = NULL,
       title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   if (agg == "wave") {
     wl_future <- wave_labels() %>%
@@ -229,7 +273,13 @@ plot_covid_spouse_treatment_overtime <- function(
     fig_path,
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   child_subset <- match.arg(child_subset)
   
@@ -293,7 +343,14 @@ plot_covid_spouse_treatment_overtime <- function(
         "| child subset:", child_subset
       ) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -321,7 +378,13 @@ plot_covid_spouse_treatment_childgrid <- function(
     fig_path,
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   stopifnot(var %in% names(df))
   stopifnot(treatment_var %in% names(df))
@@ -381,7 +444,14 @@ plot_covid_spouse_treatment_childgrid <- function(
       shape = NULL,
       title = if (include_title) couple_plot_var_label(var) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -411,7 +481,13 @@ plot_future_spouse_treatment_numeric <- function(
     fig_path,
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   child_subset <- match.arg(child_subset)
   agg <- match.arg(agg)
@@ -498,7 +574,14 @@ plot_future_spouse_treatment_numeric <- function(
         "| child subset:", child_subset
       ) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   p <- .apply_time_labels(p, dd_plot, agg = agg)
   
@@ -529,7 +612,13 @@ plot_future_spouse_treatment_childgrid <- function(
     fig_path,
     include_title = FALSE,
     restriction = NULL,
-    treated_label = NULL
+    treated_label = NULL,
+    axis_text_size = 12,
+    axis_title_size = 13,
+    strip_text_size = 12,
+    legend_text_size = 11,
+    legend_title_size = 11,
+    title_size = 14
 ) {
   agg <- match.arg(agg)
   
@@ -622,7 +711,14 @@ plot_future_spouse_treatment_childgrid <- function(
       shape = NULL,
       title = if (include_title) couple_plot_var_label(var) else NULL
     ) +
-    theme_couple_facets()
+    theme_couple_facets(
+      axis_text_size = axis_text_size,
+      axis_title_size = axis_title_size,
+      strip_text_size = strip_text_size,
+      legend_text_size = legend_text_size,
+      legend_title_size = legend_title_size,
+      title_size = title_size
+    )
   
   p <- .apply_time_labels(p, dd_plot, agg = agg)
   
@@ -639,34 +735,4 @@ plot_future_spouse_treatment_childgrid <- function(
   )
   
   p
-}
-# -----------------------------------------------------------------------------
-# Expand couple-level data into sample facets for count plots
-#
-# Output:
-#   original rows repeated across:
-#     - All couples
-#     - Young kids: 0-10
-#     - Older kids: 11-17
-# -----------------------------------------------------------------------------
-expand_couple_samples_for_counts <- function(df) {
-  
-  dplyr::bind_rows(
-    df %>%
-      dplyr::mutate(sample_group = "All couples"),
-    
-    df %>%
-      dplyr::filter(has_child_u10_2019) %>%
-      dplyr::mutate(sample_group = "Young kids: 0-10"),
-    
-    df %>%
-      dplyr::filter(has_child_11_17_2019) %>%
-      dplyr::mutate(sample_group = "Older kids: 11-17")
-  ) %>%
-    dplyr::mutate(
-      sample_group = factor(
-        sample_group,
-        levels = c("All couples", "Young kids: 0-10", "Older kids: 11-17")
-      )
-    )
 }
