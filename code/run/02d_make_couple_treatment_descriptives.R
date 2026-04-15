@@ -105,11 +105,11 @@ FUTURE_AGGS <- c("wave", "year")
 # -----------------------------------------------------------------------------
 # Plot readability controls
 # -----------------------------------------------------------------------------
-AXIS_TEXT_SIZE   <- 12
-AXIS_TITLE_SIZE  <- 13
-STRIP_TEXT_SIZE  <- 12
-LEGEND_TEXT_SIZE <- 11
-LEGEND_TITLE_SIZE <- 11
+AXIS_TEXT_SIZE   <- 14
+AXIS_TITLE_SIZE  <- 16
+STRIP_TEXT_SIZE  <- 14
+LEGEND_TEXT_SIZE <- 14
+LEGEND_TITLE_SIZE <- 14
 TITLE_SIZE       <- 14
 
 .has_data <- function(df, var) {
