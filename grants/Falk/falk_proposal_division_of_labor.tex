@@ -1,20 +1,19 @@
 \documentclass[12pt]{article}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{iftex}
+
 \ifPDFTeX
   \usepackage[utf8]{inputenc}
   \usepackage[T1]{fontenc}
   \usepackage[english]{babel}
   \usepackage{lmodern}
   \newcommand{\hebrewtitle}{}
+  \newcommand{\hebrewnameoren}{}
+  \newcommand{\hebrewnameanalia}{}
 \else
   \usepackage{fontspec}
-  \usepackage{polyglossia}
-  \setmainlanguage{english}
-  \setotherlanguage{hebrew}
-  \newfontfamily\hebrewfont[Script=Hebrew]{FreeSerif}
-  \newcommand{\hebrewtitle}{\\[0.25em]\large \texthebrew{חלוקת העבודה במשק הבית ואי שוויון מגדרי}}
 \fi
+
 \usepackage{setspace}
 \usepackage{natbib}
 \usepackage{booktabs}
@@ -22,7 +21,6 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{enumitem}
-\usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{microtype}
 \usepackage{xcolor}
@@ -30,6 +28,20 @@
 \usepackage{caption}
 \usepackage{placeins}
 \usepackage{float}
+\usepackage{hyperref}
+
+\ifPDFTeX
+\else
+  \usepackage{polyglossia}
+  \setmainlanguage{english}
+  \setotherlanguage{hebrew}
+  \setmainfont{Latin Modern Roman}
+  \newfontfamily\hebrewfont[Script=Hebrew,Scale=MatchLowercase]{David CLM}
+  \newcommand{\hebrewtitle}{\par\vspace{0.25em}{\large\texthebrew{חלוקת העבודה במשק הבית ואי שוויון מגדרי}}\par}
+  \newcommand{\hebrewnameoren}{\texthebrew{אורן דניאלי}}
+  \newcommand{\hebrewnameanalia}{\texthebrew{אנליה שלוסר}}
+\fi
+
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
 \captionsetup{font=small}
 \setstretch{1.08}
@@ -39,53 +51,54 @@
 
 \begin{document}
 
-{\Large\bfseries Division of Labor in the Household\\[0.08em]and Gender Inequality\hebrewtitle}
+\begin{center}
+{\Large\bfseries
+Division of Labor in the Household\par
+and Gender Inequality
+\hebrewtitle
+}    
+\end{center}
 
-\vspace{0.9em}
 
-\textbf{Researchers}\\
-\textbf{Oren Danieli}\\
+\textbf{Oren Danieli \hebrewnameoren}\\
 Senior Lecturer, School of Economics, Tel Aviv University\\
 Office 217, Tel Aviv University, Ramat Aviv, Tel Aviv 6997801, Israel\\
 Email: \href{mailto:orendanieli@tauex.tau.ac.il}{orendanieli@tauex.tau.ac.il} \quad Phone: 054-4531231
 
 \medskip
 
-\textbf{Itay Saporta-Ekstein}\\
-Professor, School of Economics, Tel Aviv University\\
-Office 212, Tel Aviv University, Ramat Aviv, Tel Aviv 6997801, Israel\\
-Email: \href{mailto:itaysap@tauex.tau.ac.il}{itaysap@tauex.tau.ac.il} \quad Phone: 03-6409609
+\textbf{Analia Schlosser \hebrewnameanalia}\\
+Associate Professor, School of Economics, Tel Aviv University\\
+Office 203, Tel Aviv University, Ramat Aviv, Tel Aviv 6997801, Israel\\
+Email: \href{mailto:analias@tauex.tau.ac.il}{analias@tauex.tau.ac.il} \quad Phone: 03-6409064
 
 \medskip
 
-\textbf{Analia Schlosser}\\
-Professor, School of Economics, Tel Aviv University\\
-Office 203, Tel Aviv University, Ramat Aviv, Tel Aviv 6997801, Israel\\
-Email: \href{mailto:analias@tauex.tau.ac.il}{analias@tauex.tau.ac.il} \quad Phone: 03-6409064
+Joint with Itay Saporta-Ekstein
 
 \vspace{0.8em}
 \hrule
 \vspace{0.8em}
 
 \begin{abstract}
-Gender gaps in earnings and careers remain a central economic and social problem. A central hypothesis is that the division of labor inside the household is a primary cause of those gaps later in life. This project studies whether temporary shocks to household specialization when children are young, at the beginning of parenthood, can durably change the later division of labor within the household, and whether such changes have causal effects on gender gaps in labor market outcomes. We exploit exogenous variation created by the COVID-19 pandemic, which sharply changed the allocation of paid work and caregiving across couples depending on the pre-pandemic sectors in which mothers and fathers were employed. In some households, mothers continued to work outside the home because they were employed in essential sectors such as health services, banking, or utilities, while fathers stayed home because their sectors were shut down or moved largely to remote work. We study these shocks using linked Israeli administrative data together with panel and time use survey information from the UK Household Longitudinal Study and the German Socio-Economic Panel. We will use a difference-in-differences event study design that determines treatment status based on the pre-COVID sector exposure to COVID regulations. 
+Gender gaps in earnings and careers remain a central economic and social problem. A central hypothesis is that the division of labor inside the household is the primary cause of those gaps. This project studies whether temporary shocks to household specialization when children are young, at the beginning of parenthood, can durably change the later division of labor within the household, and whether such changes have causal effects on gender gaps in labor market outcomes and parents' career trajectories. We exploit exogenous variation created by the COVID-19 pandemic, which sharply changed the allocation of paid work and caregiving across couples depending on the pre-pandemic sectors and occupations in which mothers and fathers were employed. In some households, mothers continued to work outside the home because they were employed in essential sectors such as health services, banking, or utilities, while fathers stayed home because their sectors were shut down or moved largely to remote work. We study these shocks using linked Israeli administrative data together with panel and time use survey information from the UK Household Longitudinal Study and the German Socio-Economic Panel. We will use a difference-in-differences event study design that determines treatment status based on the pre-COVID sector exposure to COVID regulations. 
 \end{abstract}
 
-\newpage
+%\newpage
 
 \section{Introduction}
 
-Gender gaps in earnings, career progression, and labor market attachment remain one of the central unresolved problems in labor economics. They matter not only for fairness within households and workplaces, but also for the allocation of talent, the returns to human capital investment, and the distribution of lifetime economic opportunities \citep{hsieh2019allocation}. Although these gaps narrowed substantially over the twentieth century, they remain large and persistent, and recent evidence suggests that convergence has slowed markedly for newer cohorts \citep{goldin2014grand,arellano2024one}. A large share of the remaining gap reflects segregation across firms and jobs, together with the sharp divergence in careers that appears after parenthood \citep{blau2016gender,card2016bargaining,kleven2019children}. A plausible hypothesis is that the division of labor in the household is the primary cause of much of these later gender gaps. Once mothers become the default providers of childcare and domestic production, households may shift paid work, commuting, temporal flexibility, and long-run career investment toward fathers. That specialization can then generate persistent differences in earnings, promotion, occupation, firm attachment, and the balance of economic power inside the family.
+Gender gaps in earnings, career progression, and labor market attachment remain one of the central unresolved problems in labor economics. They matter not only for fairness within households and workplaces, but also for the allocation of talent, the returns to human capital investment, and the distribution of lifetime economic opportunities \citep{hsieh2019allocation}. Although these gaps narrowed substantially over the twentieth century, they remain large and persistent, and recent evidence suggests that convergence has slowed markedly for newer cohorts \citep{goldin2014grand,arellano2024one}. A large share of the remaining gap reflects segregation across firms and jobs, together with the sharp divergence in careers that appears after parenthood \citep{blau2016gender,card2016bargaining,kleven2019children, albanesi2023families}. A plausible hypothesis is that the division of labor in the household is the primary cause of much of these later gender gaps. Once mothers become the default providers of childcare and domestic production, households may shift paid work, commuting, temporal flexibility, and long-run career investment toward fathers. That specialization can then generate persistent differences in earnings, promotion, occupation, firm attachment, and the balance of economic power inside the family.
 
-A growing literature suggests that the division of labor established early in parenthood can have long consequences. \citet{kleven2019childpenalties} show that the arrival of children creates large and persistent earnings penalties for women that continue long after the early-childhood years, including at stages when children require less intensive day-to-day care. Related work emphasizes that leave-taking and specialization during infancy are not merely short-run adjustments: they shape later household specialization, beliefs, and career choices \citep{moberg2023gendered,canaan2022parental,kleven2026paternity}. This literature strengthens the case for studying shocks that reallocate care at precisely the stage when family roles may be most malleable.
+A growing literature suggests that the division of labor established early in parenthood can have long consequences. \citet{kleven2019childpenalties} show that the arrival of children creates large and persistent earnings penalties for women that continue long after the early-childhood years, including at stages when children require less intensive day-to-day care. Related work emphasizes that parental leave-taking and specialization during infancy are not merely short-run adjustments: they shape later household specialization, beliefs, and career choices \citep{moberg2023gendered,kleven2026paternity}. This literature strengthens the case for studying shocks that reallocate care at precisely the stage when family roles may be most malleable.
 
 This project centers on two research questions. First, can temporary shocks to the household division of labor, when children are very young and households are at the beginning of parenthood, durably change the later division of labor within the household? Second, does the division of labor in the household causally affect gender gaps in labor market outcomes? These two questions are distinct. The first is about the persistence of household behavior itself. The second is about whether that behavior is a causal determinant of gender inequality in earnings and careers.
 
 The focus on the beginning of parenthood is important. When children are infants or toddlers, households are forming routines, employers are learning which parent provides flexibility at home, and parents themselves are updating beliefs about comparative advantage in caregiving and paid work. A temporary shock at that stage may therefore matter much more than a similar shock later in the life cycle, when patterns of specialization are already entrenched.
 
-We study these questions using a sharp and plausibly exogenous shock created by the COVID-19 pandemic. During the pandemic, restrictions differed sharply across sectors. Workers in essential sectors such as health services, banking, and utilities often continued to work outside the home, while workers in sectors such as fitness, beauty services, and other shut-down activities were forced out of the workplace. In other non-essential sectors, many employees shifted to remote work. As a result, many couples with young children experienced a sudden and unusual reversal in their household roles. In particular, some mothers continued to work outside the home while fathers stayed home because they either could not work or could work only from home.
+We study these questions using a sharp and plausibly exogenous shock created by the COVID-19 pandemic. During the pandemic, restrictions differed sharply across sectors. Workers in essential sectors such as health services, banking, and utilities often continued to work outside the home, while workers in sectors such as fitness, beauty services, and other shut-down activities were forced out of the workplace. In other non-essential sectors, many employees shifted to remote work. As a result, many couples with young children experienced a sudden and unusual reversal in their household roles. In particular, some mothers, predominantly employed in sectors or occupations designated as essential, continued to work outside the home while fathers stayed home because they either could not work or could work only from home.
 
-Our empirical strategy combines three complementary data environments and two related research designs. First, we use Israeli administrative data to estimate reduced-form difference-in-differences and event-study effects on employment, earnings, fertility, and family outcomes for the universe of relevant households. Second, in the UK Household Longitudinal Study and the German Socio-Economic Panel, we use time use survey measures of childcare, housework, paid work, and work arrangements to observe the household division of labor directly. In those time use survey data, we will complement the reduced-form design with a 2SLS framework that instruments directly measured changes in household specialization using pre-COVID sector exposure. The cross-country design is central: Israel offers very large administrative panels and long follow-up, while the UK and Germany provide time use survey evidence on the mechanism itself. 
+Our empirical strategy combines three complementary data environments and two related research designs. First, we use Israeli administrative data to estimate reduced-form difference-in-differences and event-study effects on employment, earnings, fertility, and family outcomes for the universe of relevant households. Second, in the UK Household Longitudinal Study and the German Socio-Economic Panel, we use time use survey measures of childcare, housework, paid work, and work arrangements to observe the household division of labor directly. In those time use survey data, we will complement the reduced-form design with a 2SLS framework that instruments directly measured changes in household specialization using pre-COVID sector exposure. The cross-country design is central: Israel offers very large administrative panels and long follow-up, while the UK and Germany provide time use survey evidence on the mechanism itself. Comparing results across countries will also shed light on how a similar shock shaped household behavior and labor-market trajectories under different institutional frameworks and norms.
 
 The project therefore speaks to several active policy debates at once. If early shifts in caregiving and breadwinning have persistent effects, then policies affecting early paternal involvement, remote work, parental leave, and emergency labor market arrangements may have long-run consequences for gender inequality. If households instead revert quickly to pre-existing roles, then the persistence of gender gaps may reflect deeper institutional and normative constraints. Either way, the project will advance our understanding of how families absorb large shocks and whether temporary disruptions to gender specialization can leave lasting economic effects.
 
@@ -93,9 +106,9 @@ The project therefore speaks to several active policy debates at once. If early 
 
 \subsection{Israeli administrative data}
 
-The Israeli component of the project will use linked administrative data based on tax records and the population registry. Employer reporting in Israel includes Form 126, which records employee pay and deductions, while the population registry provides official information on family composition and demographic status \citep{tax126,nationalinsurance126,piba_registry}. In addition, the Central Bureau of Statistics explicitly relies on administrative data as an important secondary source for official statistics on the Israeli population and economy \citep{cbs_about}. Our research team has already worked with comparable linked administrative data in previous projects, and we have already started to analyze these data for the current project. Even at this stage, we can easily trace large shocks in household roles, as we discuss in Section \ref{sec:prelim}.
+The Israeli component of the project will use administrative data from several sources, merged at the research room of the Central Bureau of Statistics (CBS) using fictitious unique identifiers assigned to each individual record. In particular, we will use parents' demographic characteristics from the population registry, including religion, country and year of birth, year of immigration, marital status, number of children, and children's dates of birth, as well as educational attainment and field of study from the education registry. Career trajectories, including employer characteristics, employment and earnings, will be followed using monthly tax records. Our research team has already worked with comparable linked administrative data in previous projects, and we have already started to analyze these data for the current project. Even at this stage, we can easily trace large shocks in household roles, as we discuss in Section \ref{sec:prelim}.
 
-These data are especially well suited for the Israeli part of the project for several reasons. First, they provide very clear identification of pre-pandemic sector, which is essential for our identification strategy. Second, they have a panel structure that allows us to follow households over a long period of time, both before and after the pandemic. Third, the scale of the data is very large, which will allow us to estimate treatment effects with high precision and to carry out rich heterogeneity analysis by the age of the children, by economic sector, and by different segments of Israeli society. Finally, once linked to family records, the data allow us to study outcomes such as employment, earnings, fertility, and marital stability at the household level.
+These data are especially well suited for the Israeli part of the project for several reasons. First, they provide very clear identification of pre-pandemic sector, which is essential for our identification strategy.\footnote{Specific occupations, such as MDs or nurses, will be identified using information on field of study.} Second, they have a panel structure that allows us to follow households over a long period of time, both before and after the pandemic. Third, the scale of the data is very large, which will allow us to estimate treatment effects with high precision and to carry out rich heterogeneity analysis by the age of the children, by economic sector, and by different segments of Israeli society. Finally, once linked to family records, the data allow us to study outcomes such as employment, earnings, fertility, and marital stability at the household level.
 
 For the core Israeli analysis, we will focus on couples with at least one child aged six or younger just before the pandemic. This is the age range in which caregiving needs are particularly intensive and in which temporary shifts in childcare responsibilities are most likely to induce meaningful reallocation inside the household. The Israeli data will let us trace outcomes before the pandemic, during the acute restrictions period, and for several years after restrictions were lifted.
 
@@ -109,22 +122,43 @@ This dataset fits the project in two important ways. First, it allows us to obse
 
 The German Socio-Economic Panel (SOEP) is a representative multi-cohort household panel that has followed private households in Germany since 1984 \citep{soep_core}. During the pandemic, SOEP launched SOEP-CoV, a dedicated survey effort that followed a subset of panel respondents in 2020 and 2021; official project documentation reports 6,694 interviews in the first wave and 6,038 in the second wave \citep{soepcov_doc,soepcov_overview}. Crucially for our project, SOEP-CoV includes time use survey information on childcare and housework during the pandemic and can be linked to the long SOEP panel before and after COVID \citep{soepcov_childcare}.
 
-SOEP is valuable for this project for two reasons. First, like the UKHLS, it provides time use survey measures that allow us to measure the household division of labor directly rather than infer it indirectly. The German time use survey information is therefore central for understanding whether pandemic-induced changes in fathers' and mothers' behavior persisted after restrictions were lifted. Second, Germany is a particularly interesting comparison case because cross-country evidence points to large child penalties there and emphasizes the role of gender norms and family policy in explaining cross-country differences in those penalties \citep{kleven2019childpenalties}. We will use the standard SOEP files together with the COVID extension and classify households using pre-pandemic sectors and occupations. This gives us a second time use survey setting, with a different institutional and normative environment, in which to test whether the same kind of shock produces similar or weaker persistence.
+SOEP is valuable for this project for two reasons. First, like the UKHLS, it provides time use survey measures that allow us to measure the household division of labor directly rather than infer it indirectly. The German time use survey information is therefore central for understanding whether pandemic-induced changes in fathers' and mothers' behavior persisted after restrictions were lifted. Second, Germany is a particularly interesting comparison case because cross-country evidence points to large child penalties there and emphasizes the role of gender norms and family policy in explaining cross-country differences in those penalties \citep{kleven2019childpenalties}. In addition, if sample sizes permit, variation across regions in stay-at-home policies and restrictions will provide a further source of identification, allowing comparison between couples who are similar in occupation and sector composition but faced different policy environments and were therefore subject to different shocks to the household division of labor. We will use the standard SOEP files together with the COVID extension and classify households using pre-pandemic sectors and occupations. This gives us a second time use survey setting, with a different institutional and normative environment, in which to test whether the same kind of shock produces similar or weaker persistence.
 
 \section{Institutional details}
 
 The COVID-19 pandemic led to sector-specific restrictions, under which some sectors were forced to shut down, others shifted to remote work, and some maintained regular operations. This forced many households to adopt an atypical division of labor, with females providing and males caring for children. In Israel, the institutional structure was especially sharp and maps naturally into our design. Essential sectors were permitted to operate with minimal disruption. These sectors include health services, banking, utilities such as electricity and water, and other critical services. Not-allowed sectors were forced to shut down. These sectors include businesses in non-essential activities with high risk of contagion, such as beauty services and fitness centers. Non-essential sectors, which employ most workers, were not entirely closed but faced strict limits on on-site work, prompting a widespread shift to remote work.
 
-We will focus on three types of treatment. First, in households where the female is in an essential sector and the male is not essential, the female leaves home while the male either works from home or does not work. Second, in households where the female is non-essential and the male is in a not-allowed sector, the shock pushes men outside of the labor market; if both spouses are at home, females are more likely to work from home. Third, in households where the female is in an essential sector and the male is in a not-allowed sector, men do not work at all while women are working. This third group is the rarest but also the most intense treatment. Throughout, the interpretation is based on pre-pandemic sector assignment to avoid endogeneity concerns.
+We will focus on three types of treatment. First, in households where the female is in an essential sector and the male is not essential, the female leaves home while the male either works from home or does not work. Second, in households where the female is non-essential and the male is in a not-allowed sector, the shock pushes men outside of the labor market; if both spouses are at home, females are more likely to work from home. Third, in households where the female is in an essential sector and the male is in a not-allowed sector, men do not work at all while women are working. This third group is the rarest and faces the most intense treatment. Throughout, the classification of households is based on pre-pandemic sector to avoid endogeneity concerns.
 
-We will follow official restrictions in all three countries and map sectors into treatment status accordingly. In addition, we will take a data-driven approach to identify which sectors and, in the UK and Germany, which occupations were in practice most exposed to working outside the home, working from home, or not working during the pandemic. This will allow us to validate the official classification and sharpen the comparison across countries. More broadly, the institutional variation creates a natural ordering of treatment intensity, from mild reversals in which both spouses remain attached to work, to very sharp reversals in which fathers are pushed almost fully out of paid work while mothers continue working outside the home. That variation will be useful for tracing dose-response patterns in the later outcomes.
+We will follow official restrictions in all three countries and map sectors (and occupations when data permit) into treatment status accordingly. In addition, we will take a data-driven approach to identify which sectors and, in the UK and Germany, which occupations were in practice most exposed to working outside the home, working from home, or not working during the pandemic. This will allow us to validate the official classification and sharpen the comparison across countries. More broadly, the institutional variation creates a natural ordering of treatment intensity, from mild reversals in which both spouses remain attached to work, to very sharp reversals in which fathers are pushed almost fully out of paid work while mothers continue working outside the home. That variation will be useful for tracing dose-response patterns in the later outcomes. We will also examine the opposite cases: couples who faced a reinforcing shock to the traditional division of labor.
 
 %\FloatBarrier
+
+\section{Method}
+
+Our main identification strategy involves a reduced-form difference-in-differences event-study design that compares households differentially exposed to a reversal in household specialization based on the pre-COVID sectors of both parents. We will also use the UK and German time use survey data, where the endogenous variable, the household division of labor, can be measured directly. In those data, we will use pre-COVID sectors and occupations as instruments for the directly observed household division of labor and estimate the effect of that division of labor on future labor market outcomes in a 2SLS framework.
+
+For the reduced-form design, we classify households into treatment and comparison groups using the pre-COVID sectors of both parents. Writing $Treat^g$ as an indicator for belonging to treatment group $g$, the reduced form equation is
+\begin{equation} \label{eq:simple_DID}
+Y_{it}=\beta^g_{t}Treat^g_i+\eta_t X_{it}+\gamma_t+\delta_i+\epsilon_{it},
+\end{equation}
+where $X_{it}$ are control variables, and $\gamma_t,\delta_i$ are month and household fixed effects. The coefficients of interest are $\beta_{t}^g$, which estimate the effect on the outcome over time. This is not a staggered DiD since all observations are treated at the same time. We will also include months before the onset of COVID to study pre-trends.
+
+The first set of treatment groups captures shocks that tend to reverse traditional specialization: cases in which the female remains employed outside the home while the male stays home or works from home. We will also examine the opposite shocks, where gender gaps may intensify. In particular, we will study households where the male was working outside the home while the female stayed at home, among couples in which both were employed before COVID. This symmetric comparison is useful because it allows us to study whether shocks toward greater specialization have effects that mirror shocks toward more equal household roles.
+
+In the UKHLS and SOEP data, we can measure the endogenous variable directly using time use survey measures of childcare, housework, paid work, and work arrangements. We will therefore complement the reduced-form analysis with a 2SLS design that uses pre-COVID sector and occupation exposure as instruments for the household division of labor itself. This design will allow us to quantify how shifts in fathers' and mothers' time affect later labor market outcomes.
+
+The outcome set is intentionally broad. For mothers and fathers separately, we will study employment, earnings, hours, and employer attachment. At the household level, we will study relative earnings within the couple, fertility, and marital stability. In the UK and Germany, the time use survey data will additionally allow us to examine childcare, housework, leisure, and work arrangements. Together, these outcomes will let us distinguish between short-run mechanical responses and persistent changes in specialization. We will also estimate heterogeneous effects by the age of the youngest child, pre-pandemic relative earnings within the couple, and sector. This is important for understanding whether shocks are especially consequential when children are infants or toddlers and whether they are stronger in households that were already close to equal specialization before the pandemic. We will also examine whether effects differ for parents who already have older children (and a young child) at the time of the shock; households that may have established more entrenched divisions of labor, and for whom a temporary disruption may be less likely to produce lasting change.
+
+A potential concern regarding the exclusion restriction is that COVID may affect workers in essential sectors in other ways that are unrelated to the household division of labor. For example, workers in some essential sectors may have faced unusually high stress or health risks during the pandemic. If these channels directly affect later outcomes, then treatment status may operate through more than the intended household-specialization mechanism.
+
+We will address this concern in three ways. First, we will estimate placebo models in households with older children who required much less direct supervision. Second, we will re-estimate the analysis on narrower subsets of sectors where pandemic-specific trauma is less likely to be the driving mechanism, such as utilities and other critical infrastructure. Third, in the UK and German time use survey data, we will directly verify that the treatment predicts the intended mechanism, namely a change in childcare, housework, and paid work inside the household. Looking ahead, we also plan to extend this line of work to other shocks that affect household roles in Israel, and in particular to periods of extended reserve duty.
+
 \section{Preliminary results}\label{sec:prelim}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{figures/HHmom.pdf}
+\includegraphics[width=0.5\textwidth]{figures/HHmom.pdf}
 \caption{Households with Only Wife Working}
 \label{fig:hhmom}
 \caption*{\footnotesize \textit{Notes:} The figure plots the number of two-parent households in Israel with children under age 6 in which only the female partner is employed, from October 2019 to October 2020. The dashed vertical line marks the onset of the acute COVID shock in March 2020.}
@@ -153,25 +187,16 @@ Control: both parents non-essential workers & 87,546 \\
 
 Table \ref{tab:treatment} shows that the relevant treatment groups are also quantitatively important. The largest treatment group is households in which the female is in an essential sector and the male is non-essential, followed by households in which the male is in a not-allowed sector. The most intense treatment, female essential and male not allowed, is smaller but still sizable enough to be informative. These counts indicate that the design will have enough power not only for average effects but also for meaningful heterogeneity analysis across child ages and household types. They also show that the Israeli administrative data are well-suited for studying dynamic effects over time, because treatment exposure is concentrated in groups that are large enough to be followed for several years after the initial COVID shock.
 
-\section{Method}
 
-Our main identification strategy involves a reduced-form difference-in-differences event-study design that compares households differentially exposed to a reversal in household specialization based on the pre-COVID sectors of both parents. We will also use the UK and German time use survey data, where the endogenous variable, the household division of labor, can be measured directly. In those data, we will use pre-COVID sectors and occupations as instruments for the directly observed household division of labor and estimate the effect of that division of labor on future labor market outcomes in a 2SLS framework.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/covid_workoutside_wave_treat_wife_key_notedu_husb_not_or_edu_u10_spousefacet.png}
+\caption{Work Outside Home by Pre-COVID Sector - UKHLS}
+\label{fig:UK}
+\caption*{\footnotesize \textit{Notes:} The figure plots the share working outside the home over time for wives and husbands separately in the UK, based on the UKHLS data. The treatment group (red points) consists of households in which, based on 2019 sector of employment, the wife worked in an essential sector other than education. The comparison group (blue triangles) consists of all other households. The outcome is the share reporting work outside the home. }
+\end{figure}
 
-For the reduced-form design, we classify households into treatment and comparison groups using the pre-COVID sectors of both parents. Writing $Treat^g$ as an indicator for belonging to treatment group $g$, the reduced form equation is
-\begin{equation} \label{eq:simple_DID}
-Y_{it}=\beta^g_{t}Treat^g_i+\eta_t X_{it}+\gamma_t+\delta_i+\epsilon_{it},
-\end{equation}
-where $X_{it}$ are control variables, and $\gamma_t,\delta_i$ are month and household fixed effects. The coefficients of interest are $\beta_{t}^g$, which estimate the effect on the outcome over time. This is not a staggered DiD since all observations are treated at the same time. We will also include months before the onset of COVID to study pre-trends.
-
-The first set of treatment groups captures shocks that tend to reverse traditional specialization: cases in which the female remains employed outside the home while the male stays home or works from home. We will also examine the opposite shocks, where gender gaps may intensify. In particular, we will study households where the male was working outside the home while the female stayed at home, among couples in which both were employed before COVID. This symmetric comparison is useful because it allows us to study whether shocks toward greater specialization have effects that mirror shocks toward more equal household roles.
-
-In the UKHLS and SOEP data, we can measure the endogenous variable directly using time use survey measures of childcare, housework, paid work, and work arrangements. We will therefore complement the reduced-form analysis with a 2SLS design that uses pre-COVID sector and occupation exposure as instruments for the household division of labor itself. This design will allow us to quantify how shifts in fathers' and mothers' time affect later labor market outcomes.
-
-The outcome set is intentionally broad. For mothers and fathers separately, we will study employment, earnings, hours, and employer attachment. At the household level, we will study relative earnings within the couple, fertility, and marital stability. In the UK and Germany, the time use survey data will additionally allow us to examine childcare, housework, leisure, and work arrangements. Together, these outcomes will let us distinguish between short-run mechanical responses and persistent changes in specialization. We will also estimate heterogeneous effects by the age of the youngest child, pre-pandemic relative earnings within the couple, and sector. This is important for understanding whether shocks are especially consequential when children are infants or toddlers and whether they are stronger in households that were already close to equal specialization before the pandemic.
-
-A potential concern regarding the exclusion restriction is that COVID may affect workers in essential sectors in other ways that are unrelated to the household division of labor. For example, workers in some essential sectors may have faced unusually high stress or health risks during the pandemic. If these channels directly affect later outcomes, then treatment status may operate through more than the intended household-specialization mechanism.
-
-We will address this concern in three ways. First, we will estimate placebo models in households with older children who required much less direct supervision. Second, we will re-estimate the analysis on narrower subsets of sectors where pandemic-specific trauma is less likely to be the driving mechanism, such as utilities and other critical infrastructure. Third, in the UK and German time use survey data, we will directly verify that the treatment predicts the intended mechanism, namely a change in childcare, housework, and paid work inside the household. Looking ahead, we also plan to extend this line of work to other shocks that affect household roles in Israel, and in particular to periods of extended reserve duty.
+Figure \ref{fig:UK} provides preliminary evidence on the first stage of our analysis using the UKHLS. We define the treatment group based on pre-pandemic sector of employment in 2019: households in which the wife worked in an essential sector, excluding education. The outcome is the share working outside the home, shown separately for wives and husbands. At the onset of COVID-19, out-of-home work falls sharply for both groups, reflecting the broad disruption created by the pandemic. However, the decline is much smaller for treated wives than for the comparison group, consistent with these women being more likely to continue working outside the home during the restrictions. For husbands, by contrast, the decline is somewhat larger in treatment households, suggesting that when the wife must continue working outside the home, men reduce out-of-home labor more strongly. Taken together, these patterns indicate a clear divergence in work arrangements between treatment and comparison households and provide suggestive first-stage evidence that the pandemic shock generated a meaningful reallocation of household roles.
 
 \section{Expected contribution to knowledge on the Israeli economy and society}
 
@@ -201,12 +226,13 @@ Year 2 & 5,000 & 5,000 & 10,000 \\
 Year 3 & 5,000 & 5,000 & 10,000 \\
 Year 4 & 5,000 & 5,000 & 10,000 \\
 \midrule
-\textbf{Total requested} & \textbf{20,000} & \textbf{20,000} & \textbf{40,000} \\
+\textbf{Total} & \textbf{20,000} & \textbf{20,000} & \textbf{40,000} \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
-We also plan to submit this project to other grants, including the ISF and the Fritz Thyssen Foundation.
+
+
 
 \section{Schedule (4 years)}
 
@@ -222,6 +248,14 @@ Year 4 & Finalize robustness analysis and writing; prepare replication material 
 \bottomrule
 \end{tabularx}
 \end{center}
+
+
+\section{Other sources of funding}
+No additional funding is currently supporting this project. We have submitted a proposal to the Sapir Forum and plan to submit this project to other grants, including the ISF and the Fritz Thyssen Foundation. Oren Danieli does not have additional funding. 
+Analia Schlosser has additional funding from the Israeli Science Foundation ("A Broader Perspective on Active Labor Market Programs: Examining Long-Term and Intergenerational effects"); Falk Institute for Economic Research in Israel ("The Impact of Financial Aid: Evidence From Israel"); Harry Frank Guggenheim Foundation, "Uncovering the Power of Cross-Ethnic Teacher Assignments: Insights from the Israeli Education System"; TAD - The Center for AI and Data Science, "Data-Driven Decision-Making in High Schools to Improve Achievements, Prevent Dropout, and Efficiently Allocate Resources".
+
+
+
 
 \renewcommand{\refname}{References}
 \bibliographystyle{apalike}
