@@ -238,6 +238,7 @@ add_treatment_group_label <- function(df,
 # -----------------------------------------------------------------------------
 couple_plot_var_label <- function(var) {
   dplyr::case_when(
+    var == "any_work"      ~ "Any work",
     var == "workoutside"   ~ "Working outside the home",
     var == "wfh_some"      ~ "Working from home at least sometimes",
     var == "howlng"        ~ "Housework hours",
@@ -253,6 +254,7 @@ couple_plot_var_label <- function(var) {
 
 couple_plot_var_stem <- function(var) {
   dplyr::case_when(
+    var == "any_work"      ~ "any_work",
     var == "workoutside"   ~ "workoutside",
     var == "wfh_some"      ~ "wfh_any",
     var == "howlng"        ~ "housework_hours",
@@ -284,7 +286,7 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
 }
 
 couple_plot_is_binary <- function(var) {
-  var %in% c("workoutside", "wfh_some")
+  var %in% c("any_work", "workoutside", "wfh_some")
 }
 
 # -----------------------------------------------------------------------------
@@ -371,6 +373,7 @@ filter_jointly_observed_couple_rows <- function(df, vars) {
 # -----------------------------------------------------------------------------
 covid_count_outcome_vars <- function() {
   c(
+    "any_work",
     "workoutside",
     "wfh_some",
     "howlng",
@@ -380,6 +383,7 @@ covid_count_outcome_vars <- function() {
 
 future_count_outcome_vars <- function() {
   c(
+    "any_work",
     "workoutside",
     "wfh_some",
     "jbhrs",

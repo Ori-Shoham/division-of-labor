@@ -14,18 +14,21 @@
 #
 # Outputs:
 #   COVID outcomes:
+#     - any_work
 #     - workoutside
 #     - wfh_some   (your "wfh_any")
 #     - howlng
 #     - timechcare
 #
 #   Future outcomes:
+#     - any_work
 #     - workoutside
 #     - wfh_some   (your "wfh_any")
 #     - jbhrs
 #     - paygu_dv
 #     - fimnlabgrs_dv
 #     - fimngrs_dv
+#     - howlng
 #
 # Notes:
 #   - Future outcomes saved at both wave and year aggregation
@@ -85,6 +88,7 @@ WIFE_TREATMENT_VARS <- c(
 CHILD_SUBSETS <- c("all", "u10", "11_17")
 
 COVID_OUTCOMES <- c(
+  "any_work",
   "workoutside",
   "wfh_some",
   "howlng",
@@ -92,6 +96,7 @@ COVID_OUTCOMES <- c(
 )
 
 FUTURE_OUTCOMES <- c(
+  "any_work",
   "workoutside",
   "wfh_some",
   "jbhrs",

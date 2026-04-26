@@ -8,7 +8,7 @@
 #     - add baseline-defined work groups
 #     - reshape COVID waves to long panel (pidp x wave)
 #     - add synthetic "2019" and "baseline" rows
-#     - create COVID workoutside and WFH indicators
+#     - create COVID any-work, workoutside and WFH indicators
 #
 # Notes:
 #   - The synthetic "2019" row uses regular-wave baseline variables.
@@ -125,6 +125,13 @@ build_covid_long_panel <- function(
       # For not employed (sempderived==4), set missing hours/wah to -8 sentinel
       hours = dplyr::if_else(sempderived == 4 & is.na(hours), -8, hours),
       wah   = dplyr::if_else(sempderived == 4 & is.na(wah),   -8, wah),
+      
+      # Any work last week in COVID waves; analogous positive-hours measure in
+      # synthetic pre-period rows.
+      any_work = make_any_work_covid(
+        sempderived = sempderived,
+        hours = hours
+      ),
       
       # Generic COVID work-from-home-some indicator
       wfh_some = make_wfh_some_covid(

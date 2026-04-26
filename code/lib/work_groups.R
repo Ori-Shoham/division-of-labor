@@ -148,6 +148,58 @@ add_baseline_work_groups <- function(df) {
     dplyr::select(-base_sic_clean, -base_soc_clean, -has_valid_sic, -has_valid_soc)
 }
 
+
+# -----------------------------------------------------------------------------
+# COVID any-work indicator
+#
+# Logic:
+#   - missing/invalid employment -> NA
+#   - not employed -> 0
+#   - missing/invalid hours -> NA
+#   - zero hours -> 0
+#   - positive hours -> 1
+# -----------------------------------------------------------------------------
+make_any_work_covid <- function(sempderived, hours) {
+  dplyr::case_when(
+    is.na(sempderived) ~ NA_real_,
+    sempderived < 0 ~ NA_real_,
+    sempderived == 4 ~ 0,
+    is.na(hours) ~ NA_real_,
+    hours < 0 ~ NA_real_,
+    hours > 0 ~ 1,
+    hours == 0 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+# -----------------------------------------------------------------------------
+# Future/main-wave any-work analogue
+#
+# The COVID waves ask about hours worked last week. The regular UKHLS waves do
+# not ask the same last-week question in this pipeline. The analogous measure
+# here is positive usual weekly hours among respondents whose main activity is
+# paid employment or self-employment.
+#
+# Logic:
+#   - missing/invalid employment -> NA
+#   - not employed/self-employed -> 0
+#   - missing/invalid usual hours -> NA
+#   - zero usual hours -> 0
+#   - positive usual hours -> 1
+# -----------------------------------------------------------------------------
+make_any_work_future <- function(jbstat, jbhrs) {
+  dplyr::case_when(
+    is.na(jbstat) ~ NA_real_,
+    jbstat < 0 ~ NA_real_,
+    !(jbstat %in% c(1, 2)) ~ 0,
+    is.na(jbhrs) ~ NA_real_,
+    jbhrs < 0 ~ NA_real_,
+    jbhrs > 0 ~ 1,
+    jbhrs == 0 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
 # -----------------------------------------------------------------------------
 # COVID workoutside
 #

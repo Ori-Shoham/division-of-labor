@@ -283,6 +283,14 @@ tmp_wfh <- combine_wfh(df_future_long$jbpl, df_future_long$jbwah)
 df_future_long <- df_future_long %>%
   add_baseline_work_groups() %>%
   dplyr::mutate(
+    base_any_work = make_any_work_future(
+      jbstat = base_jbstat,
+      jbhrs  = base_jbhrs
+    ),
+    any_work = make_any_work_future(
+      jbstat = jbstat,
+      jbhrs  = jbhrs
+    ),
     wfh_code = tmp_wfh$wfh_code,
     wfh_cat  = tmp_wfh$wfh_cat,
     wfh_some = make_wfh_some_future(
