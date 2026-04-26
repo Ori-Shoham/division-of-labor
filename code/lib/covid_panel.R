@@ -8,7 +8,18 @@
 #     - add baseline-defined work groups
 #     - reshape COVID waves to long panel (pidp x wave)
 #     - add synthetic "2019" and "baseline" rows
-#     - create COVID workoutside
+#     - create COVID workoutside and WFH indicators
+#
+# Notes:
+#   - The synthetic "2019" row uses regular-wave baseline variables.
+#   - For the synthetic "2019" row, wah is intentionally set to missing,
+#     because regular UKHLS waves before 2020 did not ask the COVID-style WFH
+#     question.
+#   - The synthetic "2019" row does include howlng, using base_howlng from the
+#     regular-wave baseline composite.
+#   - The synthetic "baseline" row uses Jan-Feb 2020 COVID baseline variables
+#     where available: blwork, blhours, blwah. It does not have a Jan-Feb 2020
+#     housework measure, so howlng is set to missing there.
 # =============================================================================
 
 build_covid_long_panel <- function(
@@ -34,8 +45,10 @@ build_covid_long_panel <- function(
   
   # Filter to current COVID analysis sample:
   #  - working in baseline main survey: base_jbstat in 1:2
-  #  - non-missing, non-negative baseline SIC and SOC
   #  - observed in COVID: any variable with prefix "c" is non-missing
+  #  - do NOT require valid SIC/SOC here; invalid/missing SIC/SOC are flagged
+  #    by add_baseline_work_groups() and can be excluded in specific analyses
+  #    where appropriate.
   df_sample <- df_ind_panel %>%
     dplyr::filter(
       base_jbstat %in% 1:2
@@ -54,7 +67,8 @@ build_covid_long_panel <- function(
     dplyr::mutate(dplyr::across(starts_with("bl"), first_valid)) %>%
     dplyr::ungroup()
   
-  # Synthetic pre-period rows
+  # Synthetic Jan-Feb 2020 baseline row from COVID baseline variables.
+  # No Jan-Feb 2020 housework variable is available here, so howlng is missing.
   df_precovid <- df_sample %>%
     dplyr::group_by(pidp) %>%
     dplyr::slice_head(n = 1) %>%
@@ -62,21 +76,49 @@ build_covid_long_panel <- function(
       wave = "baseline",
       sempderived = blwork,
       hours = blhours,
-      wah = blwah
+      wah = blwah,
+      howlng = NA_real_
     ) %>%
-    dplyr::ungroup() %>% 
-    select(pidp, wave, sempderived, hours, wah, starts_with("base"), starts_with("group"), starts_with("key"), shutdown_sec)
+    dplyr::ungroup() %>%
+    dplyr::select(
+      pidp,
+      wave,
+      sempderived,
+      hours,
+      wah,
+      howlng,
+      starts_with("base"),
+      starts_with("group"),
+      starts_with("key"),
+      shutdown_sec
+    )
   
+  # Synthetic 2019 row from regular-wave baseline variables.
+  # Set wah to missing because pre-2020 regular waves did not ask the relevant
+  # WFH question. Keep 2019 housework hours from base_howlng.
   df_2019 <- df_sample %>%
     dplyr::group_by(pidp) %>%
     dplyr::slice_head(n = 1) %>%
     dplyr::mutate(
       wave = "2019",
       sempderived = base_jbstat,
-      hours = base_jbhrs
+      hours = base_jbhrs,
+      wah = NA_real_,
+      howlng = base_howlng
     ) %>%
-    dplyr::ungroup()%>% 
-    select(pidp, wave, sempderived, hours, wah, starts_with("base"), starts_with("group"), starts_with("key"), shutdown_sec)
+    dplyr::ungroup() %>%
+    dplyr::select(
+      pidp,
+      wave,
+      sempderived,
+      hours,
+      wah,
+      howlng,
+      starts_with("base"),
+      starts_with("group"),
+      starts_with("key"),
+      shutdown_sec
+    )
   
   df_sample_long <- dplyr::bind_rows(df_2019, df_precovid, df_sample) %>%
     dplyr::mutate(

@@ -183,14 +183,15 @@ label_treatment_values <- function(x,
 }
 
 # -----------------------------------------------------------------------------
-# Add labeled treatment group for plotting
+# Treatment-group levels used in all treatment/control figures
+#
+# Order is always:
+#   1) treated
+#   2) untreated
 # -----------------------------------------------------------------------------
-add_treatment_group_label <- function(df,
-                                      treatment_var,
-                                      treated_label = NULL,
-                                      untreated_label = NULL) {
-  stopifnot(treatment_var %in% names(df))
-  
+treatment_group_levels <- function(treatment_var,
+                                   treated_label = NULL,
+                                   untreated_label = NULL) {
   if (is.null(treated_label)) {
     treated_label <- default_treated_label(treatment_var)
   }
@@ -199,17 +200,35 @@ add_treatment_group_label <- function(df,
     untreated_label <- default_untreated_label(treatment_var)
   }
   
+  c(treated_label, untreated_label)
+}
+
+# -----------------------------------------------------------------------------
+# Add labeled treatment group for plotting
+# -----------------------------------------------------------------------------
+add_treatment_group_label <- function(df,
+                                      treatment_var,
+                                      treated_label = NULL,
+                                      untreated_label = NULL) {
+  stopifnot(treatment_var %in% names(df))
+  
+  group_levels <- treatment_group_levels(
+    treatment_var = treatment_var,
+    treated_label = treated_label,
+    untreated_label = untreated_label
+  )
+  
   df %>%
     dplyr::mutate(
       treatment_group = label_treatment_values(
         .data[[treatment_var]],
         treatment_var = treatment_var,
-        treated_label = treated_label,
-        untreated_label = untreated_label
+        treated_label = group_levels[[1]],
+        untreated_label = group_levels[[2]]
       ),
       treatment_group = factor(
         treatment_group,
-        levels = c(treated_label, untreated_label)
+        levels = group_levels
       )
     )
 }
@@ -221,6 +240,7 @@ couple_plot_var_label <- function(var) {
   dplyr::case_when(
     var == "workoutside"   ~ "Working outside the home",
     var == "wfh_some"      ~ "Working from home at least sometimes",
+    var == "howlng"        ~ "Housework hours",
     var == "howlng_cv"     ~ "Housework hours",
     var == "timechcare"    ~ "Childcare / home-schooling hours",
     var == "jbhrs"         ~ "Weekly hours worked",
@@ -235,6 +255,7 @@ couple_plot_var_stem <- function(var) {
   dplyr::case_when(
     var == "workoutside"   ~ "workoutside",
     var == "wfh_some"      ~ "wfh_any",
+    var == "howlng"        ~ "housework_hours",
     var == "howlng_cv"     ~ "housework_hours",
     var == "timechcare"    ~ "childcare_hours",
     var == "jbhrs"         ~ "weekly_hours",
@@ -251,6 +272,7 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
   }
   
   dplyr::case_when(
+    var == "howlng"        ~ "Weekly Hours",
     var == "howlng_cv"     ~ "Weekly Hours",
     var == "timechcare"    ~ "Weekly Hours",
     var == "jbhrs"         ~ "Weekly Hours",
@@ -351,7 +373,7 @@ covid_count_outcome_vars <- function() {
   c(
     "workoutside",
     "wfh_some",
-    "howlng_cv",
+    "howlng",
     "timechcare"
   )
 }

@@ -56,6 +56,35 @@ theme_couple_facets <- function(axis_text_size = 12,
 }
 
 # -----------------------------------------------------------------------------
+# Apply common treatment/control discrete scales
+#
+# This preserves the same mapping used by add_treatment_group_label():
+# treatment is the first level and control is the second level.
+# -----------------------------------------------------------------------------
+add_treatment_group_scales <- function(p,
+                                       treatment_var,
+                                       treated_label = NULL,
+                                       untreated_label = NULL) {
+  group_levels <- treatment_group_levels(
+    treatment_var = treatment_var,
+    treated_label = treated_label,
+    untreated_label = untreated_label
+  )
+  
+  p +
+    ggplot2::scale_color_discrete(
+      limits = group_levels,
+      breaks = group_levels,
+      drop = FALSE
+    ) +
+    ggplot2::scale_shape_discrete(
+      limits = group_levels,
+      breaks = group_levels,
+      drop = FALSE
+    )
+}
+
+# -----------------------------------------------------------------------------
 # Couple counts over time by treatment group: COVID waves
 # -----------------------------------------------------------------------------
 plot_covid_treatment_group_counts <- function(
@@ -136,6 +165,12 @@ plot_covid_treatment_group_counts <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
+  
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
   
   ggsave(
     filename = out_file,
@@ -238,6 +273,12 @@ plot_future_treatment_group_counts <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
+  
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
   
   if (agg == "wave") {
     wl_future <- wave_labels() %>%
@@ -352,6 +393,12 @@ plot_covid_spouse_treatment_overtime <- function(
       title_size = title_size
     )
   
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
+  
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
   }
@@ -453,6 +500,12 @@ plot_covid_spouse_treatment_childgrid <- function(
       title_size = title_size
     )
   
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
+  
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
   }
@@ -547,7 +600,14 @@ plot_future_spouse_treatment_numeric <- function(
       remove = TRUE
     ) %>%
     dplyr::mutate(
-      spouse = factor(spouse, levels = c("Wife", "Husband"))
+      spouse = factor(spouse, levels = c("Wife", "Husband")),
+      treatment_group = factor(
+        treatment_group,
+        levels = treatment_group_levels(
+          treatment_var = treatment_var,
+          treated_label = treated_label
+        )
+      )
     )
   
   p <- ggplot(
@@ -582,6 +642,12 @@ plot_future_spouse_treatment_numeric <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
+  
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
   
   p <- .apply_time_labels(p, dd_plot, agg = agg)
   
@@ -687,6 +753,13 @@ plot_future_spouse_treatment_childgrid <- function(
       child_group_plot = factor(
         child_group_plot,
         levels = c("Young kids: 0-10", "Older kids: 11-17")
+      ),
+      treatment_group = factor(
+        treatment_group,
+        levels = treatment_group_levels(
+          treatment_var = treatment_var,
+          treated_label = treated_label
+        )
       )
     )
   
@@ -719,6 +792,12 @@ plot_future_spouse_treatment_childgrid <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
+  
+  p <- add_treatment_group_scales(
+    p = p,
+    treatment_var = treatment_var,
+    treated_label = treated_label
+  )
   
   p <- .apply_time_labels(p, dd_plot, agg = agg)
   

@@ -87,7 +87,7 @@ CHILD_SUBSETS <- c("all", "u10", "11_17")
 COVID_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
-  "howlng_cv",
+  "howlng",
   "timechcare"
 )
 
@@ -97,7 +97,8 @@ FUTURE_OUTCOMES <- c(
   "jbhrs",
   "paygu_dv",
   "fimnlabgrs_dv",
-  "fimngrs_dv"
+  "fimngrs_dv",
+  "howlng"
 )
 
 FUTURE_AGGS <- c("wave", "year")

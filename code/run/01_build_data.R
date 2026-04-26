@@ -87,14 +87,15 @@ cat("Baseline saved to: ", file.path(der_path, "baseline.rds"), "\n", sep = "")
 
 # Analytic baseline restriction used throughout downstream samples:
 #   - employed / self-employed at baseline
-#   - observed baseline SIC and SOC
-#   - negative SIC/SOC values treated as missing
+#   - do NOT require observed SIC/SOC here
+#   - missing/invalid SIC/SOC are flagged in add_baseline_work_groups()
+#     and can be excluded in specific analyses where appropriate
 df_baseline_analytic <- df_baseline %>%
   dplyr::filter(
     base_jbstat %in% 1:2
   )
 
-cat("Analytic baseline rows (valid baseline worker + SIC/SOC): ",
+cat("Analytic baseline rows (baseline employed/self-employed): ",
     nrow(df_baseline_analytic), "\n", sep = "")
 
 # =============================================================================

@@ -6,6 +6,12 @@
 #
 # Input file naming:
 #   {wave}_indresp_w.dta  for wave in {ca,...,ci}
+#
+# Notes:
+#   In the regular UKHLS waves, housework hours is named howlng.
+#   In the COVID waves, the same concept is named howlng_cv.
+#   This loader harmonizes COVID howlng_cv to howlng, so downstream panels use
+#   the common variable name howlng.
 # =============================================================================
 
 load_covid_wave <- function(path_covid, wave_prefix) {
@@ -25,7 +31,7 @@ load_covid_wave <- function(path_covid, wave_prefix) {
   #   blwah          : baseline WAH frequency in Jan-Feb 2020
   #   sempderived    : 1 employed, 2 self-employed, 3 both, 4 not employed
   #   wah            : WFH frequency 1 always, 2 often, 3 sometimes, 4 never
-  #   howlng         : housework hours
+  #   howlng_cv      : housework hours; harmonized below to howlng
   #   keyworker      : self-reported key worker
   #   keyworksector  : keyworker sector (1..8 key, 9 not)
   #   timechcare     : childcare/homeschool hours (continuous)
@@ -54,7 +60,14 @@ load_covid_wave <- function(path_covid, wave_prefix) {
   
   data %>%
     dplyr::select(dplyr::all_of(existing)) %>%
-    dplyr::rename_with(\(x) stringr::str_replace(x, "ff_furlough", "fffurlough"), dplyr::everything())
+    dplyr::rename_with(
+      \(x) stringr::str_replace(x, "ff_furlough", "fffurlough"),
+      dplyr::everything()
+    ) %>%
+    dplyr::rename_with(
+      \(x) stringr::str_replace(x, "_howlng_cv$", "_howlng"),
+      dplyr::everything()
+    )
 }
 
 merge_covid_waves_wide <- function(path_covid, covid_waves) {
