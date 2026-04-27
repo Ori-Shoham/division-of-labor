@@ -41,6 +41,7 @@ source("code/lib/family_baseline.R")
 source("code/lib/covid_loader.R")
 source("code/lib/covid_panel.R")
 source("code/lib/future_outcomes.R")
+source("code/lib/history.R")
 source("code/lib/samples.R")
 
 # ---- Ensure output folders exist (outside repo) -------------------------------
@@ -99,6 +100,39 @@ cat("Analytic baseline rows (baseline employed/self-employed): ",
     nrow(df_baseline_analytic), "\n", sep = "")
 
 # =============================================================================
+# Step 1b: Pre-baseline main-wave history
+# =============================================================================
+cat("\n--- Step 1b: Build pre-baseline history from prior main waves ---\n")
+
+# The history builder loads candidate waves from config.R, then keeps only waves
+# strictly prior to each individual baseline source wave.
+df_prebaseline_history_long <- build_prebaseline_history_long(
+  path_main     = path_main,
+  df_baseline   = df_baseline_analytic,
+  history_waves = history_waves
+)
+
+saveRDS(
+  df_prebaseline_history_long,
+  file.path(der_path, "prebaseline_history_long.rds")
+)
+
+cat("Pre-baseline person-wave history saved to: ",
+    file.path(der_path, "prebaseline_history_long.rds"), "\n", sep = "")
+
+df_prebaseline_history_summary <- summarise_prebaseline_history(
+  df_prebaseline_history_long
+)
+
+saveRDS(
+  df_prebaseline_history_summary,
+  file.path(der_path, "prebaseline_history_summary.rds")
+)
+
+cat("Pre-baseline person-level history summary saved to: ",
+    file.path(der_path, "prebaseline_history_summary.rds"), "\n", sep = "")
+
+# =============================================================================
 # Step 2: COVID wide (ca–ci)
 # =============================================================================
 cat("\n--- Step 2: Merge COVID waves wide (ca–ci) ---\n")
@@ -155,6 +189,12 @@ samples <- build_samples_2019(
   pidp_in_covid = pidp_in_covid
 )
 
+# Attach compact pre-baseline history summaries to all person-level samples.
+samples <- merge_history_summary_into_samples(
+  samples,
+  df_prebaseline_history_summary
+)
+
 saveRDS(samples$s2019_all,           file.path(samples_path, "s2019_all.rds"))
 saveRDS(samples$s2019_couples,       file.path(samples_path, "s2019_couples.rds"))
 saveRDS(samples$s2019_covid,         file.path(samples_path, "s2019_covid.rds"))
@@ -209,6 +249,50 @@ saveRDS(
 cat("COVID-observed couple roster saved to: ",
     file.path(samples_path, "baseline_couple_roster_both_in_covid.rds"), "\n", sep = "")
 
+# Build couple-level pre-baseline history files.
+df_prebaseline_couple_history_long <- build_prebaseline_couple_history_long(
+  df_history_long = df_prebaseline_history_long,
+  roster          = couple_roster
+)
+
+saveRDS(
+  df_prebaseline_couple_history_long,
+  file.path(der_path, "prebaseline_couple_history_long.rds")
+)
+
+cat("Pre-baseline couple-wave history saved to: ",
+    file.path(der_path, "prebaseline_couple_history_long.rds"), "\n", sep = "")
+
+df_prebaseline_couple_history_summary <- summarise_prebaseline_couple_history(
+  df_couple_history_long = df_prebaseline_couple_history_long,
+  df_history_summary     = df_prebaseline_history_summary,
+  roster                 = couple_roster
+)
+
+saveRDS(
+  df_prebaseline_couple_history_summary,
+  file.path(der_path, "prebaseline_couple_history_summary.rds")
+)
+
+cat("Pre-baseline couple-level history summary saved to: ",
+    file.path(der_path, "prebaseline_couple_history_summary.rds"), "\n", sep = "")
+
+# Attach compact pre-baseline history summaries to the baseline couple sample and
+# overwrite the earlier saved version so downstream sample files include history.
+s2019_baseline_couplelevel <- s2019_baseline_couplelevel %>%
+  dplyr::left_join(
+    df_prebaseline_couple_history_summary,
+    by = c("couple_id", "husband_pidp", "wife_pidp")
+  )
+
+saveRDS(
+  s2019_baseline_couplelevel,
+  file.path(samples_path, "s2019_baseline_couplelevel.rds")
+)
+
+cat("Baseline couple-level sample + pre-baseline history saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel.rds"), "\n", sep = "")
+
 # Build strict couple-wave COVID panel:
 # one row per couple x wave, keeping only waves where both spouses are observed
 df_covid_couple_long <- build_covid_couple_long(
@@ -226,7 +310,8 @@ df_covid_couple_long <- build_covid_couple_long(
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
         sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not
+        treat_husb_shutdown_wife_not,
+        dplyr::starts_with("hist_")
       ),
     by = "couple_id"
   )
@@ -348,7 +433,8 @@ df_future_couple_long <- build_future_couple_long(
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
         sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not
+        treat_husb_shutdown_wife_not,
+        dplyr::starts_with("hist_")
       ),
     by = "couple_id"
   )
@@ -362,6 +448,84 @@ cat("Future couple-level long saved to: ",
     file.path(der_path, "future_outcomes_couple_long_lmo.rds"), "\n", sep = "")
 
 # =============================================================================
+# =============================================================================
+# Step 5c: Ready-to-plot stacked history + baseline + COVID + future panels
+# =============================================================================
+cat("\n--- Step 5c: Build stacked history/baseline/COVID/future plotting panels ---\n")
+
+# Person-level stacked panel.
+# This is the ready-to-plot long file for tracing outcomes over calendar time.
+# It stacks:
+#   - pre-baseline regular-wave history
+#   - the individual baseline row
+#   - Jan-Feb 2020 COVID baseline and COVID-study rows
+#   - post-March 2020 regular-wave future outcomes
+df_person_history_future_long <- build_person_history_future_long(
+  df_history_long = df_prebaseline_history_long,
+  df_baseline     = df_baseline_analytic,
+  df_covid_long   = df_sample_long_covid,
+  df_future_long  = df_future_long,
+  include_covid   = TRUE
+)
+
+saveRDS(
+  df_person_history_future_long,
+  file.path(der_path, "person_history_future_long.rds")
+)
+
+cat("Person-level stacked history/future panel saved to: ",
+    file.path(der_path, "person_history_future_long.rds"), "\n", sep = "")
+
+# Couple-level stacked panel.
+# This has one row per baseline couple x time point, with husband/wife variables
+# side by side using suffixes _h and _w.
+df_couple_history_future_long <- build_couple_history_future_long(
+  df_couple_history_long = df_prebaseline_couple_history_long,
+  df_baseline_couple     = s2019_baseline_couplelevel,
+  df_covid_couple_long   = df_covid_couple_long,
+  df_future_couple_long  = df_future_couple_long,
+  include_covid          = TRUE
+)
+
+saveRDS(
+  df_couple_history_future_long,
+  file.path(der_path, "couple_history_future_long.rds")
+)
+
+cat("Couple-level stacked history/future panel saved to: ",
+    file.path(der_path, "couple_history_future_long.rds"), "\n", sep = "")
+
+# Convenience versions excluding COVID-study rows.
+# These are useful when the intended plot should compare only regular UKHLS
+# main-study history, the baseline row, and regular-wave future outcomes.
+df_person_history_future_mainonly_long <- build_person_history_future_long(
+  df_history_long = df_prebaseline_history_long,
+  df_baseline     = df_baseline_analytic,
+  df_covid_long   = NULL,
+  df_future_long  = df_future_long,
+  include_covid   = FALSE
+)
+
+saveRDS(
+  df_person_history_future_mainonly_long,
+  file.path(der_path, "person_history_future_mainonly_long.rds")
+)
+
+df_couple_history_future_mainonly_long <- build_couple_history_future_long(
+  df_couple_history_long = df_prebaseline_couple_history_long,
+  df_baseline_couple     = s2019_baseline_couplelevel,
+  df_covid_couple_long   = NULL,
+  df_future_couple_long  = df_future_couple_long,
+  include_covid          = FALSE
+)
+
+saveRDS(
+  df_couple_history_future_mainonly_long,
+  file.path(der_path, "couple_history_future_mainonly_long.rds")
+)
+
+cat("Main-study-only stacked panels saved to: ", der_path, "\n", sep = "")
+
 # Step 6: Future wide by year-month (ym)
 # =============================================================================
 cat("\n--- Step 6: Build future outcomes wide by year-month ---\n")
@@ -424,7 +588,8 @@ df_future_couple_wide <- build_future_couple_wide(
         treat_wife_key_notedu_husb_not_or_edu,
         treat_wife_key_notedu_any,
         sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not
+        treat_husb_shutdown_wife_not,
+        dplyr::starts_with("hist_")
       ),
     by = "couple_id"
   )

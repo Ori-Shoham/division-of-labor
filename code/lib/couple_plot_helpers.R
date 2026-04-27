@@ -238,7 +238,8 @@ add_treatment_group_label <- function(df,
 # -----------------------------------------------------------------------------
 couple_plot_var_label <- function(var) {
   dplyr::case_when(
-    var == "any_work"      ~ "Any work",
+    var == "any_work"      ~ "Worked positive hours",
+    var == "hours"         ~ "Hours worked last week",
     var == "workoutside"   ~ "Working outside the home",
     var == "wfh_some"      ~ "Working from home at least sometimes",
     var == "howlng"        ~ "Housework hours",
@@ -254,7 +255,8 @@ couple_plot_var_label <- function(var) {
 
 couple_plot_var_stem <- function(var) {
   dplyr::case_when(
-    var == "any_work"      ~ "any_work",
+    var == "any_work"      ~ "worked_positive_hours",
+    var == "hours"         ~ "hours_worked_last_week",
     var == "workoutside"   ~ "workoutside",
     var == "wfh_some"      ~ "wfh_any",
     var == "howlng"        ~ "housework_hours",
@@ -274,6 +276,7 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
   }
   
   dplyr::case_when(
+    var == "hours"         ~ "Hours",
     var == "howlng"        ~ "Weekly Hours",
     var == "howlng_cv"     ~ "Weekly Hours",
     var == "timechcare"    ~ "Weekly Hours",
@@ -374,6 +377,7 @@ filter_jointly_observed_couple_rows <- function(df, vars) {
 covid_count_outcome_vars <- function() {
   c(
     "any_work",
+    "hours",
     "workoutside",
     "wfh_some",
     "howlng",
@@ -389,7 +393,8 @@ future_count_outcome_vars <- function() {
     "jbhrs",
     "paygu_dv",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimngrs_dv",
+    "howlng"
   )
 }
 

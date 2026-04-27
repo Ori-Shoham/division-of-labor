@@ -7,6 +7,7 @@
 # Design:
 #   - helpers live in code/lib/
 #   - treatment shown in color / shape
+#   - treatment is always the first group in the legend and color mapping
 #   - standard version: facet rows = spouse
 #   - additional child-grid version:
 #       rows = young kids vs older kids
@@ -15,6 +16,7 @@
 # Outputs:
 #   COVID outcomes:
 #     - any_work
+#     - hours      (hours worked last week)
 #     - workoutside
 #     - wfh_some   (your "wfh_any")
 #     - howlng
@@ -30,11 +32,24 @@
 #     - fimngrs_dv
 #     - howlng
 #
+#   Main-survey history + future outcomes:
+#     - any_work
+#     - jbhrs
+#     - paygu_dv
+#     - fimnlabgrs_dv
+#     - fimngrs_dv
+#     - howlng
+#
 # Notes:
-#   - Future outcomes saved at both wave and year aggregation
-#   - Child-grid versions compare only 0-10 vs 11-17 child groups
+#   - Future outcomes are saved at both wave and year aggregation.
+#   - History + future figures use the main-survey-only stacked couple panel:
+#       couple_history_future_mainonly_long.rds
+#     This deliberately excludes COVID-study rows because COVID has a different
+#     questionnaire and a different sample.
+#   - History + future figures are plotted by calendar year.
+#   - Child-grid versions compare only 0-10 vs 11-17 child groups.
 #   - Restricted wife-treatment variants limit the sample to couples where
-#     the husband is not a key worker or is in education
+#     the husband is not a key worker or is in education.
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -59,9 +74,28 @@ dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
 df_covid_couple  <- readRDS(file.path(der_path, "df_sample_long_covid_couplelevel.rds"))
 df_future_couple <- readRDS(file.path(der_path, "future_outcomes_couple_long_lmo.rds"))
 
+history_future_file <- file.path(der_path, "couple_history_future_mainonly_long.rds")
+
+if (file.exists(history_future_file)) {
+  df_history_future_couple <- readRDS(history_future_file)
+} else {
+  warning(
+    "History + future stacked couple file not found: ",
+    history_future_file,
+    ". History + future treatment plots will be skipped."
+  )
+  df_history_future_couple <- NULL
+}
+
 # Convert to spouse-long
 df_covid_spouse  <- reshape_couple_long_to_spouse_long(df_covid_couple)
 df_future_spouse <- reshape_couple_long_to_spouse_long(df_future_couple)
+
+if (!is.null(df_history_future_couple)) {
+  df_history_future_spouse <- reshape_couple_long_to_spouse_long(df_history_future_couple)
+} else {
+  df_history_future_spouse <- NULL
+}
 
 # =============================================================================
 # Settings
@@ -89,6 +123,7 @@ CHILD_SUBSETS <- c("all", "u10", "11_17")
 
 COVID_OUTCOMES <- c(
   "any_work",
+  "hours",
   "workoutside",
   "wfh_some",
   "howlng",
@@ -106,20 +141,33 @@ FUTURE_OUTCOMES <- c(
   "howlng"
 )
 
+# Main-survey variables with comparable history and future values.
+# WFH/workoutside are intentionally excluded here because the regular pre-2020
+# main survey does not ask the relevant WFH questions.
+HISTORY_FUTURE_OUTCOMES <- c(
+  "any_work",
+  "jbhrs",
+  "paygu_dv",
+  "fimnlabgrs_dv",
+  "fimngrs_dv",
+  "howlng"
+)
+
 FUTURE_AGGS <- c("wave", "year")
+HISTORY_FUTURE_AGGS <- c("year")
 
 # -----------------------------------------------------------------------------
 # Plot readability controls
 # -----------------------------------------------------------------------------
-AXIS_TEXT_SIZE   <- 14
-AXIS_TITLE_SIZE  <- 16
-STRIP_TEXT_SIZE  <- 14
-LEGEND_TEXT_SIZE <- 14
+AXIS_TEXT_SIZE    <- 14
+AXIS_TITLE_SIZE   <- 16
+STRIP_TEXT_SIZE   <- 14
+LEGEND_TEXT_SIZE  <- 14
 LEGEND_TITLE_SIZE <- 14
-TITLE_SIZE       <- 14
+TITLE_SIZE        <- 14
 
 .has_data <- function(df, var) {
-  var %in% names(df) && !all(is.na(df[[var]]))
+  !is.null(df) && var %in% names(df) && !all(is.na(df[[var]]))
 }
 
 # =============================================================================
@@ -230,7 +278,7 @@ for (tr in TREATMENT_VARS) {
 }
 
 # =============================================================================
-# Run future figures
+# Run future-only figures
 # =============================================================================
 
 for (tr in TREATMENT_VARS) {
@@ -348,6 +396,126 @@ for (tr in TREATMENT_VARS) {
 }
 
 # =============================================================================
+# Run main-survey history + future figures
+# =============================================================================
+
+if (!is.null(df_history_future_spouse)) {
+  for (tr in TREATMENT_VARS) {
+    for (v in HISTORY_FUTURE_OUTCOMES) {
+      
+      if (!.has_data(df_history_future_spouse, v)) next
+      
+      for (agg in HISTORY_FUTURE_AGGS) {
+        
+        # Standard spouse-facet versions
+        for (child_subset in CHILD_SUBSETS) {
+          plot_main_history_future_spouse_treatment_numeric(
+            df = df_history_future_spouse,
+            var = v,
+            treatment_var = tr,
+            child_subset = child_subset,
+            agg = agg,
+            out_file = paste0(
+              "main_history_future_",
+              couple_plot_var_stem(v), "_",
+              agg, "_",
+              tr, "_",
+              child_subset,
+              "_spousefacet.png"
+            ),
+            fig_path = fig_path,
+            treated_label = TREATMENT_LABS[[tr]],
+            axis_text_size = AXIS_TEXT_SIZE,
+            axis_title_size = AXIS_TITLE_SIZE,
+            strip_text_size = STRIP_TEXT_SIZE,
+            legend_text_size = LEGEND_TEXT_SIZE,
+            legend_title_size = LEGEND_TITLE_SIZE,
+            title_size = TITLE_SIZE
+          )
+        }
+        
+        # Child-group facet-grid comparison
+        plot_main_history_future_spouse_treatment_childgrid(
+          df = df_history_future_spouse,
+          var = v,
+          treatment_var = tr,
+          agg = agg,
+          out_file = paste0(
+            "main_history_future_",
+            couple_plot_var_stem(v), "_",
+            agg, "_",
+            tr,
+            "_childgrid_spousecols.png"
+          ),
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
+        )
+        
+        # Restricted comparison sample for wife-based treatments only
+        if (tr %in% WIFE_TREATMENT_VARS) {
+          
+          for (child_subset in CHILD_SUBSETS) {
+            plot_main_history_future_spouse_treatment_numeric(
+              df = df_history_future_spouse,
+              var = v,
+              treatment_var = tr,
+              child_subset = child_subset,
+              agg = agg,
+              restriction = "husb_notkey_or_edu",
+              out_file = paste0(
+                "main_history_future_",
+                couple_plot_var_stem(v), "_",
+                agg, "_",
+                tr, "_",
+                child_subset,
+                "_spousefacet_husb_notkey_or_edu.png"
+              ),
+              fig_path = fig_path,
+              treated_label = TREATMENT_LABS[[tr]],
+              axis_text_size = AXIS_TEXT_SIZE,
+              axis_title_size = AXIS_TITLE_SIZE,
+              strip_text_size = STRIP_TEXT_SIZE,
+              legend_text_size = LEGEND_TEXT_SIZE,
+              legend_title_size = LEGEND_TITLE_SIZE,
+              title_size = TITLE_SIZE
+            )
+          }
+          
+          plot_main_history_future_spouse_treatment_childgrid(
+            df = df_history_future_spouse,
+            var = v,
+            treatment_var = tr,
+            agg = agg,
+            restriction = "husb_notkey_or_edu",
+            out_file = paste0(
+              "main_history_future_",
+              couple_plot_var_stem(v), "_",
+              agg, "_",
+              tr,
+              "_childgrid_spousecols_husb_notkey_or_edu.png"
+            ),
+            fig_path = fig_path,
+            treated_label = TREATMENT_LABS[[tr]],
+            axis_text_size = AXIS_TEXT_SIZE,
+            axis_title_size = AXIS_TITLE_SIZE,
+            strip_text_size = STRIP_TEXT_SIZE,
+            legend_text_size = LEGEND_TEXT_SIZE,
+            legend_title_size = LEGEND_TITLE_SIZE,
+            title_size = TITLE_SIZE
+          )
+        }
+      }
+    }
+  }
+}
+
+# =============================================================================
 # Couple-count figures by treatment group
 # =============================================================================
 
@@ -437,6 +605,54 @@ for (tr in TREATMENT_VARS) {
         legend_title_size = LEGEND_TITLE_SIZE,
         title_size = TITLE_SIZE
       )
+    }
+  }
+  
+  # Main-survey history + future counts by year
+  if (!is.null(df_history_future_couple)) {
+    for (agg in HISTORY_FUTURE_AGGS) {
+      plot_main_history_future_treatment_group_counts(
+        df = df_history_future_couple,
+        treatment_var = tr,
+        agg = agg,
+        out_file = paste0(
+          "main_history_future_counts_",
+          agg, "_",
+          tr,
+          "_samplefacets.png"
+        ),
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+      
+      if (tr %in% WIFE_TREATMENT_VARS) {
+        plot_main_history_future_treatment_group_counts(
+          df = df_history_future_couple,
+          treatment_var = tr,
+          agg = agg,
+          restriction = "husb_notkey_or_edu",
+          out_file = paste0(
+            "main_history_future_counts_",
+            agg, "_",
+            tr,
+            "_samplefacets_husb_notkey_or_edu.png"
+          ),
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
+        )
+      }
     }
   }
 }
