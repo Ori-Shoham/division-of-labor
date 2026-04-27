@@ -45,12 +45,34 @@ reshape_couple_long_to_spouse_long <- function(
   
   spouse_info <- .get_spouse_specific_cols(df)
   
+  # Some stacked couple panels contain both couple-level time variables
+  # (ym, year, intdaty_dv, intdatm_dv) and spouse-specific versions
+  # (ym_h/ym_w, year_h/year_w, etc.). For spouse-long plotting we keep the
+  # couple-level time variables and exclude the spouse-specific time versions;
+  # otherwise renaming ym_h -> ym would duplicate the existing ym column.
+  shared_time_bases <- setdiff(time_vars, "couple_id")
+  duplicate_time_bases <- intersect(
+    spouse_info$common_bases,
+    shared_time_bases[shared_time_bases %in% names(df)]
+  )
+  
+  common_bases_to_keep <- setdiff(
+    spouse_info$common_bases,
+    duplicate_time_bases
+  )
+  
   if (keep_only_common_spouse_vars) {
-    husband_keep <- paste0(spouse_info$common_bases, "_h")
-    wife_keep    <- paste0(spouse_info$common_bases, "_w")
+    husband_keep <- paste0(common_bases_to_keep, "_h")
+    wife_keep    <- paste0(common_bases_to_keep, "_w")
   } else {
-    husband_keep <- spouse_info$husband_cols
-    wife_keep    <- spouse_info$wife_cols
+    husband_keep <- setdiff(
+      spouse_info$husband_cols,
+      paste0(duplicate_time_bases, "_h")
+    )
+    wife_keep <- setdiff(
+      spouse_info$wife_cols,
+      paste0(duplicate_time_bases, "_w")
+    )
   }
   
   couple_level_cols <- setdiff(
@@ -61,7 +83,7 @@ reshape_couple_long_to_spouse_long <- function(
   couple_level_cols <- union(time_vars[time_vars %in% names(df)], couple_level_cols)
   
   df_h <- df %>%
-    dplyr::select(dplyr::all_of(c(couple_level_cols, husband_keep))) %>%
+    dplyr::select(dplyr::all_of(unique(c(couple_level_cols, husband_keep)))) %>%
     dplyr::rename_with(
       ~ stringr::str_remove(.x, "_h$"),
       .cols = dplyr::all_of(husband_keep)
@@ -72,7 +94,7 @@ reshape_couple_long_to_spouse_long <- function(
     )
   
   df_w <- df %>%
-    dplyr::select(dplyr::all_of(c(couple_level_cols, wife_keep))) %>%
+    dplyr::select(dplyr::all_of(unique(c(couple_level_cols, wife_keep)))) %>%
     dplyr::rename_with(
       ~ stringr::str_remove(.x, "_w$"),
       .cols = dplyr::all_of(wife_keep)
@@ -88,8 +110,6 @@ reshape_couple_long_to_spouse_long <- function(
     ) %>%
     dplyr::arrange(couple_id, spouse, dplyr::across(dplyr::any_of(c("wave", "ym", "year"))))
 }
-
-# -----------------------------------------------------------------------------
 # Child subgroup filter helper
 #
 # child_subset options:
@@ -324,55 +344,110 @@ expand_couple_samples_for_counts <- function(df) {
 }
 
 # -----------------------------------------------------------------------------
-# Rowwise indicator: at least one outcome is observed for both spouses
+# Rowwise indicators used by count plots
 #
 # Inputs:
 #   df   : couple-level long data with spouse-suffixed columns (_h / _w)
 #   vars : vector of unsuffixed outcome names, e.g. c("workoutside", "wfh_some")
 #
-# Rule:
-#   Returns TRUE if there exists at least one variable v in vars such that
-#   both v_h and v_w are non-missing in that row.
+# Availability definition:
+#   TRUE if there exists at least one variable v in vars such that either v_h
+#   or v_w is non-missing in that couple-time row.
+#
+# Both-spouses definition:
+#   TRUE if there exists at least one variable v in vars such that both v_h
+#   and v_w are non-missing in that couple-time row.
 # -----------------------------------------------------------------------------
-has_any_joint_outcome_observed <- function(df, vars) {
-  
+has_any_spouse_outcome_observed <- function(df, vars) {
+
   if (length(vars) == 0) {
     return(rep(FALSE, nrow(df)))
   }
-  
+
+  valid_vars <- vars[
+    paste0(vars, "_h") %in% names(df) |
+      paste0(vars, "_w") %in% names(df)
+  ]
+
+  if (length(valid_vars) == 0) {
+    return(rep(FALSE, nrow(df)))
+  }
+
+  out <- rep(FALSE, nrow(df))
+
+  for (v in valid_vars) {
+    h_col <- paste0(v, "_h")
+    w_col <- paste0(v, "_w")
+    h_obs <- if (h_col %in% names(df)) !is.na(df[[h_col]]) else rep(FALSE, nrow(df))
+    w_obs <- if (w_col %in% names(df)) !is.na(df[[w_col]]) else rep(FALSE, nrow(df))
+    out <- out | h_obs | w_obs
+  }
+
+  out
+}
+
+has_any_joint_outcome_observed <- function(df, vars) {
+
+  if (length(vars) == 0) {
+    return(rep(FALSE, nrow(df)))
+  }
+
   valid_vars <- vars[
     paste0(vars, "_h") %in% names(df) &
       paste0(vars, "_w") %in% names(df)
   ]
-  
+
   if (length(valid_vars) == 0) {
     return(rep(FALSE, nrow(df)))
   }
-  
+
   out <- rep(FALSE, nrow(df))
-  
+
   for (v in valid_vars) {
     both_obs <- !is.na(df[[paste0(v, "_h")]]) & !is.na(df[[paste0(v, "_w")]])
     out <- out | both_obs
   }
-  
+
   out
 }
 
 # -----------------------------------------------------------------------------
-# Keep only couple-time rows with at least one jointly observed couple outcome
+# Keep couple-time rows with sufficient observed outcomes for count plots
+#
+# require_both_spouses = FALSE:
+#   Keep rows with at least one observed spouse-specific outcome.
+#
+# require_both_spouses = TRUE:
+#   Keep rows where at least one outcome is observed for both spouses in the
+#   same couple-time row.
 # -----------------------------------------------------------------------------
-filter_jointly_observed_couple_rows <- function(df, vars) {
-  keep <- has_any_joint_outcome_observed(df, vars)
+filter_observed_couple_rows_for_counts <- function(df,
+                                                   vars,
+                                                   require_both_spouses = FALSE) {
+  if (require_both_spouses) {
+    keep <- has_any_joint_outcome_observed(df, vars)
+  } else {
+    keep <- has_any_spouse_outcome_observed(df, vars)
+  }
+
   df[keep, , drop = FALSE]
+}
+
+# Backward-compatible alias for older count helpers.
+filter_jointly_observed_couple_rows <- function(df, vars) {
+  filter_observed_couple_rows_for_counts(
+    df = df,
+    vars = vars,
+    require_both_spouses = TRUE
+  )
 }
 
 # -----------------------------------------------------------------------------
 # Default outcome families for count plots
 #
 # These are the variables currently used in the couple-treatment descriptives.
-# Counts are based on whether at least one of these outcomes is observed
-# for both spouses at a given time point.
+# The count plot function decides whether to require at least one spouse or both
+# spouses observed using require_both_spouses.
 # -----------------------------------------------------------------------------
 covid_count_outcome_vars <- function() {
   c(

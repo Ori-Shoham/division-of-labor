@@ -96,6 +96,7 @@ plot_covid_treatment_group_counts <- function(
     include_title = FALSE,
     restriction = NULL,
     treated_label = NULL,
+    require_both_spouses = FALSE,
     axis_text_size = 12,
     axis_title_size = 13,
     strip_text_size = 12,
@@ -111,7 +112,10 @@ plot_covid_treatment_group_counts <- function(
     filter_couple_plot_restriction(restriction = restriction)
   
   dd <- df %>%
-    filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
+    filter_observed_couple_rows_for_counts(
+      vars = outcome_vars,
+      require_both_spouses = require_both_spouses
+    ) %>%
     dplyr::distinct(
       couple_id,
       wave,
@@ -126,8 +130,7 @@ plot_covid_treatment_group_counts <- function(
     expand_couple_samples_for_counts() %>%
     dplyr::filter(
       !is.na(treatment_group),
-      !is.na(wave),
-      wave != "2019"
+      !is.na(wave)
     ) %>%
     dplyr::group_by(sample_group, wave, treatment_group) %>%
     dplyr::summarise(
@@ -152,10 +155,18 @@ plot_covid_treatment_group_counts <- function(
     theme_minimal() +
     labs(
       x = NULL,
-      y = "Number of couples",
+      y = if (require_both_spouses) {
+        "Number of couples (both spouses observed)"
+      } else {
+        "Number of couples"
+      },
       color = NULL,
       shape = NULL,
-      title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
+      title = if (include_title) paste(
+        "Couple counts over time |",
+        if (require_both_spouses) "both spouses observed |" else "any spouse observed |",
+        treatment_var
+      ) else NULL
     ) +
     theme_couple_facets(
       axis_text_size = axis_text_size,
@@ -203,6 +214,7 @@ plot_future_treatment_group_counts <- function(
     include_title = FALSE,
     restriction = NULL,
     treated_label = NULL,
+    require_both_spouses = FALSE,
     axis_text_size = 12,
     axis_title_size = 13,
     strip_text_size = 12,
@@ -219,7 +231,10 @@ plot_future_treatment_group_counts <- function(
     filter_couple_plot_restriction(restriction = restriction)
   
   dd <- df %>%
-    filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
+    filter_observed_couple_rows_for_counts(
+      vars = outcome_vars,
+      require_both_spouses = require_both_spouses
+    ) %>%
     dplyr::distinct(
       couple_id,
       .data[[time_var]],
@@ -260,10 +275,18 @@ plot_future_treatment_group_counts <- function(
     theme_minimal() +
     labs(
       x = NULL,
-      y = "Number of couples",
+      y = if (require_both_spouses) {
+        "Number of couples (both spouses observed)"
+      } else {
+        "Number of couples"
+      },
       color = NULL,
       shape = NULL,
-      title = if (include_title) paste("Couple counts over time |", treatment_var) else NULL
+      title = if (include_title) paste(
+        "Couple counts over time |",
+        if (require_both_spouses) "both spouses observed |" else "any spouse observed |",
+        treatment_var
+      ) else NULL
     ) +
     theme_couple_facets(
       axis_text_size = axis_text_size,
@@ -349,8 +372,7 @@ plot_covid_spouse_treatment_overtime <- function(
       !is.na(value),
       !is.na(treatment_group),
       !is.na(spouse),
-      !is.na(wave),
-      wave != "2019"
+      !is.na(wave)
     ) %>%
     dplyr::group_by(wave, spouse, treatment_group) %>%
     dplyr::summarise(
@@ -459,8 +481,7 @@ plot_covid_spouse_treatment_childgrid <- function(
       !is.na(treatment_group),
       !is.na(spouse),
       !is.na(child_group_plot),
-      !is.na(wave),
-      wave != "2019"
+      !is.na(wave)
     ) %>%
     dplyr::group_by(wave, spouse, child_group_plot, treatment_group) %>%
     dplyr::summarise(
@@ -1113,6 +1134,7 @@ plot_main_history_future_treatment_group_counts <- function(
     include_title = FALSE,
     restriction = NULL,
     treated_label = NULL,
+    require_both_spouses = FALSE,
     drop_covid = TRUE,
     exclude_2025 = TRUE,
     axis_text_size = 12,
@@ -1140,7 +1162,10 @@ plot_main_history_future_treatment_group_counts <- function(
   }
 
   dd <- df %>%
-    filter_jointly_observed_couple_rows(vars = outcome_vars) %>%
+    filter_observed_couple_rows_for_counts(
+      vars = outcome_vars,
+      require_both_spouses = require_both_spouses
+    ) %>%
     dplyr::distinct(
       couple_id,
       .data[[agg]],
@@ -1182,10 +1207,18 @@ plot_main_history_future_treatment_group_counts <- function(
     theme_minimal() +
     labs(
       x = NULL,
-      y = "Number of couples",
+      y = if (require_both_spouses) {
+        "Number of couples (both spouses observed)"
+      } else {
+        "Number of couples"
+      },
       color = NULL,
       shape = NULL,
-      title = if (include_title) paste("Couple counts over time | history + future |", treatment_var) else NULL
+      title = if (include_title) paste(
+        "Couple counts over time | history + future |",
+        if (require_both_spouses) "both spouses observed |" else "any spouse observed |",
+        treatment_var
+      ) else NULL
     ) +
     theme_couple_facets(
       axis_text_size = axis_text_size,

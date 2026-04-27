@@ -78,6 +78,40 @@ tab_future_all <- df_future_couple_long %>%
   collapse_to_unique_couples() %>%
   prep_sample_table_vars()
 
+# =============================================================================
+# Treatment x child-age comparison tables: baseline demographics and history
+# =============================================================================
+
+TREATMENT_BALANCE_VARS <- c(
+  "treat_wife_key_notedu_husb_not_or_edu",
+  "treat_wife_key_notedu_any",
+  "treat_husb_shutdown_wife_not"
+)
+
+for (tr in TREATMENT_BALANCE_VARS) {
+  if (!tr %in% names(tab_base_all)) next
+
+  t_balance <- make_treatment_child_balance_table(
+    df = tab_base_all,
+    treatment_var = tr,
+    include_sd_rows = TRUE
+  )
+
+  readr::write_csv(
+    t_balance,
+    file.path(tab_path, paste0("sample_table_treatment_child_balance_", tr, ".csv"))
+  )
+
+  write_treatment_child_balance_table(
+    df = t_balance,
+    file = file.path(tab_path, paste0("sample_table_treatment_child_balance_", tr, ".tex")),
+    title = paste0(
+      "Baseline and history characteristics by treatment and child-age group: ",
+      tr
+    )
+  )
+}
+
 subset_specs <- list(
   list(
     suffix = "",

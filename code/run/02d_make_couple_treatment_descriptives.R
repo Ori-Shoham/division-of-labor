@@ -519,37 +519,32 @@ if (!is.null(df_history_future_spouse)) {
 # Couple-count figures by treatment group
 # =============================================================================
 
+COUNT_REQUIRE_BOTH <- c(FALSE, TRUE)
+
+.count_suffix <- function(require_both_spouses) {
+  if (isTRUE(require_both_spouses)) {
+    "_both_spouses_observed"
+  } else {
+    ""
+  }
+}
+
 for (tr in TREATMENT_VARS) {
-  
-  # COVID wave counts
-  plot_covid_treatment_group_counts(
-    df = df_covid_couple,
-    treatment_var = tr,
-    out_file = paste0(
-      "covid_counts_wave_",
-      tr,
-      "_samplefacets.png"
-    ),
-    fig_path = fig_path,
-    treated_label = TREATMENT_LABS[[tr]],
-    axis_text_size = AXIS_TEXT_SIZE,
-    axis_title_size = AXIS_TITLE_SIZE,
-    strip_text_size = STRIP_TEXT_SIZE,
-    legend_text_size = LEGEND_TEXT_SIZE,
-    legend_title_size = LEGEND_TITLE_SIZE,
-    title_size = TITLE_SIZE
-  )
-  
-  # Restricted count plots for wife-based treatments
-  if (tr %in% WIFE_TREATMENT_VARS) {
+  for (require_both in COUNT_REQUIRE_BOTH) {
+
+    suffix <- .count_suffix(require_both)
+
+    # COVID wave counts
     plot_covid_treatment_group_counts(
       df = df_covid_couple,
       treatment_var = tr,
-      restriction = "husb_notkey_or_edu",
+      require_both_spouses = require_both,
       out_file = paste0(
         "covid_counts_wave_",
         tr,
-        "_samplefacets_husb_notkey_or_edu.png"
+        "_samplefacets",
+        suffix,
+        ".png"
       ),
       fig_path = fig_path,
       treated_label = TREATMENT_LABS[[tr]],
@@ -560,41 +555,20 @@ for (tr in TREATMENT_VARS) {
       legend_title_size = LEGEND_TITLE_SIZE,
       title_size = TITLE_SIZE
     )
-  }
-  
-  # Future counts by wave and year
-  for (agg in FUTURE_AGGS) {
-    plot_future_treatment_group_counts(
-      df = df_future_couple,
-      treatment_var = tr,
-      agg = agg,
-      out_file = paste0(
-        "future_counts_",
-        agg, "_",
-        tr,
-        "_samplefacets.png"
-      ),
-      fig_path = fig_path,
-      treated_label = TREATMENT_LABS[[tr]],
-      axis_text_size = AXIS_TEXT_SIZE,
-      axis_title_size = AXIS_TITLE_SIZE,
-      strip_text_size = STRIP_TEXT_SIZE,
-      legend_text_size = LEGEND_TEXT_SIZE,
-      legend_title_size = LEGEND_TITLE_SIZE,
-      title_size = TITLE_SIZE
-    )
-    
+
+    # Restricted count plots for wife-based treatments
     if (tr %in% WIFE_TREATMENT_VARS) {
-      plot_future_treatment_group_counts(
-        df = df_future_couple,
+      plot_covid_treatment_group_counts(
+        df = df_covid_couple,
         treatment_var = tr,
-        agg = agg,
         restriction = "husb_notkey_or_edu",
+        require_both_spouses = require_both,
         out_file = paste0(
-          "future_counts_",
-          agg, "_",
+          "covid_counts_wave_",
           tr,
-          "_samplefacets_husb_notkey_or_edu.png"
+          "_samplefacets_husb_notkey_or_edu",
+          suffix,
+          ".png"
         ),
         fig_path = fig_path,
         treated_label = TREATMENT_LABS[[tr]],
@@ -606,20 +580,21 @@ for (tr in TREATMENT_VARS) {
         title_size = TITLE_SIZE
       )
     }
-  }
-  
-  # Main-survey history + future counts by year
-  if (!is.null(df_history_future_couple)) {
-    for (agg in HISTORY_FUTURE_AGGS) {
-      plot_main_history_future_treatment_group_counts(
-        df = df_history_future_couple,
+
+    # Future counts by wave and year
+    for (agg in FUTURE_AGGS) {
+      plot_future_treatment_group_counts(
+        df = df_future_couple,
         treatment_var = tr,
         agg = agg,
+        require_both_spouses = require_both,
         out_file = paste0(
-          "main_history_future_counts_",
+          "future_counts_",
           agg, "_",
           tr,
-          "_samplefacets.png"
+          "_samplefacets",
+          suffix,
+          ".png"
         ),
         fig_path = fig_path,
         treated_label = TREATMENT_LABS[[tr]],
@@ -630,18 +605,21 @@ for (tr in TREATMENT_VARS) {
         legend_title_size = LEGEND_TITLE_SIZE,
         title_size = TITLE_SIZE
       )
-      
+
       if (tr %in% WIFE_TREATMENT_VARS) {
-        plot_main_history_future_treatment_group_counts(
-          df = df_history_future_couple,
+        plot_future_treatment_group_counts(
+          df = df_future_couple,
           treatment_var = tr,
           agg = agg,
           restriction = "husb_notkey_or_edu",
+          require_both_spouses = require_both,
           out_file = paste0(
-            "main_history_future_counts_",
+            "future_counts_",
             agg, "_",
             tr,
-            "_samplefacets_husb_notkey_or_edu.png"
+            "_samplefacets_husb_notkey_or_edu",
+            suffix,
+            ".png"
           ),
           fig_path = fig_path,
           treated_label = TREATMENT_LABS[[tr]],
@@ -652,6 +630,60 @@ for (tr in TREATMENT_VARS) {
           legend_title_size = LEGEND_TITLE_SIZE,
           title_size = TITLE_SIZE
         )
+      }
+    }
+
+    # Main-survey history + future counts by year
+    if (!is.null(df_history_future_couple)) {
+      for (agg in HISTORY_FUTURE_AGGS) {
+        plot_main_history_future_treatment_group_counts(
+          df = df_history_future_couple,
+          treatment_var = tr,
+          agg = agg,
+          require_both_spouses = require_both,
+          out_file = paste0(
+            "main_history_future_counts_",
+            agg, "_",
+            tr,
+            "_samplefacets",
+            suffix,
+            ".png"
+          ),
+          fig_path = fig_path,
+          treated_label = TREATMENT_LABS[[tr]],
+          axis_text_size = AXIS_TEXT_SIZE,
+          axis_title_size = AXIS_TITLE_SIZE,
+          strip_text_size = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          legend_title_size = LEGEND_TITLE_SIZE,
+          title_size = TITLE_SIZE
+        )
+
+        if (tr %in% WIFE_TREATMENT_VARS) {
+          plot_main_history_future_treatment_group_counts(
+            df = df_history_future_couple,
+            treatment_var = tr,
+            agg = agg,
+            restriction = "husb_notkey_or_edu",
+            require_both_spouses = require_both,
+            out_file = paste0(
+              "main_history_future_counts_",
+              agg, "_",
+              tr,
+              "_samplefacets_husb_notkey_or_edu",
+              suffix,
+              ".png"
+            ),
+            fig_path = fig_path,
+            treated_label = TREATMENT_LABS[[tr]],
+            axis_text_size = AXIS_TEXT_SIZE,
+            axis_title_size = AXIS_TITLE_SIZE,
+            strip_text_size = STRIP_TEXT_SIZE,
+            legend_text_size = LEGEND_TEXT_SIZE,
+            legend_title_size = LEGEND_TITLE_SIZE,
+            title_size = TITLE_SIZE
+          )
+        }
       }
     }
   }

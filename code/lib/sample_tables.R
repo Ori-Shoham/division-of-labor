@@ -629,3 +629,283 @@ plot_wfh_some_composition <- function(df,
     title = title
   )
 }
+
+# =============================================================================
+
+# =============================================================================
+# Treatment x child-age baseline/history comparison table
+# =============================================================================
+
+clean_balance_numeric <- function(x, invalid_negative = TRUE) {
+  x <- haven::zap_labels(x)
+  x <- suppressWarnings(as.numeric(x))
+  if (invalid_negative) {
+    x[x < 0] <- NA_real_
+  }
+  x
+}
+
+balance_col_numeric <- function(df, col, invalid_negative = TRUE) {
+  if (!col %in% names(df)) {
+    return(rep(NA_real_, nrow(df)))
+  }
+  clean_balance_numeric(df[[col]], invalid_negative = invalid_negative)
+}
+
+balance_coalesce_numeric <- function(df, cols, invalid_negative = TRUE) {
+  vals <- lapply(cols, function(col) {
+    balance_col_numeric(df, col, invalid_negative = invalid_negative)
+  })
+  Reduce(dplyr::coalesce, vals)
+}
+
+balance_keyworker_nonedu <- function(df, spouse = c("w", "h")) {
+  spouse <- match.arg(spouse)
+
+  bool_col <- if (spouse == "w") {
+    "wife_is_keyworker_nonedu"
+  } else {
+    "husb_is_keyworker_nonedu"
+  }
+
+  if (bool_col %in% names(df)) {
+    x <- df[[bool_col]]
+    return(dplyr::case_when(
+      is.na(x) ~ NA_real_,
+      x %in% c(TRUE, 1) ~ 1,
+      x %in% c(FALSE, 0) ~ 0,
+      TRUE ~ NA_real_
+    ))
+  }
+
+  group_col <- paste0("group_industry_based_detailed_", spouse)
+  if (!group_col %in% names(df)) {
+    return(rep(NA_real_, nrow(df)))
+  }
+
+  dplyr::case_when(
+    is.na(df[[group_col]]) ~ NA_real_,
+    df[[group_col]] %in% c(
+      "key worker - health\n and social services",
+      "key worker - public safety\n and essential gvt. services"
+    ) ~ 1,
+    TRUE ~ 0
+  )
+}
+
+prep_treatment_child_balance_vars <- function(df,
+                                              treatment_var = "treat_wife_key_notedu_husb_not_or_edu") {
+  stopifnot(treatment_var %in% names(df))
+
+  df <- collapse_to_unique_couples(df)
+
+  youngest_child <- balance_coalesce_numeric(
+    df,
+    cols = c("youngest_child_2019", "base_age_youngest_child_w", "base_age_youngest_child_h")
+  )
+
+  first_cohabit_year <- balance_col_numeric(
+    df,
+    "hist_couple_first_observed_cohabit_base_partner_year",
+    invalid_negative = FALSE
+  )
+
+  df$balance_treatment_status <- dplyr::case_when(
+    df[[treatment_var]] == 1 ~ "Treated",
+    df[[treatment_var]] == 0 ~ "Control",
+    TRUE ~ NA_character_
+  )
+
+  df$balance_child_group <- dplyr::case_when(
+    !is.na(youngest_child) & youngest_child >= 0 & youngest_child <= 10 ~ "Young child",
+    !is.na(youngest_child) & youngest_child >= 11 & youngest_child <= 17 ~ "Older child",
+    TRUE ~ NA_character_
+  )
+
+  df$balance_group <- dplyr::case_when(
+    df$balance_treatment_status == "Treated" & df$balance_child_group == "Young child" ~
+      "Treated, youngest child 0-10",
+    df$balance_treatment_status == "Treated" & df$balance_child_group == "Older child" ~
+      "Treated, youngest child 11-17",
+    df$balance_treatment_status == "Control" & df$balance_child_group == "Young child" ~
+      "Control, youngest child 0-10",
+    df$balance_treatment_status == "Control" & df$balance_child_group == "Older child" ~
+      "Control, youngest child 11-17",
+    TRUE ~ NA_character_
+  )
+
+  df$balance_group <- factor(
+    df$balance_group,
+    levels = c(
+      "Treated, youngest child 0-10",
+      "Treated, youngest child 11-17",
+      "Control, youngest child 0-10",
+      "Control, youngest child 11-17"
+    )
+  )
+
+  df$balance_wife_age <- balance_col_numeric(df, "base_age_dv_w")
+  df$balance_husband_age <- balance_col_numeric(df, "base_age_dv_h")
+  df$balance_children_u18 <- balance_coalesce_numeric(
+    df,
+    cols = c(
+      "base_n_children_18_under_w",
+      "base_n_children_18_under_h",
+      "base_ndepchl_dv_w",
+      "base_ndepchl_dv_h"
+    )
+  )
+  df$balance_children_u10 <- balance_coalesce_numeric(
+    df,
+    cols = c("base_n_children_10_under_w", "base_n_children_10_under_h")
+  )
+  df$balance_youngest_child_age <- youngest_child
+  df$balance_years_cohabit_before_2019 <- dplyr::case_when(
+    is.na(first_cohabit_year) ~ NA_real_,
+    first_cohabit_year < 2019 ~ 2019 - first_cohabit_year,
+    TRUE ~ 0
+  )
+  df$balance_wife_jbhrs <- balance_col_numeric(df, "base_jbhrs_w")
+  df$balance_husband_jbhrs <- balance_col_numeric(df, "base_jbhrs_h")
+  df$balance_wife_keyworker_nonedu <- balance_keyworker_nonedu(df, "w")
+  df$balance_husband_keyworker_nonedu <- balance_keyworker_nonedu(df, "h")
+  df$balance_wife_fimnlabgrs <- balance_col_numeric(df, "base_fimnlabgrs_dv_w")
+  df$balance_husband_fimnlabgrs <- balance_col_numeric(df, "base_fimnlabgrs_dv_h")
+
+  df
+}
+
+treatment_child_balance_specs <- function() {
+  tibble::tribble(
+    ~var, ~label, ~type, ~digits,
+    "balance_wife_age", "Wife age at baseline", "mean", 1,
+    "balance_husband_age", "Husband age at baseline", "mean", 1,
+    "balance_children_u18", "Number of children under 18 at baseline", "mean", 2,
+    "balance_children_u10", "Number of children under 10 at baseline", "mean", 2,
+    "balance_youngest_child_age", "Age of youngest child at baseline", "mean", 1,
+    "balance_years_cohabit_before_2019", "Years observed cohabiting before 2019", "mean", 1,
+    "balance_wife_jbhrs", "Wife weekly hours worked at baseline", "mean", 1,
+    "balance_husband_jbhrs", "Husband weekly hours worked at baseline", "mean", 1,
+    "balance_wife_keyworker_nonedu", "Wife keyworker non-education share", "percent", 1,
+    "balance_husband_keyworker_nonedu", "Husband keyworker non-education share", "percent", 1,
+    "balance_wife_fimnlabgrs", "Wife gross monthly labour income at baseline", "mean", 0,
+    "balance_husband_fimnlabgrs", "Husband gross monthly labour income at baseline", "mean", 0
+  )
+}
+
+format_balance_value <- function(x, type = c("mean", "percent", "n"), digits = 1) {
+  type <- match.arg(type)
+  if (length(x) == 0 || is.na(x)) {
+    return("")
+  }
+
+  if (type == "n") {
+    return(formatC(x, format = "d", big.mark = ","))
+  }
+
+  if (type == "percent") {
+    return(paste0(formatC(100 * x, format = "f", digits = digits, big.mark = ","), "\\%"))
+  }
+
+  formatC(x, format = "f", digits = digits, big.mark = ",")
+}
+
+summarise_balance_cell <- function(df, var, type, digits) {
+  if (type == "n") {
+    n_couples <- dplyr::n_distinct(df$couple_id)
+    return(list(mean = format_balance_value(n_couples, type = "n"), sd = ""))
+  }
+
+  if (!var %in% names(df)) {
+    return(list(mean = "", sd = ""))
+  }
+
+  x <- df[[var]]
+  x <- x[!is.na(x)]
+
+  if (length(x) == 0) {
+    return(list(mean = "", sd = ""))
+  }
+
+  mean_x <- mean(x)
+  sd_x <- if (length(x) >= 2) stats::sd(x) else NA_real_
+
+  list(
+    mean = format_balance_value(mean_x, type = type, digits = digits),
+    sd = ifelse(
+      is.na(sd_x),
+      "",
+      paste0("(", format_balance_value(sd_x, type = type, digits = digits), ")")
+    )
+  )
+}
+
+make_treatment_child_balance_table <- function(df,
+                                               treatment_var = "treat_wife_key_notedu_husb_not_or_edu",
+                                               include_sd_rows = TRUE) {
+  group_levels <- c(
+    "Treated, youngest child 0-10",
+    "Treated, youngest child 11-17",
+    "Control, youngest child 0-10",
+    "Control, youngest child 11-17"
+  )
+
+  dd <- prep_treatment_child_balance_vars(
+    df = df,
+    treatment_var = treatment_var
+  ) %>%
+    dplyr::filter(!is.na(balance_group))
+
+  specs <- treatment_child_balance_specs()
+
+  out_rows <- list()
+
+  n_row <- tibble::tibble(Variable = "Number of couples")
+  for (g in group_levels) {
+    cell <- summarise_balance_cell(
+      df = dd %>% dplyr::filter(balance_group == g),
+      var = NULL,
+      type = "n",
+      digits = 0
+    )
+    n_row[[g]] <- cell$mean
+  }
+  out_rows[[length(out_rows) + 1]] <- n_row
+
+  for (i in seq_len(nrow(specs))) {
+    spec <- specs[i, ]
+
+    mean_row <- tibble::tibble(Variable = spec$label)
+    sd_row <- tibble::tibble(Variable = "")
+
+    for (g in group_levels) {
+      cell <- summarise_balance_cell(
+        df = dd %>% dplyr::filter(balance_group == g),
+        var = spec$var,
+        type = spec$type,
+        digits = spec$digits
+      )
+      mean_row[[g]] <- cell$mean
+      sd_row[[g]] <- cell$sd
+    }
+
+    out_rows[[length(out_rows) + 1]] <- mean_row
+    if (include_sd_rows) {
+      out_rows[[length(out_rows) + 1]] <- sd_row
+    }
+  }
+
+  dplyr::bind_rows(out_rows)
+}
+
+write_treatment_child_balance_table <- function(df,
+                                                file,
+                                                title = NULL) {
+  write_latex_table(
+    df = df,
+    file = file,
+    title = title,
+    align = paste0("l", paste(rep("r", ncol(df) - 1), collapse = "")),
+    escape = FALSE
+  )
+}

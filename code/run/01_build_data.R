@@ -50,6 +50,39 @@ dir.create(der_path,      showWarnings = FALSE, recursive = TRUE)
 dir.create(samples_path,  showWarnings = FALSE, recursive = TRUE)
 dir.create(cache_path,    showWarnings = FALSE, recursive = TRUE)
 
+# ---- Small diagnostics --------------------------------------------------------
+print_history_coverage <- function(df, label, year_col = "year", wave_col = "wave") {
+  cat("\n", label, " coverage:\n", sep = "")
+  if (is.null(df) || nrow(df) == 0) {
+    cat("  No rows.\n")
+    return(invisible(NULL))
+  }
+
+  if (year_col %in% names(df)) {
+    yrs <- sort(unique(df[[year_col]][!is.na(df[[year_col]])]))
+    if (length(yrs) > 0) {
+      cat("  Years: ", min(yrs), "-", max(yrs), "\n", sep = "")
+      cat("  Year counts:\n")
+      print(
+        df %>%
+          dplyr::count(.data[[year_col]], name = "n") %>%
+          dplyr::arrange(.data[[year_col]])
+      )
+    }
+  }
+
+  if (wave_col %in% names(df)) {
+    cat("  Wave counts:\n")
+    print(
+      df %>%
+        dplyr::count(.data[[wave_col]], name = "n") %>%
+        dplyr::arrange(.data[[wave_col]])
+    )
+  }
+
+  invisible(NULL)
+}
+
 # =============================================================================
 # Step 0: Load policy files and keyworker crosswalk
 # =============================================================================
@@ -104,12 +137,22 @@ cat("Analytic baseline rows (baseline employed/self-employed): ",
 # =============================================================================
 cat("\n--- Step 1b: Build pre-baseline history from prior main waves ---\n")
 
-# The history builder loads candidate waves from config.R, then keeps only waves
-# strictly prior to each individual baseline source wave.
+# Use all available main-study waves on disk as candidates, then keep only waves
+# strictly prior to each individual's own baseline source wave. This avoids
+# accidentally limiting history to the I/J/K baseline-construction waves.
+history_waves_to_use <- discover_main_wave_prefixes(path_main)
+
+if (length(history_waves_to_use) == 0 && exists("history_waves")) {
+  history_waves_to_use <- history_waves
+}
+
+cat("Candidate history waves: ",
+    paste(history_waves_to_use, collapse = ", "), "\n", sep = "")
+
 df_prebaseline_history_long <- build_prebaseline_history_long(
   path_main     = path_main,
   df_baseline   = df_baseline_analytic,
-  history_waves = history_waves
+  history_waves = history_waves_to_use
 )
 
 saveRDS(
@@ -119,6 +162,13 @@ saveRDS(
 
 cat("Pre-baseline person-wave history saved to: ",
     file.path(der_path, "prebaseline_history_long.rds"), "\n", sep = "")
+
+print_history_coverage(
+  df_prebaseline_history_long,
+  label = "Person pre-baseline history",
+  year_col = "year",
+  wave_col = "wave"
+)
 
 df_prebaseline_history_summary <- summarise_prebaseline_history(
   df_prebaseline_history_long
@@ -262,6 +312,13 @@ saveRDS(
 
 cat("Pre-baseline couple-wave history saved to: ",
     file.path(der_path, "prebaseline_couple_history_long.rds"), "\n", sep = "")
+
+print_history_coverage(
+  df_prebaseline_couple_history_long,
+  label = "Couple pre-baseline history",
+  year_col = "couple_year",
+  wave_col = "wave"
+)
 
 df_prebaseline_couple_history_summary <- summarise_prebaseline_couple_history(
   df_couple_history_long = df_prebaseline_couple_history_long,
@@ -525,6 +582,13 @@ saveRDS(
 )
 
 cat("Main-study-only stacked panels saved to: ", der_path, "\n", sep = "")
+
+print_history_coverage(
+  df_couple_history_future_mainonly_long,
+  label = "Couple stacked main-study-only history/future panel",
+  year_col = "year",
+  wave_col = "wave"
+)
 
 # Step 6: Future wide by year-month (ym)
 # =============================================================================
