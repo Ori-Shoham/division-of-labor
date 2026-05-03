@@ -54,11 +54,11 @@ wave_order_value <- function(wave) {
 discover_main_wave_prefixes <- function(path_main, max_wave = "o") {
   files <- list.files(
     path = path_main,
-    pattern = "^[a-z]_indresp\.dta$",
+    pattern = "^[a-z]_indresp\\.dta$",
     full.names = FALSE
   )
 
-  waves <- sub("_indresp\.dta$", "", files)
+  waves <- sub("_indresp\\.dta$", "", files)
   waves <- standardize_wave_prefix(waves)
 
   ord <- wave_order_value(waves)

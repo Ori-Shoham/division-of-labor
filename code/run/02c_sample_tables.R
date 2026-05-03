@@ -105,10 +105,7 @@ for (tr in TREATMENT_BALANCE_VARS) {
   write_treatment_child_balance_table(
     df = t_balance,
     file = file.path(tab_path, paste0("sample_table_treatment_child_balance_", tr, ".tex")),
-    title = paste0(
-      "Baseline and history characteristics by treatment and child-age group: ",
-      tr
-    )
+    
   )
 }
 
@@ -171,17 +168,14 @@ for (spec in subset_specs) {
   write_latex_table(
     t_3x3_base,
     file = file.path(tab_path, paste0("sample_table_3x3_baseline", suffix, ".tex")),
-    title = "Joint distribution of spouses by industry group"
   )
   write_latex_table(
     t_3x3_covid,
     file = file.path(tab_path, paste0("sample_table_3x3_covid", suffix, ".tex")),
-    title = "Joint distribution of spouses by industry group"
   )
   write_latex_table(
     t_3x3_future,
     file = file.path(tab_path, paste0("sample_table_3x3_future", suffix, ".tex")),
-    title = "Joint distribution of spouses by industry group"
   )
   write_three_panel_table(
     df_a = t_3x3_base,
@@ -202,17 +196,14 @@ for (spec in subset_specs) {
   write_latex_table(
     t_5x5_base,
     file = file.path(tab_path, paste0("sample_table_5x5_baseline", suffix, ".tex")),
-    title = "Joint distribution of spouses by detailed industry group"
   )
   write_latex_table(
     t_5x5_covid,
     file = file.path(tab_path, paste0("sample_table_5x5_covid", suffix, ".tex")),
-    title = "Joint distribution of spouses by detailed industry group"
   )
   write_latex_table(
     t_5x5_future,
     file = file.path(tab_path, paste0("sample_table_5x5_future", suffix, ".tex")),
-    title = "Joint distribution of spouses by detailed industry group"
   )
   write_three_panel_table(
     df_a = t_5x5_base,
@@ -236,7 +227,6 @@ for (spec in subset_specs) {
   write_latex_table(
     t_child_exact_all,
     file = file.path(tab_path, paste0("sample_table_youngest_child_exact_all", suffix, ".tex")),
-    title = "Distribution of youngest child age in 2019"
   )
 
   t_child_binned_base <- make_child_age_table_binned(tab_base)
@@ -253,7 +243,6 @@ for (spec in subset_specs) {
   write_latex_table(
     t_child_binned_all,
     file = file.path(tab_path, paste0("sample_table_youngest_child_binned_all", suffix, ".tex")),
-    title = "Distribution of youngest child age in 2019"
   )
 
   p_covid_share <- plot_workoutside_composition(
