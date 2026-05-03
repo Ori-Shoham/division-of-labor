@@ -20,6 +20,9 @@
 #       * future_outcomes_couple_wide_lmo.rds
 #       * s2019_baseline_couplelevel_plus_lmo.rds
 #   - adds baseline couple treatment flags and child-age subgroup flags
+#   - builds pre-baseline history files
+#   - builds stacked history/baseline/COVID/future plotting panels
+#   - harmonizes husits for baseline/history/COVID only
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -34,6 +37,7 @@ rm(list = ls())
 source("code/lib/config.R")
 source("code/lib/utils.R")
 source("code/lib/harmonize_outcomes.R")
+source("code/lib/husits_harmonization.R")
 source("code/lib/work_groups.R")
 source("code/lib/policies_keyworkers.R")
 
@@ -57,7 +61,7 @@ print_history_coverage <- function(df, label, year_col = "year", wave_col = "wav
     cat("  No rows.\n")
     return(invisible(NULL))
   }
-
+  
   if (year_col %in% names(df)) {
     yrs <- sort(unique(df[[year_col]][!is.na(df[[year_col]])]))
     if (length(yrs) > 0) {
@@ -70,7 +74,7 @@ print_history_coverage <- function(df, label, year_col = "year", wave_col = "wav
       )
     }
   }
-
+  
   if (wave_col %in% names(df)) {
     cat("  Wave counts:\n")
     print(
@@ -79,8 +83,25 @@ print_history_coverage <- function(df, label, year_col = "year", wave_col = "wav
         dplyr::arrange(.data[[wave_col]])
     )
   }
-
+  
   invisible(NULL)
+}
+
+# ---- Small husits helper ------------------------------------------------------
+# Baseline couple files use base_husits_h / base_husits_w because they come from
+# the baseline-composite person file. The couple-level husits direction helper
+# expects harmonized husits_h / husits_w, so this function adds temporary
+# standard names while preserving the original base_* columns.
+add_baseline_couple_husits_direction <- function(df) {
+  if (!("husits_h" %in% names(df))) {
+    df$husits_h <- if ("base_husits_h" %in% names(df)) df$base_husits_h else NA_real_
+  }
+  
+  if (!("husits_w" %in% names(df))) {
+    df$husits_w <- if ("base_husits_w" %in% names(df)) df$base_husits_w else NA_real_
+  }
+  
+  add_couple_husits_direction_vars(df)
 }
 
 # =============================================================================
@@ -277,7 +298,8 @@ s2019_baseline_couplelevel <- build_baseline_couple_dataset(
   df_baseline = df_baseline_analytic,
   roster      = couple_roster
 ) %>%
-  add_couple_baseline_treatments()
+  add_couple_baseline_treatments() %>%
+  add_baseline_couple_husits_direction()
 
 saveRDS(
   s2019_baseline_couplelevel,
@@ -356,6 +378,7 @@ df_covid_couple_long <- build_covid_couple_long(
   df_covid_long = df_sample_long_covid,
   roster        = couple_roster
 ) %>%
+  add_couple_husits_direction_vars() %>%
   dplyr::left_join(
     s2019_baseline_couplelevel %>%
       dplyr::select(
@@ -505,7 +528,6 @@ cat("Future couple-level long saved to: ",
     file.path(der_path, "future_outcomes_couple_long_lmo.rds"), "\n", sep = "")
 
 # =============================================================================
-# =============================================================================
 # Step 5c: Ready-to-plot stacked history + baseline + COVID + future panels
 # =============================================================================
 cat("\n--- Step 5c: Build stacked history/baseline/COVID/future plotting panels ---\n")
@@ -590,6 +612,7 @@ print_history_coverage(
   wave_col = "wave"
 )
 
+# =============================================================================
 # Step 6: Future wide by year-month (ym)
 # =============================================================================
 cat("\n--- Step 6: Build future outcomes wide by year-month ---\n")

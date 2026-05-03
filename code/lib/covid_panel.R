@@ -77,7 +77,9 @@ build_covid_long_panel <- function(
       sempderived = blwork,
       hours = blhours,
       wah = blwah,
-      howlng = NA_real_
+      howlng = NA_real_,
+      timechcare = NA_real_,
+      husits = NA_real_
     ) %>%
     dplyr::ungroup() %>%
     dplyr::select(
@@ -87,6 +89,8 @@ build_covid_long_panel <- function(
       hours,
       wah,
       howlng,
+      timechcare,
+      husits,
       starts_with("base"),
       starts_with("group"),
       starts_with("key"),
@@ -104,7 +108,9 @@ build_covid_long_panel <- function(
       sempderived = base_jbstat,
       hours = base_jbhrs,
       wah = NA_real_,
-      howlng = base_howlng
+      howlng = base_howlng,
+      timechcare = NA_real_,
+      husits = base_husits
     ) %>%
     dplyr::ungroup() %>%
     dplyr::select(
@@ -114,6 +120,8 @@ build_covid_long_panel <- function(
       hours,
       wah,
       howlng,
+      timechcare,
+      husits,
       starts_with("base"),
       starts_with("group"),
       starts_with("key"),
@@ -145,7 +153,14 @@ build_covid_long_panel <- function(
         sempderived = sempderived,
         hours = hours,
         wah = wah
-      )
+      ),
+      husits_raw = husits,
+      husits = dplyr::case_when(
+        wave == "2019" ~ clean_husits_main(husits_raw),
+        wave == "baseline" ~ NA_real_,
+        TRUE ~ clean_husits_covid(husits_raw, covid_code8_to_missing = TRUE)
+      ),
+      husits_cat = label_husits(husits)
     )
   
   df_sample_long

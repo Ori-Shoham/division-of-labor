@@ -154,6 +154,7 @@ clean_baseline_wave <- function(path_main, prefix) {
     
     # Time use / caring
     paste0(prefix, "_howlng"),
+    paste0(prefix, "_husits"),
     paste0(prefix, "_chcare"),
     paste0(prefix, "_aidadhrs"),
     
@@ -174,7 +175,8 @@ clean_baseline_wave <- function(path_main, prefix) {
   read_dta_clean(file_path) %>%
     dplyr::select(any_of(cols_to_keep)) %>%
     dplyr::left_join(df_family, by = "pidp") %>%
-    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)
+    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)%>%
+    add_husits_main_vars(raw_var = "husits", out_var = "husits")
 }
 
 build_baseline <- function(path_main) {

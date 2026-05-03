@@ -6,12 +6,18 @@
 #
 # Input file naming:
 #   {wave}_indresp_w.dta  for wave in {ca,...,ci}
+# Harmonization:
+#   - howlng_cv -> howlng
+#   - husits_cv -> husits
 #
 # Notes:
 #   In the regular UKHLS waves, housework hours is named howlng.
 #   In the COVID waves, the same concept is named howlng_cv.
 #   This loader harmonizes COVID howlng_cv to howlng, so downstream panels use
 #   the common variable name howlng.
+# Note:
+#   husits is still raw COVID-coded after loading. It is collapsed to the
+#   main-stage husits coding after reshaping to long in covid_panel.R.
 # =============================================================================
 
 load_covid_wave <- function(path_covid, wave_prefix) {
@@ -66,6 +72,10 @@ load_covid_wave <- function(path_covid, wave_prefix) {
     ) %>%
     dplyr::rename_with(
       \(x) stringr::str_replace(x, "_howlng_cv$", "_howlng"),
+      dplyr::everything()
+    ) %>%
+    dplyr::rename_with(
+      \(x) stringr::str_replace(x, "_husits_cv$", "_husits"),
       dplyr::everything()
     )
 }

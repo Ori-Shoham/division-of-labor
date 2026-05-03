@@ -4,33 +4,54 @@
 # Purpose:
 #   Build pre-baseline UKHLS main-wave history files for the analytic sample.
 #
+# Important:
+#   This file assumes code/lib/husits_harmonization.R has already been sourced.
+#   It uses:
+#     - add_husits_main_vars()
+#     - add_couple_husits_direction_vars()
+#
 # Outputs produced by these helpers:
-#   1) person-wave history long file:
-#        one row per pidp x prior main-study wave
-#        includes all baseline/future outcome variables loaded by
-#        load_main_wave_with_family(), plus derived variables such as any_work,
-#        wfh_some, workoutside, health_sf, and cohabitation-with-baseline-partner
-#        indicators.
+#   1) person-wave history long file
+#   2) person-level history summary
+#   3) couple-wave history long file
+#   4) couple-level history summary
+#   5) stacked person/couple history + baseline + COVID + future plotting panels
 #
-#   2) person-level history summary:
-#        compact history variables prefixed with hist_ that can be merged onto
-#        baseline person-level samples.
+# Interpretation:
+#   Cohabitation timing variables identify the first wave/date where the
+#   baseline partners are observed as cohabiting / partnered in available UKHLS
+#   data. They do not identify the literal start date of cohabitation.
 #
-#   3) couple-wave history long file:
-#        one row per baseline couple x prior wave where at least one spouse is
-#        observed in that wave. Husband variables have suffix _h and wife
-#        variables have suffix _w. Includes spouse-specific interview dates and
-#        a couple-level date/year for plotting.
-#
-#   4) couple-level history summary:
-#        compact history variables prefixed with hist_ that can be merged onto
-#        baseline couple-level samples.
-#
-# Important interpretation:
-#   The cohabitation timing variables identify the first wave/date where the
-#   baseline partners are OBSERVED as cohabiting / partnered in the available
-#   UKHLS data. They do not identify the literal start date of cohabitation.
+# husits:
+#   - Main-stage husits is added to the history branch explicitly from raw
+#     main-wave files and harmonized by add_husits_main_vars().
+#   - Couple-level history rows get husband/wife directional variables through
+#     add_couple_husits_direction_vars().
 # =============================================================================
+
+# -----------------------------------------------------------------------------
+# Dependency checks
+# -----------------------------------------------------------------------------
+check_history_husits_helpers <- function() {
+  required_funs <- c(
+    "add_husits_main_vars",
+    "add_couple_husits_direction_vars"
+  )
+  
+  missing_funs <- required_funs[
+    !vapply(required_funs, exists, logical(1), mode = "function")
+  ]
+  
+  if (length(missing_funs) > 0) {
+    stop(
+      "history.R requires code/lib/husits_harmonization.R to be sourced first. ",
+      "Missing function(s): ",
+      paste(missing_funs, collapse = ", ")
+    )
+  }
+  
+  invisible(TRUE)
+}
 
 # -----------------------------------------------------------------------------
 # Wave ordering
@@ -57,13 +78,13 @@ discover_main_wave_prefixes <- function(path_main, max_wave = "o") {
     pattern = "^[a-z]_indresp\\.dta$",
     full.names = FALSE
   )
-
+  
   waves <- sub("_indresp\\.dta$", "", files)
   waves <- standardize_wave_prefix(waves)
-
+  
   ord <- wave_order_value(waves)
   max_ord <- wave_order_value(max_wave)
-
+  
   waves <- waves[!is.na(ord) & ord <= max_ord]
   waves[order(wave_order_value(waves))]
 }
@@ -74,12 +95,14 @@ resolve_history_waves <- function(path_main, history_waves = NULL) {
     history_waves <- history_waves[order(wave_order_value(history_waves))]
     return(history_waves)
   }
-
+  
   waves <- discover_main_wave_prefixes(path_main)
+  
   if (length(waves) == 0) {
-    # Fallback for environments where list.files() cannot see the raw data yet.
+    # Fallback for environments where list.files() cannot see raw data yet.
     waves <- letters[1:11]
   }
+  
   waves
 }
 
@@ -153,6 +176,87 @@ ensure_columns <- function(df, cols) {
 }
 
 # -----------------------------------------------------------------------------
+# Add main-stage husits to a loaded history wave
+#
+# load_main_wave_with_family() may not include husits, because husits is not
+# part of the L-O future outcome branch. This helper explicitly reads
+# {prefix}_husits from the raw main-wave indresp file and joins it to the
+# already-loaded history wave.
+# -----------------------------------------------------------------------------
+add_history_husits_from_raw <- function(out, path_main, prefix) {
+  check_history_husits_helpers()
+  
+  f <- file.path(path_main, paste0(prefix, "_indresp.dta"))
+  
+  if (!file.exists(f)) {
+    return(
+      add_husits_main_vars(
+        out,
+        raw_var = "husits",
+        out_var = "husits"
+      )
+    )
+  }
+  
+  raw_var <- paste0(prefix, "_husits")
+  
+  raw_husits <- tryCatch(
+    {
+      read_dta_clean(f) %>%
+        dplyr::select(dplyr::any_of(c("pidp", raw_var))) %>%
+        dplyr::rename_with(
+          ~ stringr::str_remove(.x, paste0("^", prefix, "_")),
+          -pidp
+        )
+    },
+    error = function(e) {
+      warning(
+        "Could not load husits for history wave ",
+        prefix,
+        ": ",
+        conditionMessage(e)
+      )
+      NULL
+    }
+  )
+  
+  if (is.null(raw_husits) || !("husits" %in% names(raw_husits))) {
+    return(
+      add_husits_main_vars(
+        out,
+        raw_var = "husits",
+        out_var = "husits"
+      )
+    )
+  }
+  
+  if ("husits" %in% names(out)) {
+    out <- out %>%
+      dplyr::left_join(
+        raw_husits %>%
+          dplyr::rename(husits_from_raw = husits),
+        by = "pidp"
+      ) %>%
+      dplyr::mutate(
+        husits = dplyr::coalesce(
+          suppressWarnings(as.numeric(husits)),
+          suppressWarnings(as.numeric(husits_from_raw))
+        )
+      ) %>%
+      dplyr::select(-husits_from_raw)
+  } else {
+    out <- out %>%
+      dplyr::left_join(raw_husits, by = "pidp")
+  }
+  
+  out %>%
+    add_husits_main_vars(
+      raw_var = "husits",
+      out_var = "husits"
+    )
+}
+
+# -----------------------------------------------------------------------------
 # Load one main wave for the history branch
 # -----------------------------------------------------------------------------
 load_history_wave <- function(path_main, prefix) {
@@ -163,8 +267,14 @@ load_history_wave <- function(path_main, prefix) {
       NULL
     }
   )
+  
   if (is.null(out)) return(NULL)
-  out
+  
+  out %>%
+    add_history_husits_from_raw(
+      path_main = path_main,
+      prefix = prefix
+    )
 }
 
 # -----------------------------------------------------------------------------
@@ -172,9 +282,18 @@ load_history_wave <- function(path_main, prefix) {
 # -----------------------------------------------------------------------------
 add_history_derived_variables <- function(df) {
   needed <- c(
-    "jbstat", "jbhrs", "jbpl", "jbwah", "sf1", "scsf1",
-    "partner_pidp", "partner_rel", "base_partner_pidp", "hidp"
+    "jbstat",
+    "jbhrs",
+    "jbpl",
+    "jbwah",
+    "sf1",
+    "scsf1",
+    "partner_pidp",
+    "partner_rel",
+    "base_partner_pidp",
+    "hidp"
   )
+  
   df <- ensure_columns(df, needed)
   
   tmp_wfh <- combine_wfh(df$jbpl, df$jbwah)
@@ -224,11 +343,11 @@ build_prebaseline_history_long <- function(path_main,
     path_main = path_main,
     history_waves = history_waves
   )
-
+  
   if (length(history_waves) == 0) {
     stop("No candidate history waves were supplied or discovered.")
   }
-
+  
   base_ref <- df_baseline %>%
     dplyr::transmute(
       pidp,
@@ -244,7 +363,10 @@ build_prebaseline_history_long <- function(path_main,
   
   dfs <- lapply(history_waves, function(w) load_history_wave(path_main, w))
   dfs <- dfs[!vapply(dfs, is.null, logical(1))]
-  if (length(dfs) == 0) stop("No history waves could be loaded.")
+  
+  if (length(dfs) == 0) {
+    stop("No history waves could be loaded.")
+  }
   
   hist_all <- dplyr::bind_rows(dfs) %>%
     dplyr::mutate(
@@ -261,8 +383,6 @@ build_prebaseline_history_long <- function(path_main,
     ) %>%
     add_history_derived_variables()
   
-  # To identify whether the baseline partner is observed in the same household in
-  # a prior wave, join in the baseline partner's wave-specific household id.
   partner_hh <- hist_all %>%
     dplyr::select(
       base_partner_pidp = pidp,
@@ -339,6 +459,7 @@ history_numeric_summary_vars <- function(df) {
     "nchild_dv",
     "ndepchl_dv",
     "howlng",
+    "husits",
     "chcare",
     "aidadhrs",
     "scghq2_dv",
@@ -353,6 +474,7 @@ history_numeric_summary_vars <- function(df) {
     "observed_same_hh_base_partner",
     "observed_cohabit_base_partner"
   )
+  
   vars <- intersect(vars, names(df))
   vars[vapply(df[vars], is.numeric, logical(1))]
 }
@@ -442,30 +564,36 @@ merge_history_summary_into_samples <- function(samples, df_history_summary) {
 # Build baseline couple x prior-wave history long file
 # -----------------------------------------------------------------------------
 build_prebaseline_couple_history_long <- function(df_history_long, roster) {
+  check_history_husits_helpers()
+  
   husband <- df_history_long %>%
     dplyr::rename(husband_pidp = pidp) %>%
     dplyr::rename_with(
-      ~ ifelse(.x %in% c("husband_pidp", "wave", "wave_order"),
-               .x,
-               paste0(.x, "_h"))
+      ~ ifelse(
+        .x %in% c("husband_pidp", "wave", "wave_order"),
+        .x,
+        paste0(.x, "_h")
+      )
     )
-
+  
   wife <- df_history_long %>%
     dplyr::rename(wife_pidp = pidp) %>%
     dplyr::rename_with(
-      ~ ifelse(.x %in% c("wife_pidp", "wave", "wave_order"),
-               .x,
-               paste0(.x, "_w"))
+      ~ ifelse(
+        .x %in% c("wife_pidp", "wave", "wave_order"),
+        .x,
+        paste0(.x, "_w")
+      )
     )
-
+  
   husband_rows <- roster %>%
     dplyr::select(couple_id, husband_pidp, wife_pidp, dplyr::everything()) %>%
     dplyr::inner_join(husband, by = "husband_pidp")
-
+  
   wife_rows <- roster %>%
     dplyr::select(couple_id, husband_pidp, wife_pidp, dplyr::everything()) %>%
     dplyr::inner_join(wife, by = "wife_pidp")
-
+  
   dplyr::full_join(
     husband_rows,
     wife_rows,
@@ -511,6 +639,7 @@ build_prebaseline_couple_history_long <- function(df_history_long, roster) {
         TRUE ~ 0
       )
     ) %>%
+    add_couple_husits_direction_vars() %>%
     dplyr::arrange(couple_id, couple_ym, wave_order)
 }
 
@@ -584,7 +713,15 @@ covid_wave_ym_lookup <- function() {
   tibble::tibble(
     wave = c(
       "baseline",
-      "ca", "cb", "cc", "cd", "ce", "cf", "cg", "ch", "ci"
+      "ca",
+      "cb",
+      "cc",
+      "cd",
+      "ce",
+      "cf",
+      "cg",
+      "ch",
+      "ci"
     ),
     ym = as.Date(c(
       "2020-02-01",
@@ -599,58 +736,149 @@ covid_wave_ym_lookup <- function() {
       "2021-09-01"
     ))
   ) %>%
-    dplyr::mutate(year = suppressWarnings(as.integer(format(ym, "%Y"))))
+    dplyr::mutate(
+      year = suppressWarnings(as.integer(format(ym, "%Y")))
+    )
 }
 
 # -----------------------------------------------------------------------------
-# Convert baseline person rows from base_* names to regular-wave names
+# Convert baseline couple rows from base_*_h/base_*_w to regular suffixes
 # -----------------------------------------------------------------------------
-build_baseline_person_plot_rows <- function(df_baseline) {
-  base_cols <- names(df_baseline)[startsWith(names(df_baseline), "base_")]
-  keep_cols <- setdiff(
-    names(df_baseline),
-    base_cols
+build_baseline_couple_plot_rows <- function(df_baseline_couple) {
+  check_history_husits_helpers()
+  
+  base_spouse_cols <- names(df_baseline_couple)[
+    grepl("^base_.*_(h|w)$", names(df_baseline_couple))
+  ]
+  
+  # Names after removing the base_ prefix:
+  #   base_jbhrs_h  -> jbhrs_h
+  #   base_husits_w -> husits_w
+  base_spouse_target_cols <- sub(
+    "^base_(.*)_(h|w)$",
+    "\\1_\\2",
+    base_spouse_cols
   )
-  keep_cols <- setdiff(keep_cols, c("pidp"))
-  keep_cols <- keep_cols[!grepl("^hist_", keep_cols)]
-  keep_cols <- keep_cols[!grepl("_(h|w)$", keep_cols)]
-  keep_cols <- keep_cols[keep_cols %in% names(df_baseline)]
-
-  base_part <- df_baseline %>%
-    dplyr::select(pidp, dplyr::all_of(base_cols)) %>%
+  
+  non_history_cols <- names(df_baseline_couple)[
+    !startsWith(names(df_baseline_couple), "hist_")
+  ]
+  non_history_cols <- setdiff(non_history_cols, base_spouse_cols)
+  
+  # Important:
+  # s2019_baseline_couplelevel may already contain derived columns such as
+  # husits_h / husits_w, created from base_husits_h / base_husits_w before the
+  # stacked panel is built. If we keep those existing target-name columns and
+  # then rename base_husits_h -> husits_h, rename_with() creates duplicate names.
+  #
+  # For baseline plot rows, the base_* spouse columns are the authoritative
+  # source. Drop any existing columns that would collide with their renamed names.
+  non_history_cols <- setdiff(non_history_cols, base_spouse_target_cols)
+  
+  out <- df_baseline_couple %>%
+    dplyr::select(
+      dplyr::all_of(non_history_cols),
+      dplyr::all_of(base_spouse_cols)
+    ) %>%
     dplyr::rename_with(
-      ~ sub("^base_", "", .x),
-      dplyr::starts_with("base_")
+      ~ sub("^base_(.*)_(h|w)$", "\\1_\\2", .x),
+      dplyr::all_of(base_spouse_cols)
     )
-
-  extra_part <- df_baseline %>%
-    dplyr::select(pidp, dplyr::all_of(keep_cols))
-
-  out <- base_part %>%
-    dplyr::left_join(extra_part, by = "pidp") %>%
-    ensure_columns(c(
-      "source_wave", "intdaty_dv", "intdatm_dv", "jbstat", "jbhrs",
-      "jbpl", "jbwah", "sf1", "scsf1", "partner_pidp", "partner_rel",
-      "hidp"
-    )) %>%
+  
+  needed <- c(
+    "source_wave_h",
+    "source_wave_w",
+    "intdaty_dv_h",
+    "intdatm_dv_h",
+    "intdaty_dv_w",
+    "intdatm_dv_w",
+    "jbstat_h",
+    "jbhrs_h",
+    "jbpl_h",
+    "jbwah_h",
+    "sf1_h",
+    "scsf1_h",
+    "jbstat_w",
+    "jbhrs_w",
+    "jbpl_w",
+    "jbwah_w",
+    "sf1_w",
+    "scsf1_w"
+  )
+  
+  out <- ensure_columns(out, needed)
+  
+  tmp_wfh_h <- combine_wfh(out$jbpl_h, out$jbwah_h)
+  tmp_wfh_w <- combine_wfh(out$jbpl_w, out$jbwah_w)
+  
+  out %>%
     dplyr::mutate(
-      wave = standardize_wave_prefix(source_wave),
+      wave = dplyr::coalesce(
+        standardize_wave_prefix(source_wave_h),
+        standardize_wave_prefix(source_wave_w)
+      ),
       wave_order = wave_order_value(wave),
-      ym = dplyr::case_when(
-        !is.na(intdaty_dv) & !is.na(intdatm_dv) ~
-          as.Date(sprintf("%d-%02d-01", intdaty_dv, intdatm_dv)),
+      ym_h = dplyr::case_when(
+        !is.na(intdaty_dv_h) & !is.na(intdatm_dv_h) ~
+          as.Date(sprintf("%d-%02d-01", intdaty_dv_h, intdatm_dv_h)),
         TRUE ~ as.Date(NA)
       ),
-      year = suppressWarnings(as.integer(format(ym, "%Y")))
-    ) %>%
-    add_history_derived_variables() %>%
-    dplyr::mutate(
+      ym_w = dplyr::case_when(
+        !is.na(intdaty_dv_w) & !is.na(intdatm_dv_w) ~
+          as.Date(sprintf("%d-%02d-01", intdaty_dv_w, intdatm_dv_w)),
+        TRUE ~ as.Date(NA)
+      ),
+      ym = dplyr::case_when(
+        !is.na(ym_h) & !is.na(ym_w) & ym_h >= ym_w ~ ym_h,
+        !is.na(ym_h) & !is.na(ym_w) & ym_w > ym_h ~ ym_w,
+        !is.na(ym_h) ~ ym_h,
+        !is.na(ym_w) ~ ym_w,
+        TRUE ~ as.Date(NA)
+      ),
+      year = suppressWarnings(as.integer(format(ym, "%Y"))),
+      any_work_h = make_any_work_future(
+        jbstat = jbstat_h,
+        jbhrs = jbhrs_h
+      ),
+      any_work_w = make_any_work_future(
+        jbstat = jbstat_w,
+        jbhrs = jbhrs_w
+      ),
+      wfh_code_h = tmp_wfh_h$wfh_code,
+      wfh_cat_h = tmp_wfh_h$wfh_cat,
+      wfh_code_w = tmp_wfh_w$wfh_code,
+      wfh_cat_w = tmp_wfh_w$wfh_cat,
+      wfh_some_h = make_wfh_some_future(
+        jbstat = jbstat_h,
+        jbhrs = jbhrs_h,
+        jbpl = jbpl_h,
+        jbwah = jbwah_h
+      ),
+      wfh_some_w = make_wfh_some_future(
+        jbstat = jbstat_w,
+        jbhrs = jbhrs_w,
+        jbpl = jbpl_w,
+        jbwah = jbwah_w
+      ),
+      workoutside_h = make_workoutside_future(
+        jbstat = jbstat_h,
+        jbhrs = jbhrs_h,
+        wfh_code = wfh_code_h
+      ),
+      workoutside_w = make_workoutside_future(
+        jbstat = jbstat_w,
+        jbhrs = jbhrs_w,
+        wfh_code = wfh_code_w
+      ),
       period = "baseline",
       source = "main_baseline",
       time_order = 2L
     ) %>%
+    add_couple_husits_direction_vars() %>%
     dplyr::select(
-      pidp,
+      couple_id,
+      husband_pidp,
+      wife_pidp,
       period,
       source,
       time_order,
@@ -663,7 +891,6 @@ build_baseline_person_plot_rows <- function(df_baseline) {
 
   out
 }
-
 # -----------------------------------------------------------------------------
 # Prepare person-level COVID rows for the stacked plotting panel
 # -----------------------------------------------------------------------------
@@ -671,7 +898,7 @@ prepare_covid_person_plot_rows <- function(df_covid_long) {
   if (is.null(df_covid_long) || nrow(df_covid_long) == 0) {
     return(tibble::tibble())
   }
-
+  
   df_covid_long %>%
     dplyr::filter(wave != "2019") %>%
     dplyr::left_join(covid_wave_ym_lookup(), by = "wave") %>%
@@ -715,7 +942,7 @@ prepare_future_person_plot_rows <- function(df_future_long) {
   if (is.null(df_future_long) || nrow(df_future_long) == 0) {
     return(tibble::tibble())
   }
-
+  
   df_future_long %>%
     dplyr::mutate(
       period = "future",
@@ -763,19 +990,19 @@ build_person_history_future_long <- function(df_history_long,
       year,
       dplyr::everything()
     )
-
+  
   baseline_rows <- build_baseline_person_plot_rows(df_baseline)
-
+  
   pieces <- list(hist_rows, baseline_rows)
-
+  
   if (include_covid && !is.null(df_covid_long)) {
     pieces <- c(pieces, list(prepare_covid_person_plot_rows(df_covid_long)))
   }
-
+  
   if (!is.null(df_future_long)) {
     pieces <- c(pieces, list(prepare_future_person_plot_rows(df_future_long)))
   }
-
+  
   dplyr::bind_rows(pieces) %>%
     dplyr::arrange(pidp, ym, time_order, wave_order) %>%
     dplyr::mutate(
@@ -790,15 +1017,17 @@ build_person_history_future_long <- function(df_history_long,
 # Convert baseline couple rows from base_*_h/base_*_w to regular suffixes
 # -----------------------------------------------------------------------------
 build_baseline_couple_plot_rows <- function(df_baseline_couple) {
+  check_history_husits_helpers()
+  
   base_spouse_cols <- names(df_baseline_couple)[
     grepl("^base_.*_(h|w)$", names(df_baseline_couple))
   ]
-
+  
   non_history_cols <- names(df_baseline_couple)[
     !startsWith(names(df_baseline_couple), "hist_")
   ]
   non_history_cols <- setdiff(non_history_cols, base_spouse_cols)
-
+  
   out <- df_baseline_couple %>%
     dplyr::select(
       dplyr::all_of(non_history_cols),
@@ -808,19 +1037,33 @@ build_baseline_couple_plot_rows <- function(df_baseline_couple) {
       ~ sub("^base_(.*)_(h|w)$", "\\1_\\2", .x),
       dplyr::all_of(base_spouse_cols)
     )
-
+  
   needed <- c(
-    "source_wave_h", "source_wave_w",
-    "intdaty_dv_h", "intdatm_dv_h",
-    "intdaty_dv_w", "intdatm_dv_w",
-    "jbstat_h", "jbhrs_h", "jbpl_h", "jbwah_h", "sf1_h", "scsf1_h",
-    "jbstat_w", "jbhrs_w", "jbpl_w", "jbwah_w", "sf1_w", "scsf1_w"
+    "source_wave_h",
+    "source_wave_w",
+    "intdaty_dv_h",
+    "intdatm_dv_h",
+    "intdaty_dv_w",
+    "intdatm_dv_w",
+    "jbstat_h",
+    "jbhrs_h",
+    "jbpl_h",
+    "jbwah_h",
+    "sf1_h",
+    "scsf1_h",
+    "jbstat_w",
+    "jbhrs_w",
+    "jbpl_w",
+    "jbwah_w",
+    "sf1_w",
+    "scsf1_w"
   )
+  
   out <- ensure_columns(out, needed)
-
+  
   tmp_wfh_h <- combine_wfh(out$jbpl_h, out$jbwah_h)
   tmp_wfh_w <- combine_wfh(out$jbpl_w, out$jbwah_w)
-
+  
   out %>%
     dplyr::mutate(
       wave = dplyr::coalesce(
@@ -878,6 +1121,7 @@ build_baseline_couple_plot_rows <- function(df_baseline_couple) {
       source = "main_baseline",
       time_order = 2L
     ) %>%
+    add_couple_husits_direction_vars() %>%
     dplyr::select(
       couple_id,
       husband_pidp,
@@ -900,7 +1144,7 @@ prepare_covid_couple_plot_rows <- function(df_covid_couple_long) {
   if (is.null(df_covid_couple_long) || nrow(df_covid_couple_long) == 0) {
     return(tibble::tibble())
   }
-
+  
   df_covid_couple_long %>%
     dplyr::filter(wave != "2019") %>%
     dplyr::left_join(covid_wave_ym_lookup(), by = "wave") %>%
@@ -948,7 +1192,7 @@ prepare_future_couple_plot_rows <- function(df_future_couple_long) {
   if (is.null(df_future_couple_long) || nrow(df_future_couple_long) == 0) {
     return(tibble::tibble())
   }
-
+  
   df_future_couple_long %>%
     dplyr::mutate(
       period = "future",
@@ -991,25 +1235,25 @@ baseline_couple_stacked_group_vars <- function(df_baseline_couple) {
         "both_in_covid"
       )
   ]
-
+  
   unique(c("couple_id", candidate_vars))
 }
 
 attach_baseline_couple_stacked_group_vars <- function(df, df_baseline_couple) {
   attach_cols <- baseline_couple_stacked_group_vars(df_baseline_couple)
   attach_cols <- intersect(attach_cols, names(df_baseline_couple))
-
+  
   if (!"couple_id" %in% attach_cols) {
     return(df)
   }
 
   # Avoid duplicate columns if a component already carries any of these variables.
   vars_to_add <- setdiff(attach_cols, c("couple_id", names(df)))
-
+  
   if (length(vars_to_add) == 0) {
     return(df)
   }
-
+  
   df %>%
     dplyr::left_join(
       df_baseline_couple %>%
@@ -1050,12 +1294,12 @@ build_couple_history_future_long <- function(df_couple_history_long,
       dplyr::everything()
     ) %>%
     attach_baseline_couple_stacked_group_vars(df_baseline_couple)
-
+  
   baseline_rows <- build_baseline_couple_plot_rows(df_baseline_couple) %>%
     attach_baseline_couple_stacked_group_vars(df_baseline_couple)
-
+  
   pieces <- list(hist_rows, baseline_rows)
-
+  
   if (include_covid && !is.null(df_covid_couple_long)) {
     pieces <- c(
       pieces,
@@ -1065,7 +1309,7 @@ build_couple_history_future_long <- function(df_couple_history_long,
       )
     )
   }
-
+  
   if (!is.null(df_future_couple_long)) {
     pieces <- c(
       pieces,
@@ -1075,7 +1319,7 @@ build_couple_history_future_long <- function(df_couple_history_long,
       )
     )
   }
-
+  
   dplyr::bind_rows(pieces) %>%
     dplyr::arrange(couple_id, ym, time_order, wave_order) %>%
     dplyr::mutate(

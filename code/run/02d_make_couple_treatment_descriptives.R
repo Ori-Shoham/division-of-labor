@@ -63,6 +63,7 @@ source("code/lib/wave_labels.R")
 source("code/lib/descriptives_plots.R")
 source("code/lib/future_descriptives_plots.R")
 source("code/lib/couple_plot_helpers.R")
+source("code/lib/husits_covid_plots.R")
 source("code/lib/couple_treatment_plots.R")
 
 dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
@@ -394,7 +395,92 @@ for (tr in TREATMENT_VARS) {
     }
   }
 }
+# =============================================================================
+# COVID couple-level husits distribution figures
+# =============================================================================
 
+if (.has_husits_distribution(df_covid_couple)) {
+  
+  for (tr in TREATMENT_VARS) {
+    
+    plot_covid_husits_distribution(
+      df = df_covid_couple,
+      treatment_var = tr,
+      out_file = paste0(
+        "covid_husits_distribution_wave_",
+        tr,
+        "_treatmentfacets.png"
+      ),
+      fig_path = fig_path,
+      treated_label = TREATMENT_LABS[[tr]],
+      axis_text_size = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      legend_title_size = LEGEND_TITLE_SIZE,
+      title_size = TITLE_SIZE
+    )
+    
+    plot_covid_husits_distribution_childgrid(
+      df = df_covid_couple,
+      treatment_var = tr,
+      out_file = paste0(
+        "covid_husits_distribution_wave_",
+        tr,
+        "_childgrid_treatmentcols.png"
+      ),
+      fig_path = fig_path,
+      treated_label = TREATMENT_LABS[[tr]],
+      axis_text_size = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      legend_title_size = LEGEND_TITLE_SIZE,
+      title_size = TITLE_SIZE
+    )
+    
+    if (tr %in% WIFE_TREATMENT_VARS) {
+      
+      plot_covid_husits_distribution(
+        df = df_covid_couple,
+        treatment_var = tr,
+        restriction = "husb_notkey_or_edu",
+        out_file = paste0(
+          "covid_husits_distribution_wave_",
+          tr,
+          "_treatmentfacets_husb_notkey_or_edu.png"
+        ),
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+      
+      plot_covid_husits_distribution_childgrid(
+        df = df_covid_couple,
+        treatment_var = tr,
+        restriction = "husb_notkey_or_edu",
+        out_file = paste0(
+          "covid_husits_distribution_wave_",
+          tr,
+          "_childgrid_treatmentcols_husb_notkey_or_edu.png"
+        ),
+        fig_path = fig_path,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+    }
+  }
+}
 # =============================================================================
 # Run main-survey history + future figures
 # =============================================================================
