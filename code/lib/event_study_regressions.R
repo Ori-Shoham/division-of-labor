@@ -6,11 +6,12 @@
 #
 # Design:
 #   - Runs spouse-specific event studies.
-#   - Runs separately by baseline child-age category.
+#   - Estimates separately by baseline child-age category.
+#   - Plots younger/older child-group estimates in the same figure.
 #   - Supports main-study and COVID-study panels.
 #   - Supports no-controls and baseline-demographic-controls versions.
+#   - Supports no couple fixed effects and couple fixed effects.
 #   - Clusters standard errors at pidp level.
-#   - Includes an option for couple fixed effects, but defaults to FALSE.
 #
 # First-round controlled specification:
 #   Controls:
@@ -19,10 +20,20 @@
 #     - number of children under 18 at baseline
 #     - number of children under 10 at baseline
 #     - baseline region
+# Key outcome-cleaning rule:
+#   Event-study outcomes are cleaned to mirror the descriptive plots.
 #
 # Not included in first-round controls:
 #     - baseline work hours
 #     - baseline pay
+#   Main-study / history-future:
+#     - jbhrs, paygu_dv, fimnlabgrs_dv, fimngrs_dv are zeroed for non-workers.
+#     - working people with missing outcome remain NA.
+#     - missing employment status remains NA.
+#
+#   COVID:
+#     - non-binary outcomes are cleaned for negative missing codes.
+#     - they are not zeroed by work status.
 #
 # Required package:
 #   fixest
@@ -120,6 +131,109 @@ sanitize_name <- function(x) {
 }
 
 # =============================================================================
+# Outcome cleaning for event-study regressions
+# =============================================================================
+
+event_study_zero_if_not_working_outcomes <- function() {
+  c(
+    "jbhrs",
+    "jbot",
+    "basrate",
+    "paygu_dv",
+    "fimnlabgrs_dv",
+    "fimngrs_dv"
+  )
+}
+
+event_study_binary_outcomes <- function() {
+  c(
+    "any_work",
+    "workoutside",
+    "wfh_some",
+    "husits_wife_main_both"
+  )
+}
+
+event_study_clean_negative_codes <- function(x) {
+  if (requireNamespace("haven", quietly = TRUE)) {
+    x <- haven::zap_labels(x)
+  }
+  
+  x <- suppressWarnings(as.numeric(x))
+  x[x %in% c(-9, -8, -7, -2, -1)] <- NA_real_
+  x
+}
+
+event_study_clean_binary <- function(x) {
+  x <- event_study_clean_negative_codes(x)
+  
+  dplyr::case_when(
+    is.na(x) ~ NA_real_,
+    x == 1 ~ 1,
+    x == 0 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+event_study_clean_main_outcome <- function(df, outcome) {
+  stopifnot(outcome %in% names(df))
+  
+  x <- event_study_clean_negative_codes(df[[outcome]])
+  
+  if (outcome %in% event_study_binary_outcomes()) {
+    return(event_study_clean_binary(df[[outcome]]))
+  }
+  
+  if (outcome %in% event_study_zero_if_not_working_outcomes()) {
+    if (!("jbstat" %in% names(df))) {
+      stop(
+        "Outcome '", outcome, "' requires spouse-level jbstat for ",
+        "event-study cleaning, but jbstat is not in the event-study panel."
+      )
+    }
+    
+    emp <- event_study_clean_negative_codes(df$jbstat)
+    
+    x <- dplyr::case_when(
+      is.na(emp) ~ NA_real_,
+      !(emp %in% c(1, 2)) ~ 0,
+      TRUE ~ x
+    )
+  }
+  
+  x
+}
+
+event_study_clean_covid_outcome <- function(df, outcome) {
+  stopifnot(outcome %in% names(df))
+  
+  if (outcome %in% event_study_binary_outcomes()) {
+    return(event_study_clean_binary(df[[outcome]]))
+  }
+  
+  # Mirrors COVID descriptive plots:
+  # non-binary COVID outcomes are cleaned by dropping negative missing codes.
+  # They are not zeroed by work status.
+  event_study_clean_negative_codes(df[[outcome]])
+}
+
+event_study_clean_outcome <- function(df,
+                                      outcome,
+                                      study = c("main", "covid")) {
+  study <- match.arg(study)
+  
+  if (study == "main") {
+    return(event_study_clean_main_outcome(df, outcome))
+  }
+  
+  if (study == "covid") {
+    return(event_study_clean_covid_outcome(df, outcome))
+  }
+  
+  stop("Unknown study: ", study)
+}
+
+# =============================================================================
 # Baseline controls and treatment variables
 # =============================================================================
 
@@ -203,6 +317,70 @@ attach_event_baseline_controls <- function(df, df_baseline_couple) {
 }
 
 # =============================================================================
+# husits event-study binary outcome
+# =============================================================================
+
+add_husits_wife_main_both <- function(df,
+                                      out_var = "husits_wife_main_both") {
+  if (all(c("husits_wife_main_w", "husits_wife_main_h") %in% names(df))) {
+    wife_says_wife_main <- clean_binary_01(df$husits_wife_main_w)
+    husband_says_wife_main <- clean_binary_01(df$husits_wife_main_h)
+    
+    df[[out_var]] <- dplyr::case_when(
+      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
+        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
+      TRUE ~ NA_real_
+    )
+    
+    return(df)
+  }
+  
+  if (all(c("husits_w", "husits_h") %in% names(df))) {
+    husits_w <- suppressWarnings(as.numeric(df$husits_w))
+    husits_h <- suppressWarnings(as.numeric(df$husits_h))
+    
+    husits_w <- dplyr::case_when(
+      is.na(husits_w) ~ NA_real_,
+      husits_w < 0 ~ NA_real_,
+      husits_w %in% c(1, 2, 3, 4) ~ husits_w,
+      TRUE ~ NA_real_
+    )
+    
+    husits_h <- dplyr::case_when(
+      is.na(husits_h) ~ NA_real_,
+      husits_h < 0 ~ NA_real_,
+      husits_h %in% c(1, 2, 3, 4) ~ husits_h,
+      TRUE ~ NA_real_
+    )
+    
+    wife_says_wife_main <- dplyr::case_when(
+      is.na(husits_w) ~ NA_real_,
+      husits_w == 1 ~ 1,
+      husits_w %in% c(2, 3, 4) ~ 0,
+      TRUE ~ NA_real_
+    )
+    
+    husband_says_wife_main <- dplyr::case_when(
+      is.na(husits_h) ~ NA_real_,
+      husits_h == 2 ~ 1,
+      husits_h %in% c(1, 3, 4) ~ 0,
+      TRUE ~ NA_real_
+    )
+    
+    df[[out_var]] <- dplyr::case_when(
+      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
+        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
+      TRUE ~ NA_real_
+    )
+    
+    return(df)
+  }
+  
+  df[[out_var]] <- NA_real_
+  df
+}
+
+# =============================================================================
 # Study-specific time variables
 # =============================================================================
 
@@ -220,9 +398,7 @@ add_main_event_time <- function(df,
   # Match yearly descriptive figures: exclude Jan-Feb 2020 from 2020 points.
   if (exclude_jan_feb_2020) {
     out <- out %>%
-      dplyr::filter(
-        !(year == 2020 & !is.na(month) & month <= 2)
-      )
+      dplyr::filter(!(year == 2020 & !is.na(month) & month <= 2))
   }
   
   # Match yearly descriptive figures: drop 2025.
@@ -273,9 +449,7 @@ covid_wave_order_lookup <- function() {
 
 add_covid_event_time <- function(df) {
   df %>%
-    dplyr::mutate(
-      wave = as.character(wave)
-    ) %>%
+    dplyr::mutate(wave = as.character(wave)) %>%
     dplyr::left_join(covid_wave_order_lookup(), by = "wave") %>%
     dplyr::mutate(
       event_time = covid_event_time,
@@ -287,29 +461,34 @@ add_covid_event_time <- function(df) {
 choose_covid_reference_event_time <- function(df,
                                               outcome,
                                               treatment_var) {
-  ref_2019_available <- df %>%
+  outcome_clean <- event_study_clean_outcome(
+    df = df,
+    outcome = outcome,
+    study = "covid"
+  )
+  
+  dd <- df %>%
+    dplyr::mutate(outcome_clean = outcome_clean)
+  
+  ref_2019_available <- dd %>%
     dplyr::filter(
       event_time == -1,
-      !is.na(.data[[outcome]]),
+      !is.na(outcome_clean),
       !is.na(.data[[treatment_var]])
     ) %>%
     nrow() > 0
   
-  if (ref_2019_available) {
-    return(-1)
-  }
+  if (ref_2019_available) return(-1)
   
-  ref_baseline_available <- df %>%
+  ref_baseline_available <- dd %>%
     dplyr::filter(
       event_time == 0,
-      !is.na(.data[[outcome]]),
+      !is.na(outcome_clean),
       !is.na(.data[[treatment_var]])
     ) %>%
     nrow() > 0
   
-  if (ref_baseline_available) {
-    return(0)
-  }
+  if (ref_baseline_available) return(0)
   
   NA_real_
 }
@@ -342,6 +521,11 @@ make_spouse_event_panel <- function(df,
   )
   common_cols <- intersect(common_cols, names(df))
   
+  aux_vars <- c(
+    "jbstat",
+    "sempderived"
+  )
+  
   make_one_spouse <- function(suffix, spouse_label, pidp_var) {
     pidp_vec <- if (pidp_var %in% names(df)) df[[pidp_var]] else NA_real_
     
@@ -352,13 +536,14 @@ make_spouse_event_panel <- function(df,
         pidp = pidp_vec
       )
     
-    for (vv in outcomes) {
+    for (vv in union(outcomes, aux_vars)) {
       suffixed_var <- paste0(vv, "_", suffix)
+      
       if (suffixed_var %in% names(df)) {
         out[[vv]] <- df[[suffixed_var]]
       } else if (vv %in% names(df)) {
         out[[vv]] <- df[[vv]]
-      } else {
+      } else if (!(vv %in% names(out))) {
         out[[vv]] <- NA_real_
       }
     }
@@ -476,15 +661,21 @@ estimate_event_study <- function(df,
                                  treatment_var,
                                  ref_event_time,
                                  controls = c("none", "baseline"),
-                                 couple_fe = FALSE) {
+                                 couple_fe = FALSE,
+                                 study = c("main", "covid")) {
   check_event_study_packages()
   
   controls <- match.arg(controls)
+  study <- match.arg(study)
+  
+  outcome_value <- event_study_clean_outcome(
+    df = df,
+    outcome = outcome,
+    study = study
+  )
   
   dd <- df %>%
-    dplyr::mutate(
-      outcome_value = suppressWarnings(as.numeric(.data[[outcome]]))
-    ) %>%
+    dplyr::mutate(outcome_value = outcome_value) %>%
     dplyr::filter(
       !is.na(outcome_value),
       !is.na(event_time),
@@ -495,17 +686,9 @@ estimate_event_study <- function(df,
       "{outcome}" := outcome_value
     )
   
-  if (nrow(dd) == 0) {
-    return(NULL)
-  }
-  
-  if (dplyr::n_distinct(dd$treated) < 2) {
-    return(NULL)
-  }
-  
-  if (!any(dd$event_time == ref_event_time)) {
-    return(NULL)
-  }
+  if (nrow(dd) == 0) return(NULL)
+  if (dplyr::n_distinct(dd$treated) < 2) return(NULL)
+  if (!any(dd$event_time == ref_event_time)) return(NULL)
   
   fml <- build_event_study_formula(
     outcome = outcome,
@@ -586,7 +769,7 @@ extract_event_study_coefs <- function(model,
 }
 
 # =============================================================================
-# Plotting
+# Labels
 # =============================================================================
 
 event_study_outcome_label <- function(outcome) {
@@ -598,17 +781,13 @@ event_study_outcome_label <- function(outcome) {
     jbhrs = "Weekly hours worked",
     howlng = "Housework hours",
     timechcare = "Childcare hours",
+    husits_wife_main_both = "Both spouses report wife mainly responsible for childcare",
     paygu_dv = "Usual gross pay",
     fimnlabgrs_dv = "Gross monthly labour pay",
-    fimngrs_dv = "Gross monthly income",
-    husits_wife_main_both = "Both spouses report wife mainly responsible for childcare"
+    fimngrs_dv = "Gross monthly income"
   )
   
-  if (outcome %in% names(labels)) {
-    labels[[outcome]]
-  } else {
-    outcome
-  }
+  if (outcome %in% names(labels)) labels[[outcome]] else outcome
 }
 
 treatment_label <- function(treatment_var) {
@@ -621,11 +800,7 @@ treatment_label <- function(treatment_var) {
       "Husband shutdown sector; wife not"
   )
   
-  if (treatment_var %in% names(labels)) {
-    labels[[treatment_var]]
-  } else {
-    treatment_var
-  }
+  if (treatment_var %in% names(labels)) labels[[treatment_var]] else treatment_var
 }
 
 child_group_label <- function(child_group) {
@@ -635,6 +810,108 @@ child_group_label <- function(child_group) {
     TRUE ~ child_group
   )
 }
+
+# =============================================================================
+# Short file/folder names
+# =============================================================================
+
+event_study_treatment_slug <- function(treatment_var) {
+  dplyr::case_when(
+    treatment_var == "treat_wife_key_notedu_husb_not_or_edu" ~ "wife_key_husb_notedu",
+    treatment_var == "treat_wife_key_notedu_any" ~ "wife_key_any",
+    treatment_var == "treat_husb_shutdown_wife_not" ~ "husb_shutdown",
+    TRUE ~ sanitize_name(treatment_var)
+  )
+}
+
+event_study_sample_slug <- function(sample_variant) {
+  dplyr::case_when(
+    sample_variant == "all" ~ "all",
+    sample_variant == "husb_notkey_or_edu" ~ "hne",
+    TRUE ~ sanitize_name(sample_variant)
+  )
+}
+
+event_study_controls_slug <- function(controls) {
+  dplyr::case_when(
+    controls == "none" ~ "noc",
+    controls == "baseline" ~ "bctrl",
+    TRUE ~ sanitize_name(controls)
+  )
+}
+
+event_study_spouse_slug <- function(spouse) {
+  dplyr::case_when(
+    spouse == "wife" ~ "w",
+    spouse == "husband" ~ "h",
+    TRUE ~ sanitize_name(spouse)
+  )
+}
+
+event_study_fe_slug <- function(couple_fe) {
+  ifelse(couple_fe, "cfe", "nfe")
+}
+
+make_event_study_file_stem <- function(study,
+                                       outcome,
+                                       treatment_var,
+                                       child_group,
+                                       spouse,
+                                       controls,
+                                       sample_variant,
+                                       couple_fe) {
+  paste(
+    "es",
+    study,
+    sanitize_name(outcome),
+    event_study_treatment_slug(treatment_var),
+    child_group,
+    event_study_spouse_slug(spouse),
+    event_study_controls_slug(controls),
+    event_study_sample_slug(sample_variant),
+    event_study_fe_slug(couple_fe),
+    sep = "_"
+  ) %>%
+    sanitize_name()
+}
+
+safe_save_rds <- function(object, file) {
+  dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
+  
+  ok <- tryCatch(
+    {
+      saveRDS(object, file)
+      TRUE
+    },
+    error = function(e) {
+      warning("Could not save RDS file: ", file, "\nReason: ", conditionMessage(e))
+      FALSE
+    }
+  )
+  
+  invisible(ok)
+}
+
+safe_write_csv <- function(object, file) {
+  dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
+  
+  ok <- tryCatch(
+    {
+      readr::write_csv(object, file)
+      TRUE
+    },
+    error = function(e) {
+      warning("Could not write CSV file: ", file, "\nReason: ", conditionMessage(e))
+      FALSE
+    }
+  )
+  
+  invisible(ok)
+}
+
+# =============================================================================
+# Plotting
+# =============================================================================
 
 plot_event_study <- function(coefs,
                              study,
@@ -701,7 +978,8 @@ plot_event_study <- function(coefs,
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = main_breaks,
-        labels = main_breaks + 2019
+        labels = main_breaks + 2019,
+        minor_breaks = NULL
       ) +
       ggplot2::labs(x = "Calendar year")
   }
@@ -714,7 +992,8 @@ plot_event_study <- function(coefs,
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = covid_axis$covid_event_time,
-        labels = covid_axis$covid_event_label
+        labels = covid_axis$covid_event_label,
+        minor_breaks = NULL
       ) +
       ggplot2::labs(x = "COVID-study wave")
   }
@@ -933,103 +1212,6 @@ save_combined_child_group_event_study_plots <- function(results,
   
   invisible(NULL)
 }
-# =============================================================================
-# Short file/folder names
-# =============================================================================
-
-event_study_treatment_slug <- function(treatment_var) {
-  dplyr::case_when(
-    treatment_var == "treat_wife_key_notedu_husb_not_or_edu" ~ "wife_key_husb_notedu",
-    treatment_var == "treat_wife_key_notedu_any" ~ "wife_key_any",
-    treatment_var == "treat_husb_shutdown_wife_not" ~ "husb_shutdown",
-    TRUE ~ sanitize_name(treatment_var)
-  )
-}
-
-event_study_sample_slug <- function(sample_variant) {
-  dplyr::case_when(
-    sample_variant == "all" ~ "all",
-    sample_variant == "husb_notkey_or_edu" ~ "hne",
-    TRUE ~ sanitize_name(sample_variant)
-  )
-}
-
-event_study_controls_slug <- function(controls) {
-  dplyr::case_when(
-    controls == "none" ~ "noc",
-    controls == "baseline" ~ "bctrl",
-    TRUE ~ sanitize_name(controls)
-  )
-}
-
-event_study_spouse_slug <- function(spouse) {
-  dplyr::case_when(
-    spouse == "wife" ~ "w",
-    spouse == "husband" ~ "h",
-    TRUE ~ sanitize_name(spouse)
-  )
-}
-
-event_study_fe_slug <- function(couple_fe) {
-  ifelse(couple_fe, "cfe", "nfe")
-}
-
-make_event_study_file_stem <- function(study,
-                                       outcome,
-                                       treatment_var,
-                                       child_group,
-                                       spouse,
-                                       controls,
-                                       sample_variant,
-                                       couple_fe) {
-  paste(
-    "es",
-    study,
-    sanitize_name(outcome),
-    event_study_treatment_slug(treatment_var),
-    child_group,
-    event_study_spouse_slug(spouse),
-    event_study_controls_slug(controls),
-    event_study_sample_slug(sample_variant),
-    event_study_fe_slug(couple_fe),
-    sep = "_"
-  ) %>%
-    sanitize_name()
-}
-
-safe_save_rds <- function(object, file) {
-  dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
-  
-  ok <- tryCatch(
-    {
-      saveRDS(object, file)
-      TRUE
-    },
-    error = function(e) {
-      warning("Could not save RDS file: ", file, "\nReason: ", conditionMessage(e))
-      FALSE
-    }
-  )
-  
-  invisible(ok)
-}
-
-safe_write_csv <- function(object, file) {
-  dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
-  
-  ok <- tryCatch(
-    {
-      readr::write_csv(object, file)
-      TRUE
-    },
-    error = function(e) {
-      warning("Could not write CSV file: ", file, "\nReason: ", conditionMessage(e))
-      FALSE
-    }
-  )
-  
-  invisible(ok)
-}
 
 # =============================================================================
 # One regression task
@@ -1079,7 +1261,8 @@ run_one_event_study_task <- function(df_spouse,
     treatment_var = treatment_var,
     ref_event_time = ref_event_time,
     controls = controls,
-    couple_fe = couple_fe
+    couple_fe = couple_fe,
+    study = study
   )
   
   if (is.null(model)) {
@@ -1238,12 +1421,12 @@ run_event_study_batch <- function(df_spouse,
   
   out <- dplyr::bind_rows(all_results)
   
-  readr::write_csv(
+  safe_write_csv(
     out,
     file.path(results_dir, paste0("event_study_", study, "_all_coefficients.csv"))
   )
   
-  saveRDS(
+  safe_save_rds(
     out,
     file.path(results_dir, paste0("event_study_", study, "_all_coefficients.rds"))
   )
@@ -1298,86 +1481,4 @@ diagnose_pidp_year_duplicates <- function(df_spouse,
   })
   
   list(overall = base, by_outcome = by_outcome)
-}
-
-add_husits_wife_main_both <- function(df,
-                                      out_var = "husits_wife_main_both") {
-  # Preferred path:
-  # Use already-directional variables if husits_harmonization.R created them.
-  #
-  # Interpretation:
-  #   husits_wife_main_w == 1 means wife's own report says wife mainly responsible.
-  #   husits_wife_main_h == 1 means husband's report says wife mainly responsible.
-  if (all(c("husits_wife_main_w", "husits_wife_main_h") %in% names(df))) {
-    wife_says_wife_main <- clean_binary_01(df$husits_wife_main_w)
-    husband_says_wife_main <- clean_binary_01(df$husits_wife_main_h)
-    
-    df[[out_var]] <- dplyr::case_when(
-      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
-        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
-      TRUE ~ NA_real_
-    )
-    
-    return(df)
-  }
-  
-  # Fallback path:
-  # Use harmonized spouse-specific husits codes if only husits_w / husits_h exist.
-  #
-  # Harmonized main-stage levels:
-  #   1 = mainly self
-  #   2 = mainly partner
-  #   3 = shared
-  #   4 = someone else / other
-  #
-  # Wife report:
-  #   wife mainly responsible if husits_w == 1.
-  #
-  # Husband report:
-  #   wife mainly responsible if husits_h == 2.
-  if (all(c("husits_w", "husits_h") %in% names(df))) {
-    husits_w <- suppressWarnings(as.numeric(df$husits_w))
-    husits_h <- suppressWarnings(as.numeric(df$husits_h))
-    
-    husits_w <- dplyr::case_when(
-      is.na(husits_w) ~ NA_real_,
-      husits_w < 0 ~ NA_real_,
-      husits_w %in% c(1, 2, 3, 4) ~ husits_w,
-      TRUE ~ NA_real_
-    )
-    
-    husits_h <- dplyr::case_when(
-      is.na(husits_h) ~ NA_real_,
-      husits_h < 0 ~ NA_real_,
-      husits_h %in% c(1, 2, 3, 4) ~ husits_h,
-      TRUE ~ NA_real_
-    )
-    
-    wife_says_wife_main <- dplyr::case_when(
-      is.na(husits_w) ~ NA_real_,
-      husits_w == 1 ~ 1,
-      husits_w %in% c(2, 3, 4) ~ 0,
-      TRUE ~ NA_real_
-    )
-    
-    husband_says_wife_main <- dplyr::case_when(
-      is.na(husits_h) ~ NA_real_,
-      husits_h == 2 ~ 1,
-      husits_h %in% c(1, 3, 4) ~ 0,
-      TRUE ~ NA_real_
-    )
-    
-    df[[out_var]] <- dplyr::case_when(
-      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
-        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
-      TRUE ~ NA_real_
-    )
-    
-    return(df)
-  }
-  
-  # If neither input style exists, create the column as missing so downstream
-  # code can safely skip or report that the outcome has no data.
-  df[[out_var]] <- NA_real_
-  df
 }

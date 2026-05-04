@@ -5,31 +5,32 @@
 #   Create regression/event-study analogs of the couple-treatment figures.
 #
 # Outputs:
-#   figures/event_studies/<short_treatment_slug>/*.png
-#   derived/event_study_results/<short_treatment_slug>/*.csv
-#   derived/event_study_results/<short_treatment_slug>/*.rds
+#   figures/event_studies/<short_treatment_slug>/<fe_slug>/*.png
+#   derived/event_study_results/<short_treatment_slug>/<fe_slug>/*.csv
+#   derived/event_study_results/<short_treatment_slug>/<fe_slug>/*.rds
 #
 # Design:
 #   - Main-study and COVID-study event studies are estimated separately.
 #   - Spouses are estimated separately.
-#   - Baseline child-age groups are estimated separately:
-#       youngest child 0-10
-#       youngest child 11-17
+#   - Baseline child-age groups are estimated separately, but plotted together.
 #   - Treatments:
 #       treat_wife_key_notedu_husb_not_or_edu
 #       treat_wife_key_notedu_any
 #       treat_husb_shutdown_wife_not
 #   - Each treatment definition is saved in its own output folder.
-#   - Folder names and file stems are shortened to avoid Windows path limits.
-#   - For wife-key treatments, both versions are produced:
-#       all available controls
-#       restricted to sample_husb_notkey_or_edu
+#   - Each fixed-effects version is saved in its own subfolder:
+#       nfe = no couple fixed effects
+#       cfe = couple fixed effects
 #   - Controls versions:
-#       no controls
-#       baseline demographics controls
-#   - Fixed-effects versions:
-#       no couple fixed effects
-#       couple fixed effects
+#       nfe:
+#         * none
+#         * baseline
+#       cfe:
+#         * none only
+#     Baseline controls are time-invariant and therefore absorbed by couple FE.
+#   - For wife-key treatments, both comparison samples are produced:
+#       all
+#       restricted to sample_husb_notkey_or_edu
 #   - Standard errors clustered by pidp.
 # =============================================================================
 
@@ -65,7 +66,12 @@ TREATMENT_VARS <- c(
 
 CHILD_GROUPS <- c("u10", "11_17")
 SPOUSES <- c("wife", "husband")
-CONTROLS_SET <- c("none", "baseline")
+
+# Important:
+#   - baseline controls are run only without couple FE.
+#   - with couple FE, baseline controls are collinear with couple fixed effects.
+CONTROLS_SET_NO_FE <- c("none", "baseline")
+CONTROLS_SET_COUPLE_FE <- c("none")
 
 MAIN_OUTCOMES <- c(
   "workoutside",
@@ -203,8 +209,15 @@ for (tr in TREATMENT_VARS) {
     
     fe_slug <- event_study_fe_slug(run_couple_fe)
     
+    controls_set_this_fe <- if (isTRUE(run_couple_fe)) {
+      CONTROLS_SET_COUPLE_FE
+    } else {
+      CONTROLS_SET_NO_FE
+    }
+    
     cat("\n------------------------------------------------------------\n")
     cat("Couple FE version: ", fe_slug, "\n", sep = "")
+    cat("Controls run: ", paste(controls_set_this_fe, collapse = ", "), "\n", sep = "")
     cat("------------------------------------------------------------\n")
     
     treatment_fe_fig_dir <- file.path(treatment_fig_dir, fe_slug)
@@ -226,11 +239,13 @@ for (tr in TREATMENT_VARS) {
       treatment_vars = tr,
       child_groups = CHILD_GROUPS,
       spouses = SPOUSES,
-      controls_set = CONTROLS_SET,
+      controls_set = controls_set_this_fe,
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
-      save_model = TRUE
+      save_model = TRUE,
+      save_individual_child_plots = FALSE,
+      save_combined_child_plots = TRUE
     )
     
     saveRDS(
@@ -264,11 +279,13 @@ for (tr in TREATMENT_VARS) {
       treatment_vars = tr,
       child_groups = CHILD_GROUPS,
       spouses = SPOUSES,
-      controls_set = CONTROLS_SET,
+      controls_set = controls_set_this_fe,
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
-      save_model = TRUE
+      save_model = TRUE,
+      save_individual_child_plots = FALSE,
+      save_combined_child_plots = TRUE
     )
     
     saveRDS(
@@ -398,6 +415,16 @@ saveRDS(
 readr::write_csv(
   all_results,
   file.path(event_results_dir, "all_results_all_treatments.csv")
+)
+
+# =============================================================================
+# Coverage diagnostic
+# =============================================================================
+
+cat("\nEvent-study result coverage:\n")
+print(
+  all_results %>%
+    dplyr::count(study, treatment_var, couple_fe, controls)
 )
 
 cat("\nEvent-study regressions complete.\n")
