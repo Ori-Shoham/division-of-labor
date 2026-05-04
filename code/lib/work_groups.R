@@ -12,8 +12,8 @@
 #     - workoutside logic is based on work status + work location / WFH
 #
 # Classification systems used:
-#   SIC 2007 (condensed) – industry codes
-#   SOC 2010 (condensed) – occupation codes
+#   SIC 2007 (condensed) - industry codes
+#   SOC 2010 (condensed) - occupation codes
 # =============================================================================
 
 
@@ -172,6 +172,7 @@ make_any_work_covid <- function(sempderived, hours) {
   )
 }
 
+
 # -----------------------------------------------------------------------------
 # Future/main-wave any-work analogue
 #
@@ -199,6 +200,7 @@ make_any_work_future <- function(jbstat, jbhrs) {
     TRUE ~ NA_real_
   )
 }
+
 
 # -----------------------------------------------------------------------------
 # COVID workoutside
@@ -245,59 +247,83 @@ make_wfh_some_covid <- function(sempderived, hours, wah) {
 
 
 # -----------------------------------------------------------------------------
-# Future-outcomes work-from-home-some indicator
+# Future/main-wave work-from-home-some indicator
 #
 # Inputs:
-#   jbstat : labour-market status
-#            1 employed
-#            2 self-employed
+#   jbstat   : labour-market status
+#              1 employed
+#              2 self-employed
 #
-#   jbhrs  : usual weekly hours worked
+#   jbhrs    : usual weekly hours worked
 #
 #   jbpl   : work location
 #            1 at home
 #            2 employer premises
 #            3 driving / travelling around
 #            4 one or more other places
+#   wfh_code : harmonized WFH code from combine_wfh()
+#              1 always
+#              2 often
+#              3 sometimes
+#              4 never
 #
 #   jbwah  : working at home frequency
 #            1 always
 #            2 often
 #            3 sometimes
 #            4 never
+# Backward-compatible inputs:
+#   Existing scripts may still call this function with jbpl and jbwah instead
+#   of wfh_code. In that case, this function computes wfh_code internally using
+#   combine_wfh(jbpl, jbwah).
 #
 # Logic:
-#   - if employment status missing -> NA
+#   This intentionally mirrors make_workoutside_future().
+#
+#   - if employment status missing/invalid -> NA
+#   - if harmonized WFH code is missing -> NA
+#       This is the wave/question-availability gate. If jbwah was not asked in
+#       a main-study wave, combine_wfh() returns NA, so wfh_some is unavailable
+#       for everyone in that wave.
 #   - if not employed/self-employed -> 0
 #   - if hours missing -> NA
 #   - if zero or negative hours -> 0
-#   - if jbpl==1 (works at home) -> 1
-#   - else if jbwah is observed, use it directly:
-#       always/often/sometimes -> 1
-#       never -> 0
-#   - else if only jbpl is observed and indicates a non-home workplace -> 0
-#
-# This variable is intentionally constructed directly from jbpl/jbwah rather
-# than from the harmonized wfh_code so that adding wfh_some does not alter the
-# existing workoutside series.
+#   - if always/often/sometimes WFH -> 1
+#   - if never WFH -> 0
 # -----------------------------------------------------------------------------
-make_wfh_some_future <- function(jbstat, jbhrs, jbpl, jbwah) {
+make_wfh_some_future <- function(jbstat,
+                                 jbhrs,
+                                 wfh_code = NULL,
+                                 jbpl = NULL,
+                                 jbwah = NULL) {
+  
+  if (is.null(wfh_code)) {
+    if (is.null(jbpl) || is.null(jbwah)) {
+      stop(
+        "make_wfh_some_future() requires either wfh_code or both jbpl and jbwah."
+      )
+    }
+    
+    wfh_code <- combine_wfh(jbpl, jbwah)$wfh_code
+  }
+  
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
+    jbstat < 0 ~ NA_real_,
+    is.na(wfh_code) ~ NA_real_,
     !(jbstat %in% c(1, 2)) ~ 0,
     is.na(jbhrs) ~ NA_real_,
-    jbhrs <= 0 ~ 0,
-    !is.na(jbpl) & jbpl == 1 ~ 1,
-    jbwah %in% 1:3 ~ 1,
-    jbwah == 4 ~ 0,
-    !is.na(jbpl) & jbpl %in% 2:4 ~ 0,
+    jbhrs < 0 ~ NA_real_,
+    jbhrs == 0 ~ 0,
+    wfh_code %in% 1:3 ~ 1,
+    wfh_code == 4 ~ 0,
     TRUE ~ NA_real_
   )
 }
 
 
 # -----------------------------------------------------------------------------
-# Future-outcomes workoutside
+# Future/main-wave workoutside
 #
 # Inputs:
 #   jbstat   : labour-market status
@@ -314,6 +340,8 @@ make_wfh_some_future <- function(jbstat, jbhrs, jbpl, jbwah) {
 #
 # Logic:
 #   - if employment status missing/invalid -> NA
+#   - if harmonized WFH code is missing -> NA
+#       This is the wave/question-availability gate.
 #   - if not employed/self-employed -> 0
 #   - if hours missing -> NA
 #   - if zero or negative hours -> 0
@@ -326,10 +354,12 @@ make_wfh_some_future <- function(jbstat, jbhrs, jbpl, jbwah) {
 make_workoutside_future <- function(jbstat, jbhrs, wfh_code) {
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
+    jbstat < 0 ~ NA_real_,
     is.na(wfh_code) ~ NA_real_,
     !(jbstat %in% c(1, 2)) ~ 0,
     is.na(jbhrs) ~ NA_real_,
-    jbhrs <= 0 ~ 0,
+    jbhrs < 0 ~ NA_real_,
+    jbhrs == 0 ~ 0,
     wfh_code == 1 ~ 0,
     wfh_code %in% 2:4 ~ 1,
     TRUE ~ NA_real_

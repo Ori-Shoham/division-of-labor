@@ -4,7 +4,7 @@
 # Purpose:
 #   Load UKHLS main-wave future outcomes and family structure at each wave.
 #   - Outcomes from INDRESP
-#   - Family structure from EGOALT + INDALL (same construction as baseline)
+#   - Family structure from EGOALT + INDALL
 #   - Keeps interview year/month
 #   - Supports adding J/K main-study interviews from March 2020 onward
 #
@@ -13,12 +13,16 @@
 #     1 if wave partner_pidp matches baseline partner_pidp
 #     0 if baseline couple but link no longer present / different
 #     NA if not a baseline couple
+# Note:
+#   This file contains the shared main-wave loader used by both:
+#     1. future outcomes, and
+#     2. pre-baseline history.
 #
-# Notes:
-#   - Requires build_family_data() from family_baseline.R to be sourced first.
+#   It therefore requests husits when available. Future L-O waves will silently
+#   omit it via any_of(); earlier waves where husits exists will carry it.
 # =============================================================================
 
-load_main_wave_indresp <- function(path_main, prefix) {
+load_main_wave_indresp <- function(path_main, prefix, pidp_filter = NULL) {
   
   f <- file.path(path_main, paste0(prefix, "_indresp.dta"))
   if (!file.exists(f)) {
@@ -28,7 +32,7 @@ load_main_wave_indresp <- function(path_main, prefix) {
   
   cols_to_keep <- c(
     "pidp",
-    paste0(prefix,"_hidp"),
+    paste0(prefix, "_hidp"),
     
     # Demographics
     paste0(prefix, "_sex"),
@@ -58,7 +62,7 @@ load_main_wave_indresp <- function(path_main, prefix) {
     paste0(prefix, "_jbpl"),
     paste0(prefix, "_jbwah"),
     
-    # Family/couple (from INDRESP)
+    # Family/couple from INDRESP
     paste0(prefix, "_mastat_dv"),
     paste0(prefix, "_sppid"),
     paste0(prefix, "_nchild_dv"),
@@ -66,6 +70,7 @@ load_main_wave_indresp <- function(path_main, prefix) {
     
     # Time use / caring
     paste0(prefix, "_howlng"),
+    paste0(prefix, "_husits"),
     paste0(prefix, "_chcare"),
     paste0(prefix, "_aidadhrs"),
     
@@ -83,34 +88,69 @@ load_main_wave_indresp <- function(path_main, prefix) {
     paste0(prefix, "_intdaty_dv")
   )
   
-  read_dta_clean(f) %>%
-    dplyr::select(any_of(cols_to_keep)) %>%
-    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp) %>%
+  out <- read_dta_clean(f) %>%
+    dplyr::select(any_of(cols_to_keep))
+  
+  if (!is.null(pidp_filter)) {
+    pidp_filter <- unique(pidp_filter[!is.na(pidp_filter)])
+    out <- out %>%
+      dplyr::filter(pidp %in% pidp_filter)
+  }
+  
+  out <- out %>%
+    dplyr::rename_with(
+      ~ stringr::str_remove(., paste0("^", prefix, "_")),
+      -pidp
+    ) %>%
     dplyr::mutate(
       wave = prefix,
       # Month-year as a proper Date (first of month). Easy to plot and aggregate.
       ym = as.Date(sprintf("%d-%02d-01", intdaty_dv, intdatm_dv)),
       year = as.integer(intdaty_dv)
     )
+  
+  if (exists("add_husits_main_vars", mode = "function")) {
+    out <- out %>%
+      add_husits_main_vars(raw_var = "husits", out_var = "husits")
+  }
+  
+  out
 }
 
-load_main_wave_with_family <- function(path_main, prefix) {
+load_main_wave_with_family <- function(path_main, prefix, pidp_filter = NULL) {
   
-  df <- load_main_wave_indresp(path_main, prefix)
+  df <- load_main_wave_indresp(
+    path_main = path_main,
+    prefix = prefix,
+    pidp_filter = pidp_filter
+  )
   if (is.null(df)) return(NULL)
   
-  # build_family_data() returns columns prefixed with {prefix}_
-  df_family <- build_family_data(path_main, prefix) %>%
-    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)
+  df_family <- build_family_data(
+    path_main = path_main,
+    prefix = prefix,
+    pidp_filter = pidp_filter
+  ) %>%
+    dplyr::rename_with(
+      ~ stringr::str_remove(., paste0("^", prefix, "_")),
+      -pidp
+    )
   
-  df %>% dplyr::left_join(df_family, by = "pidp")
+  df %>%
+    dplyr::left_join(df_family, by = "pidp")
 }
 
 build_future_outcomes_long <- function(path_main, future_waves, min_ym = NULL) {
   
-  dfs <- lapply(future_waves, \(w) load_main_wave_with_family(path_main, w))
+  dfs <- lapply(
+    future_waves,
+    \(w) load_main_wave_with_family(path_main = path_main, prefix = w)
+  )
   dfs <- dfs[!sapply(dfs, is.null)]
-  if (length(dfs) == 0) stop("No future wave files found.")
+  
+  if (length(dfs) == 0) {
+    stop("No future wave files found.")
+  }
   
   out <- dplyr::bind_rows(dfs)
   
@@ -132,7 +172,8 @@ add_baseline_couple_evolution <- function(df_future_long, df_baseline) {
       base_partner_pidp = base_partner_pidp,
       base_partner_rel  = base_partner_rel,
       base_family_id    = base_family_id,
-      base_is_couple = !is.na(base_partner_pidp) & base_partner_rel %in% c(1, 2, 3)
+      base_is_couple = !is.na(base_partner_pidp) &
+        base_partner_rel %in% c(1, 2, 3)
     )
   
   df_future_long %>%
@@ -140,7 +181,9 @@ add_baseline_couple_evolution <- function(df_future_long, df_baseline) {
     dplyr::mutate(
       still_with_base_partner = dplyr::case_when(
         base_is_couple == FALSE ~ NA_real_,
-        base_is_couple == TRUE & !is.na(partner_pidp) & partner_pidp == base_partner_pidp ~ 1,
+        base_is_couple == TRUE &
+          !is.na(partner_pidp) &
+          partner_pidp == base_partner_pidp ~ 1,
         base_is_couple == TRUE ~ 0
       )
     )

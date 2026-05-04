@@ -6,7 +6,7 @@
 #   - Pull rich covariates and outcomes from INDRESP
 #   - Build family structure from EGOALT + INDALL:
 #       partner_pidp, partner_rel, number and ages of children, family_id
-#   - Prefer wave K restricted to 2019; fill remaining pidps from wave J.
+#   - Prefer wave K restricted to 2019; fill remaining pidps from wave J and I.
 #
 # Baseline variable meanings (subset):
 #   pidp           : person id
@@ -55,18 +55,39 @@
 #   intdatm_dv, intdaty_dv : interview month/year
 # =============================================================================
 
-build_family_data <- function(path_main, prefix) {
+build_family_data <- function(path_main, prefix, pidp_filter = NULL) {
   
   egoalt_path <- file.path(path_main, paste0(prefix, "_egoalt.dta"))
   indall_path <- file.path(path_main, paste0(prefix, "_indall.dta"))
+  
+  egoalt <- read_dta_clean(egoalt_path) %>%
+    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_"))) %>%
+    dplyr::select(pidp, apidp, relationship_dv)
+  
+  if (!is.null(pidp_filter)) {
+    pidp_filter <- unique(pidp_filter[!is.na(pidp_filter)])
+    egoalt <- egoalt %>%
+      dplyr::filter(pidp %in% pidp_filter)
+    
+    focal_pidps <- tibble::tibble(pidp = pidp_filter)
+  } else {
+    focal_pidps <- egoalt %>%
+      dplyr::distinct(pidp)
+  }
+  
+  alter_pidps <- unique(egoalt$apidp[!is.na(egoalt$apidp)])
   
   indall <- read_dta_clean(indall_path) %>%
     dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_"))) %>%
     dplyr::select(pidp, age_dv)
   
-  egoalt <- read_dta_clean(egoalt_path) %>%
-    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_"))) %>%
-    dplyr::select(pidp, apidp, relationship_dv)
+  if (length(alter_pidps) > 0) {
+    indall <- indall %>%
+      dplyr::filter(pidp %in% alter_pidps)
+  } else {
+    indall <- indall %>%
+      dplyr::slice(0)
+  }
   
   # Couples: 1=Husband/Wife, 2=Partner/Cohabitee, 3=Civil partner
   couples <- egoalt %>%
@@ -74,7 +95,7 @@ build_family_data <- function(path_main, prefix) {
     dplyr::select(pidp, partner_pidp = apidp, partner_rel = relationship_dv) %>%
     dplyr::distinct(pidp, .keep_all = TRUE)
   
-  # Children: your convention 9:12 (kept as-is)
+  # Children: project convention 9:12.
   children <- egoalt %>%
     dplyr::filter(relationship_dv %in% 9:12) %>%
     dplyr::left_join(indall, by = c("apidp" = "pidp")) %>%
@@ -90,16 +111,14 @@ build_family_data <- function(path_main, prefix) {
       .groups = "drop"
     )
   
-  egoalt %>%
-    dplyr::distinct(pidp) %>%
+  focal_pidps %>%
     dplyr::left_join(couples, by = "pidp") %>%
     dplyr::left_join(children, by = "pidp") %>%
     dplyr::mutate(
       n_children = tidyr::replace_na(n_children, 0),
-      
-      # family_id:
-      #   - if no partner: fam_{pidp}
-      #   - if partner: symmetric id fam_{min}_{max}
+      n_children_18_under = tidyr::replace_na(n_children_18_under, 0),
+      n_children_16_under = tidyr::replace_na(n_children_16_under, 0),
+      n_children_10_under = tidyr::replace_na(n_children_10_under, 0),
       family_id = dplyr::case_when(
         is.na(partner_pidp) ~ paste0("fam_", pidp),
         pidp < partner_pidp ~ paste0("fam_", pidp, "_", partner_pidp),
@@ -109,14 +128,19 @@ build_family_data <- function(path_main, prefix) {
     dplyr::rename_with(~ paste0(prefix, "_", .), -pidp)
 }
 
-clean_baseline_wave <- function(path_main, prefix) {
+clean_baseline_wave <- function(path_main, prefix, pidp_filter = NULL) {
   
   file_path <- file.path(path_main, paste0(prefix, "_indresp.dta"))
-  df_family <- build_family_data(path_main, prefix)
+  
+  df_family <- build_family_data(
+    path_main = path_main,
+    prefix = prefix,
+    pidp_filter = pidp_filter
+  )
   
   cols_to_keep <- c(
     "pidp",
-    paste0(prefix,"_hidp"),
+    paste0(prefix, "_hidp"),
     
     # Demographics
     paste0(prefix, "_sex"),
@@ -124,7 +148,7 @@ clean_baseline_wave <- function(path_main, prefix) {
     paste0(prefix, "_gor_dv"),
     paste0(prefix, "_isced11_dv"),
     
-    # Employment + outcomes you requested
+    # Employment + outcomes
     paste0(prefix, "_jbstat"),
     paste0(prefix, "_jbhas"),
     paste0(prefix, "_jbsic07_cc"),
@@ -146,7 +170,7 @@ clean_baseline_wave <- function(path_main, prefix) {
     paste0(prefix, "_jbpl"),
     paste0(prefix, "_jbwah"),
     
-    # Family (from INDRESP)
+    # Family from INDRESP
     paste0(prefix, "_mastat_dv"),
     paste0(prefix, "_sppid"),
     paste0(prefix, "_nchild_dv"),
@@ -172,11 +196,25 @@ clean_baseline_wave <- function(path_main, prefix) {
     paste0(prefix, "_intdaty_dv")
   )
   
-  read_dta_clean(file_path) %>%
-    dplyr::select(any_of(cols_to_keep)) %>%
+  out <- read_dta_clean(file_path) %>%
+    dplyr::select(any_of(cols_to_keep))
+  
+  if (!is.null(pidp_filter)) {
+    pidp_filter <- unique(pidp_filter[!is.na(pidp_filter)])
+    out <- out %>%
+      dplyr::filter(pidp %in% pidp_filter)
+  }
+  
+  out <- out %>%
     dplyr::left_join(df_family, by = "pidp") %>%
-    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)%>%
-    add_husits_main_vars(raw_var = "husits", out_var = "husits")
+    dplyr::rename_with(~ stringr::str_remove(., paste0("^", prefix, "_")), -pidp)
+  
+  if (exists("add_husits_main_vars", mode = "function")) {
+    out <- out %>%
+      add_husits_main_vars(raw_var = "husits", out_var = "husits")
+  }
+  
+  out
 }
 
 build_baseline <- function(path_main) {
@@ -185,22 +223,22 @@ build_baseline <- function(path_main) {
   df_j <- clean_baseline_wave(path_main, "j")
   df_k <- clean_baseline_wave(path_main, "k")
   
-  # K baseline: keep strictly pre-2020 (your existing convention)
+  # K baseline: keep strictly pre-2020.
   df_k_2019 <- df_k %>%
     dplyr::filter(intdaty_dv < 2020) %>%
     dplyr::mutate(source_wave = "K")
   
-  # J baseline: keep strictly pre-2020 (your existing convention)
+  # J baseline: keep strictly pre-2020.
   df_j_2019 <- df_j %>%
     dplyr::filter(intdaty_dv < 2020) %>%
     dplyr::mutate(source_wave = "J")
   
-  # I spans 2017–2019, so REQUIRE 2019 explicitly
+  # I spans 2017-2019, so require 2019 explicitly.
   df_i_2019only <- df_i %>%
     dplyr::filter(intdaty_dv == 2019) %>%
     dplyr::mutate(source_wave = "I")
   
-  # Priority fill: K first, then J, then I
+  # Priority fill: K first, then J, then I.
   df_j_fill <- df_j_2019 %>%
     dplyr::anti_join(df_k_2019, by = "pidp")
   
@@ -217,7 +255,6 @@ build_baseline <- function(path_main) {
       # Harmonized baseline general health:
       # use base_scsf1 when available, otherwise base_sf1
       base_health_sf = combine_health(base_sf1, base_scsf1),
-      
       base_health_sf = factor(
         dplyr::case_when(
           base_health_sf == 1 ~ "Excellent",
@@ -229,5 +266,6 @@ build_baseline <- function(path_main) {
         ),
         levels = c("Excellent", "Very good", "Good", "Fair", "Poor"),
         ordered = TRUE
-      )    )
+      )
+    )
 }

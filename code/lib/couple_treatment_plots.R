@@ -85,6 +85,37 @@ add_treatment_group_scales <- function(p,
 }
 
 # -----------------------------------------------------------------------------
+# Main-history/future yearly x-axis scale
+#
+# Used only for main-survey history + future year plots.
+# Gives one major break per calendar year and no minor breaks.
+# -----------------------------------------------------------------------------
+.add_yearly_x_breaks <- function(p, dd, time_var = "time") {
+  if (is.null(dd) || nrow(dd) == 0 || !(time_var %in% names(dd))) {
+    return(p)
+  }
+  
+  years <- suppressWarnings(as.integer(dd[[time_var]]))
+  years <- years[!is.na(years)]
+  
+  if (length(years) == 0) {
+    return(p)
+  }
+  
+  year_breaks <- seq(
+    from = min(years, na.rm = TRUE),
+    to = max(years, na.rm = TRUE),
+    by = 1
+  )
+  
+  p +
+    ggplot2::scale_x_continuous(
+      breaks = year_breaks,
+      minor_breaks = NULL
+    )
+}
+
+# -----------------------------------------------------------------------------
 # Couple counts over time by treatment group: COVID waves
 # -----------------------------------------------------------------------------
 plot_covid_treatment_group_counts <- function(
@@ -583,8 +614,6 @@ plot_future_spouse_treatment_numeric <- function(
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
   
-  # Build a combined group variable BEFORE calling the future helper,
-  # because the helper returns aggregated data without pidp.
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
     add_treatment_group_label(
@@ -726,8 +755,6 @@ plot_future_spouse_treatment_childgrid <- function(
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
   
-  # Same logic: encode child group + spouse + treatment into one grouping var
-  # before calling the summarization helper.
   dd <- df %>%
     filter_couples_for_child_grid() %>%
     add_treatment_group_label(
@@ -836,6 +863,7 @@ plot_future_spouse_treatment_childgrid <- function(
   
   p
 }
+
 # -----------------------------------------------------------------------------
 # Main-survey history + future plot: spouse facets
 #
@@ -868,11 +896,11 @@ plot_main_history_future_spouse_treatment_numeric <- function(
 ) {
   child_subset <- match.arg(child_subset)
   agg <- match.arg(agg)
-
+  
   stopifnot(var %in% names(df))
   stopifnot(treatment_var %in% names(df))
   stopifnot(agg %in% names(df))
-
+  
   zero_if_not_working <- var %in% c(
     "jbhrs",
     "jbot",
@@ -881,20 +909,20 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     "fimnlabgrs_dv",
     "fimngrs_dv"
   )
-
+  
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
-
+  
   if (drop_covid && "period" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!(as.character(period) %in% c("covid_baseline", "covid")))
   }
-
+  
   if (drop_covid && "source" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!grepl("^covid", as.character(source)))
   }
-
+  
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
     add_treatment_group_label(
@@ -929,7 +957,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
       n = dplyr::n(),
       .groups = "drop"
     )
-
+  
   p <- ggplot(
     dd,
     aes(
@@ -962,17 +990,21 @@ plot_main_history_future_spouse_treatment_numeric <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
-
+  
   p <- add_treatment_group_scales(
     p = p,
     treatment_var = treatment_var,
     treated_label = treated_label
   )
-
+  
+  if (agg == "year") {
+    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
+  }
+  
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
   }
-
+  
   ggsave(
     filename = out_file,
     plot = p,
@@ -980,7 +1012,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     width = 12,
     height = 8
   )
-
+  
   p
 }
 
@@ -1007,11 +1039,11 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     title_size = 14
 ) {
   agg <- match.arg(agg)
-
+  
   stopifnot(var %in% names(df))
   stopifnot(treatment_var %in% names(df))
   stopifnot(agg %in% names(df))
-
+  
   zero_if_not_working <- var %in% c(
     "jbhrs",
     "jbot",
@@ -1020,20 +1052,20 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     "fimnlabgrs_dv",
     "fimngrs_dv"
   )
-
+  
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
-
+  
   if (drop_covid && "period" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!(as.character(period) %in% c("covid_baseline", "covid")))
   }
-
+  
   if (drop_covid && "source" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!grepl("^covid", as.character(source)))
   }
-
+  
   dd <- df %>%
     filter_couples_for_child_grid() %>%
     add_treatment_group_label(
@@ -1069,7 +1101,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
       n = dplyr::n(),
       .groups = "drop"
     )
-
+  
   p <- ggplot(
     dd,
     aes(
@@ -1089,7 +1121,10 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
       y = couple_plot_var_units(var, is_binary = couple_plot_is_binary(var)),
       color = NULL,
       shape = NULL,
-      title = if (include_title) paste(couple_plot_var_label(var), "| history + future") else NULL
+      title = if (include_title) paste(
+        couple_plot_var_label(var),
+        "| history + future"
+      ) else NULL
     ) +
     theme_couple_facets(
       axis_text_size = axis_text_size,
@@ -1099,17 +1134,21 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
-
+  
   p <- add_treatment_group_scales(
     p = p,
     treatment_var = treatment_var,
     treated_label = treated_label
   )
-
+  
+  if (agg == "year") {
+    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
+  }
+  
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
   }
-
+  
   ggsave(
     filename = out_file,
     plot = p,
@@ -1117,7 +1156,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     width = 13,
     height = 9
   )
-
+  
   p
 }
 
@@ -1147,20 +1186,20 @@ plot_main_history_future_treatment_group_counts <- function(
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
   stopifnot(agg %in% names(df))
-
+  
   df <- df %>%
     filter_couple_plot_restriction(restriction = restriction)
-
+  
   if (drop_covid && "period" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!(as.character(period) %in% c("covid_baseline", "covid")))
   }
-
+  
   if (drop_covid && "source" %in% names(df)) {
     df <- df %>%
       dplyr::filter(!grepl("^covid", as.character(source)))
   }
-
+  
   dd <- df %>%
     filter_observed_couple_rows_for_counts(
       vars = outcome_vars,
@@ -1190,7 +1229,7 @@ plot_main_history_future_treatment_group_counts <- function(
       n_couples = dplyr::n_distinct(couple_id),
       .groups = "drop"
     )
-
+  
   p <- ggplot(
     dd,
     aes(
@@ -1228,13 +1267,17 @@ plot_main_history_future_treatment_group_counts <- function(
       legend_title_size = legend_title_size,
       title_size = title_size
     )
-
+  
   p <- add_treatment_group_scales(
     p = p,
     treatment_var = treatment_var,
     treated_label = treated_label
   )
-
+  
+  if (agg == "year") {
+    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
+  }
+  
   ggsave(
     filename = out_file,
     plot = p,
@@ -1242,6 +1285,6 @@ plot_main_history_future_treatment_group_counts <- function(
     width = 12,
     height = 9
   )
-
+  
   p
 }

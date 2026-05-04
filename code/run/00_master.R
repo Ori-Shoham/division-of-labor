@@ -6,7 +6,7 @@
 #   so large objects created in earlier stages do NOT remain in memory.
 #
 # How it works:
-#   - Each stage is sourced with: local = new.env(parent = emptyenv())
+#   - Each stage is sourced with: local = new.env(parent = globalenv())
 #   - This prevents carry-over of large datasets between scripts.
 #   - Each stage still reads/writes from disk (derived/, figures/, tables/).
 #
@@ -24,8 +24,9 @@ RUN_CHECK_INPUTS        <- TRUE
 RUN_BUILD_DATA          <- TRUE
 RUN_DESCRIPTIVES        <- TRUE
 RUN_FUTURE_DESCRIPTIVES <- TRUE
-RUN_COUPLE_TREATMENT_DESCRIPTIVES <- TRUE
 RUN_SAMPLE_TABLES       <- TRUE
+RUN_COUPLE_TREATMENT_DESCRIPTIVES <- TRUE
+RUN_EVENT_STUDIES       <- TRUE
 RUN_MODELS              <- TRUE
 RUN_LASSO               <- TRUE
 RUN_SESSION_INFO        <- TRUE
@@ -39,17 +40,14 @@ STOP_AFTER_EACH         <- FALSE
 run_stage <- function(script_path) {
   message("\n--- Running: ", script_path, " ---")
   
-  # new.env with empty parent means: no accidental access to global objects
+  # new.env with global parent keeps package/base functions available while
+  # preventing accidental reuse of objects created by previous stages.
   e <- new.env(parent = globalenv())
-  
-  # Give the stage the minimal base packages it needs to run `source`, `library`, etc.
-  # (base is always there; we add utils explicitly for safety)
-  # e$`%>%` <- NULL  # avoid accidental reliance on magrittr from global env
   
   # Source in isolated env
   source(script_path, local = e)
   
-  # Drop the environment (and everything created inside)
+  # Drop the environment and clean memory
   rm(e)
   invisible(gc())
 }
@@ -88,22 +86,33 @@ if (RUN_FUTURE_DESCRIPTIVES) {
 }
 
 if (RUN_SAMPLE_TABLES) {
-  message("\n==================== Stage 2c: Sample tables =============")
+  message("\n==================== Stage 2c: Sample tables ===================")
   run_stage("code/run/02c_sample_tables.R")
   if (STOP_AFTER_EACH) stop("Stopped after Stage 2c (as requested).")
 }
+
 if (RUN_COUPLE_TREATMENT_DESCRIPTIVES) {
-  message("\n==================== Stage 2d: Couple treatment descriptives =============")
+  message("\n==================== Stage 2d: Couple treatment descriptives ====")
   run_stage("code/run/02d_make_couple_treatment_descriptives.R")
   if (STOP_AFTER_EACH) stop("Stopped after Stage 2d (as requested).")
 }
+
 # =============================================================================
-# Stage 3: Regression tables
+# Stage 3a: Event-study regression analogs of treatment descriptives
+# =============================================================================
+if (RUN_EVENT_STUDIES) {
+  message("\n==================== Stage 3a: Event studies ===================")
+  run_stage("code/run/03a_make_couple_treatment_event_studies.R")
+  if (STOP_AFTER_EACH) stop("Stopped after Stage 3a (as requested).")
+}
+
+# =============================================================================
+# Stage 3b: Regression tables
 # =============================================================================
 if (RUN_MODELS) {
-  message("\n==================== Stage 3: Models ===========================")
+  message("\n==================== Stage 3b: Models ==========================")
   run_stage("code/run/03_models_workoutside.R")
-  if (STOP_AFTER_EACH) stop("Stopped after Stage 3 (as requested).")
+  if (STOP_AFTER_EACH) stop("Stopped after Stage 3b (as requested).")
 }
 
 # =============================================================================
@@ -125,3 +134,4 @@ if (RUN_SESSION_INFO) {
 }
 
 message("\n==================== ALL DONE ====================\n")
+
