@@ -129,6 +129,18 @@ build_covid_long_panel <- function(
     )
   
   df_sample_long <- dplyr::bind_rows(df_2019, df_precovid, df_sample) %>%
+    dplyr::group_by(wave) %>%
+    dplyr::mutate(
+      # Wave-level availability of the COVID WFH question.
+      # This must be computed before the not-employed -8 sentinel is inserted
+      # into wah, so synthetic 2019 remains unavailable.
+      covid_wfh_question_available = any(
+        !is.na(suppressWarnings(as.numeric(wah))) &
+          suppressWarnings(as.numeric(wah)) >= 0,
+        na.rm = TRUE
+      )
+    ) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(
       # For not employed (sempderived==4), set missing hours/wah to -8 sentinel
       hours = dplyr::if_else(sempderived == 4 & is.na(hours), -8, hours),
@@ -145,14 +157,16 @@ build_covid_long_panel <- function(
       wfh_some = make_wfh_some_covid(
         sempderived = sempderived,
         hours = hours,
-        wah = wah
+        wah = wah,
+        wfh_question_available = covid_wfh_question_available
       ),
       
       # Generic COVID workoutside
       workoutside = make_workoutside_covid(
         sempderived = sempderived,
         hours = hours,
-        wah = wah
+        wah = wah,
+        wfh_question_available = covid_wfh_question_available
       ),
       husits_raw = husits,
       husits = dplyr::case_when(
@@ -161,7 +175,8 @@ build_covid_long_panel <- function(
         TRUE ~ clean_husits_covid(husits_raw, covid_code8_to_missing = TRUE)
       ),
       husits_cat = label_husits(husits)
-    )
+    ) %>%
+    dplyr::select(-covid_wfh_question_available)
   
   df_sample_long
 }

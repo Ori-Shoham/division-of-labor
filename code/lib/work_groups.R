@@ -160,6 +160,9 @@ add_baseline_work_groups <- function(df) {
 #   - positive hours -> 1
 # -----------------------------------------------------------------------------
 make_any_work_covid <- function(sempderived, hours) {
+  sempderived <- suppressWarnings(as.numeric(sempderived))
+  hours <- suppressWarnings(as.numeric(hours))
+  
   dplyr::case_when(
     is.na(sempderived) ~ NA_real_,
     sempderived < 0 ~ NA_real_,
@@ -189,6 +192,9 @@ make_any_work_covid <- function(sempderived, hours) {
 #   - positive usual hours -> 1
 # -----------------------------------------------------------------------------
 make_any_work_future <- function(jbstat, jbhrs) {
+  jbstat <- suppressWarnings(as.numeric(jbstat))
+  jbhrs <- suppressWarnings(as.numeric(jbhrs))
+  
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
     jbstat < 0 ~ NA_real_,
@@ -210,9 +216,32 @@ make_any_work_future <- function(jbstat, jbhrs) {
 #   - not working / zero hours -> 0
 #   - always WFH -> 0
 #   - often/sometimes/never WFH -> 1
+# Key point:
+#   workoutside is only defined in waves where the COVID WFH question was asked.
+#   If wfh_question_available == FALSE, return NA for everyone in that wave,
+#   including non-workers. This avoids defining synthetic 2019 values.
 # -----------------------------------------------------------------------------
-make_workoutside_covid <- function(sempderived, hours, wah) {
+make_workoutside_covid <- function(sempderived,
+                                   hours,
+                                   wah,
+                                   wfh_question_available = NULL) {
+  sempderived <- suppressWarnings(as.numeric(sempderived))
+  hours <- suppressWarnings(as.numeric(hours))
+  wah <- suppressWarnings(as.numeric(wah))
+  
+  if (is.null(wfh_question_available)) {
+    wfh_question_available <- rep(TRUE, length(sempderived))
+  }
+  
+  wfh_question_available <- as.logical(wfh_question_available)
+  
   dplyr::case_when(
+    # New rule only:
+    # If WFH question was not asked in this wave, workoutside is unavailable
+    # for everyone in the wave.
+    is.na(wfh_question_available) | !wfh_question_available ~ NA_real_,
+    
+    # Original individual-level logic:
     is.na(sempderived) ~ NA_real_,
     sempderived < 0 ~ NA_real_,
     is.na(hours) ~ NA_real_,
@@ -232,9 +261,32 @@ make_workoutside_covid <- function(sempderived, hours, wah) {
 #   - not working / zero hours -> 0
 #   - always/often/sometimes WFH -> 1
 #   - never WFH -> 0
+# Key point:
+#   wfh_some is only defined in waves where the COVID WFH question was asked.
+#   If wfh_question_available == FALSE, return NA for everyone in that wave,
+#   including non-workers. This avoids defining synthetic 2019 values.
 # -----------------------------------------------------------------------------
-make_wfh_some_covid <- function(sempderived, hours, wah) {
+make_wfh_some_covid <- function(sempderived,
+                                hours,
+                                wah,
+                                wfh_question_available = NULL) {
+  sempderived <- suppressWarnings(as.numeric(sempderived))
+  hours <- suppressWarnings(as.numeric(hours))
+  wah <- suppressWarnings(as.numeric(wah))
+  
+  if (is.null(wfh_question_available)) {
+    wfh_question_available <- rep(TRUE, length(sempderived))
+  }
+  
+  wfh_question_available <- as.logical(wfh_question_available)
+  
   dplyr::case_when(
+    # New rule only:
+    # If WFH question was not asked in this wave, wfh_some is unavailable
+    # for everyone in the wave.
+    is.na(wfh_question_available) | !wfh_question_available ~ NA_real_,
+    
+    # Original individual-level logic:
     is.na(sempderived) ~ NA_real_,
     sempderived < 0 ~ NA_real_,
     is.na(hours) ~ NA_real_,
@@ -296,16 +348,18 @@ make_wfh_some_future <- function(jbstat,
                                  wfh_code = NULL,
                                  jbpl = NULL,
                                  jbwah = NULL) {
+  jbstat <- suppressWarnings(as.numeric(jbstat))
+  jbhrs <- suppressWarnings(as.numeric(jbhrs))
   
   if (is.null(wfh_code)) {
     if (is.null(jbpl) || is.null(jbwah)) {
-      stop(
-        "make_wfh_some_future() requires either wfh_code or both jbpl and jbwah."
-      )
+      stop("make_wfh_some_future() requires either wfh_code or both jbpl and jbwah.")
     }
     
     wfh_code <- combine_wfh(jbpl, jbwah)$wfh_code
   }
+  
+  wfh_code <- suppressWarnings(as.numeric(wfh_code))
   
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
@@ -313,8 +367,7 @@ make_wfh_some_future <- function(jbstat,
     is.na(wfh_code) ~ NA_real_,
     !(jbstat %in% c(1, 2)) ~ 0,
     is.na(jbhrs) ~ NA_real_,
-    jbhrs < 0 ~ NA_real_,
-    jbhrs == 0 ~ 0,
+    jbhrs <= 0 ~ 0,
     wfh_code %in% 1:3 ~ 1,
     wfh_code == 4 ~ 0,
     TRUE ~ NA_real_
@@ -352,14 +405,17 @@ make_wfh_some_future <- function(jbstat,
 # reconstructing it separately from jbpl/jbwah.
 # -----------------------------------------------------------------------------
 make_workoutside_future <- function(jbstat, jbhrs, wfh_code) {
+  jbstat <- suppressWarnings(as.numeric(jbstat))
+  jbhrs <- suppressWarnings(as.numeric(jbhrs))
+  wfh_code <- suppressWarnings(as.numeric(wfh_code))
+  
   dplyr::case_when(
     is.na(jbstat) ~ NA_real_,
     jbstat < 0 ~ NA_real_,
     is.na(wfh_code) ~ NA_real_,
     !(jbstat %in% c(1, 2)) ~ 0,
     is.na(jbhrs) ~ NA_real_,
-    jbhrs < 0 ~ NA_real_,
-    jbhrs == 0 ~ 0,
+    jbhrs <= 0 ~ 0,
     wfh_code == 1 ~ 0,
     wfh_code %in% 2:4 ~ 1,
     TRUE ~ NA_real_

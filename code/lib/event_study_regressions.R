@@ -37,6 +37,10 @@
 #
 # Required package:
 #   fixest
+# Key fixes:
+#   - Baseline controls ending in _h / _w are preserved in the spouse-long panel.
+#   - Event-study outcome cleaning mirrors descriptive plotting logic.
+#   - Model failures produce warnings instead of failing silently.
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -506,6 +510,18 @@ make_spouse_event_panel <- function(df,
     !stringr::str_detect(names(df), "_h$|_w$")
   ]
   
+  # These are couple-level controls even though some end in _h / _w.
+  # They must be carried to both wife and husband rows.
+  baseline_control_cols <- c(
+    "base_age_dv_h",
+    "base_age_dv_w",
+    "base_isced11_cat_h",
+    "base_isced11_cat_w",
+    "n_children_under18_baseline",
+    "n_children_under10_baseline",
+    "base_region"
+  )
+  
   common_cols <- union(
     common_cols,
     c(
@@ -516,9 +532,11 @@ make_spouse_event_panel <- function(df,
       "year",
       "ym",
       "event_time",
-      "event_label"
+      "event_label",
+      baseline_control_cols
     )
   )
+  
   common_cols <- intersect(common_cols, names(df))
   
   aux_vars <- c(
@@ -627,7 +645,7 @@ build_event_study_formula <- function(outcome,
   
   rhs_terms <- c(
     "treated",
-    paste0("i(event_time, treated, ref = ", ref_event_time, ")")
+    paste0("fixest::i(event_time, treated, ref = ", ref_event_time, ")")
   )
   
   if (controls == "baseline") {
@@ -641,7 +659,6 @@ build_event_study_formula <- function(outcome,
   }
   
   if (couple_fe) {
-    # treated is time-invariant and collinear with couple FE.
     rhs_terms <- setdiff(rhs_terms, "treated")
   }
   
@@ -705,7 +722,18 @@ estimate_event_study <- function(df,
       notes = FALSE,
       warn = FALSE
     ),
-    error = function(e) NULL
+    error = function(e) {
+      warning(
+        "Event-study model failed: ",
+        "study=", study,
+        ", outcome=", outcome,
+        ", controls=", controls,
+        ", couple_fe=", couple_fe,
+        ". Reason: ",
+        conditionMessage(e)
+      )
+      NULL
+    }
   )
   
   mod
@@ -731,11 +759,17 @@ extract_event_study_coefs <- function(model,
   
   out <- ct %>%
     tibble::as_tibble() %>%
-    dplyr::filter(stringr::str_detect(term, "^event_time::")) %>%
+    dplyr::filter(
+      stringr::str_detect(term, ":treated$")
+    ) %>%
     dplyr::mutate(
+      # Robust to both:
+      #   event_time::2018:treated
+      # and:
+      #   fixest::i(event_time, treated, ref = 0)::2018:treated
       event_time_chr = stringr::str_match(
         term,
-        "^event_time::([^:]+):treated$"
+        "::([^:]+):treated$"
       )[, 2],
       event_time = suppressWarnings(as.numeric(event_time_chr)),
       conf_low = estimate - 1.96 * std_error,
