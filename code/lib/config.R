@@ -15,9 +15,19 @@
 #   without touching code.
 # =============================================================================
 
+#load data
+user = Sys.info()[["user"]]
+# print(user)
+
 # ---- Data INPUT root folders (outside repo; confidential/raw) -----------------
 path_main  <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata14_se/ukhls"
 path_covid <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data/UKDA-8644-stata/stata/stata13_se/"
+
+if(user == "orishoham"){
+  dropbox_path <- "C:/Users/orishoham/Dropbox/"
+  path_main  <- paste0(dropbox_path,"WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata14_se/ukhls")
+  path_covid <- paste0(dropbox_path,"WFH_covid/UK project/understanding society uk all data/UKDA-8644-stata/stata/stata13_se/")
+}
 
 # ---- Project REPO folders (inside repo; safe to sync) -------------------------
 pol_path <- "policies"
@@ -35,7 +45,12 @@ KEYWORKER_XLSX <- file.path(pol_path, "keyworkersreferencetableupdated2.xlsx")
 #   "D:/protected_outputs/ukhls_project"
 #   "E:/encrypted_drive/ukhls_outputs"
 #   "C:/Users/USER/Documents/protected/ukhls_outputs"
-data_out_root <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data"  # <-- EDIT ME
+data_out_root <- "C:/Users/USER/Dropbox/WFH_covid/UK project/understanding society uk all data" 
+
+if(user == "orishoham"){
+  data_out_root <- paste0(dropbox_path,"WFH_covid/UK project/understanding society uk all data")  
+
+}
 
 # Under data_out_root we keep all non-shareable derived products:
 der_path     <- file.path(data_out_root, "derived")

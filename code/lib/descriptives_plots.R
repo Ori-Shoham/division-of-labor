@@ -461,10 +461,11 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
                       y = work_hours, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
     theme_minimal() +
-    labs(color = NULL, sahpe = NULL, x = NULL, y = "Hours worked last week",
-         title = "Hours worked last week (2019–September 2021)") +
     theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 90, hjust = 1))
+          axis.text.x = element_text(angle = 90, hjust = 1))+
+    labs(color = NULL, sahpe = NULL, x = NULL, y = "Hours worked last week",
+         title = "Hours worked last week (2019–September 2021)") 
+    
 
   ggsave(out_file, p, path = fig_path, width = 12, height = 8)
   p
