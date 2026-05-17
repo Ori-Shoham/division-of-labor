@@ -115,6 +115,27 @@ add_treatment_group_scales <- function(p,
     )
 }
 
+.filter_monthly_2018_2023 <- function(dd, time_var = "time") {
+  if (is.null(dd) || nrow(dd) == 0 || !(time_var %in% names(dd))) {
+    return(dd)
+  }
+
+  dd %>%
+    dplyr::filter(
+      !is.na(.data[[time_var]]),
+      .data[[time_var]] >= as.Date("2018-01-01"),
+      .data[[time_var]] <= as.Date("2023-12-01")
+    )
+}
+
+.apply_regular_wave_time_labels <- function(p, dd, agg) {
+  if (agg == "year") {
+    .add_yearly_x_breaks(p, dd, time_var = "time")
+  } else {
+    .apply_time_labels(p, dd, agg = agg)
+  }
+}
+
 # -----------------------------------------------------------------------------
 # Couple counts over time by treatment group: COVID waves
 # -----------------------------------------------------------------------------
@@ -230,6 +251,7 @@ plot_covid_treatment_group_counts <- function(
 #
 # agg:
 #   - "wave"
+#   - "ym"
 #   - "year"
 #
 # Uses couple-level long data (one row per couple x time point), not spouse-long.
@@ -238,7 +260,7 @@ plot_covid_treatment_group_counts <- function(
 plot_future_treatment_group_counts <- function(
     df,
     treatment_var,
-    agg = c("wave", "year"),
+    agg = c("wave", "ym", "year"),
     out_file,
     fig_path,
     outcome_vars = future_count_outcome_vars(),
@@ -284,6 +306,7 @@ plot_future_treatment_group_counts <- function(
       !is.na(treatment_group),
       !is.na(time)
     ) %>%
+    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
     dplyr::group_by(sample_group, time, treatment_group) %>%
     dplyr::summarise(
       n_couples = dplyr::n_distinct(couple_id),
@@ -343,6 +366,8 @@ plot_future_treatment_group_counts <- function(
         limits = wl_future$wave,
         labels = wl_future$wave_lab_short
       )
+  } else {
+    p <- .apply_time_labels(p, dd, agg = agg)
   }
   
   ggsave(
@@ -581,7 +606,7 @@ plot_future_spouse_treatment_numeric <- function(
     var,
     treatment_var,
     child_subset = c("all", "u10", "11_17"),
-    agg = c("wave", "year"),
+    agg = c("wave", "ym", "year"),
     out_file,
     fig_path,
     include_title = FALSE,
@@ -659,6 +684,10 @@ plot_future_spouse_treatment_numeric <- function(
         )
       )
     )
+
+  if (agg == "ym") {
+    dd_plot <- .filter_monthly_2018_2023(dd_plot)
+  }
   
   p <- ggplot(
     dd_plot,
@@ -723,7 +752,7 @@ plot_future_spouse_treatment_childgrid <- function(
     df,
     var,
     treatment_var,
-    agg = c("wave", "year"),
+    agg = c("wave", "ym", "year"),
     out_file,
     fig_path,
     include_title = FALSE,
@@ -810,6 +839,10 @@ plot_future_spouse_treatment_childgrid <- function(
         )
       )
     )
+
+  if (agg == "ym") {
+    dd_plot <- .filter_monthly_2018_2023(dd_plot)
+  }
   
   p <- ggplot(
     dd_plot,
@@ -879,7 +912,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     var,
     treatment_var,
     child_subset = c("all", "u10", "11_17"),
-    agg = c("year"),
+    agg = c("year", "ym"),
     out_file,
     fig_path,
     include_title = FALSE,
@@ -951,6 +984,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
+    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
     dplyr::group_by(time, spouse, treatment_group) %>%
     dplyr::summarise(
       mean_y = mean(value, na.rm = TRUE),
@@ -997,9 +1031,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     treated_label = treated_label
   )
   
-  if (agg == "year") {
-    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
-  }
+  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -1023,7 +1055,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     df,
     var,
     treatment_var,
-    agg = c("year"),
+    agg = c("year", "ym"),
     out_file,
     fig_path,
     include_title = FALSE,
@@ -1095,6 +1127,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
+    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
     dplyr::group_by(time, spouse, child_group_plot, treatment_group) %>%
     dplyr::summarise(
       mean_y = mean(value, na.rm = TRUE),
@@ -1141,9 +1174,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     treated_label = treated_label
   )
   
-  if (agg == "year") {
-    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
-  }
+  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -1166,7 +1197,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
 plot_main_history_future_treatment_group_counts <- function(
     df,
     treatment_var,
-    agg = c("year"),
+    agg = c("year", "ym"),
     out_file,
     fig_path,
     outcome_vars = future_count_outcome_vars(),
@@ -1224,6 +1255,7 @@ plot_main_history_future_treatment_group_counts <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
+    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
     dplyr::group_by(sample_group, time, treatment_group) %>%
     dplyr::summarise(
       n_couples = dplyr::n_distinct(couple_id),
@@ -1274,9 +1306,7 @@ plot_main_history_future_treatment_group_counts <- function(
     treated_label = treated_label
   )
   
-  if (agg == "year") {
-    p <- .add_yearly_x_breaks(p, dd, time_var = "time")
-  }
+  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
   
   ggsave(
     filename = out_file,

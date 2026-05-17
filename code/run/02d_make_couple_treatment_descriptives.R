@@ -41,12 +41,12 @@
 #     - howlng
 #
 # Notes:
-#   - Future outcomes are saved at both wave and year aggregation.
+#   - Future outcomes are saved at wave, month, and year aggregation.
 #   - History + future figures use the main-survey-only stacked couple panel:
 #       couple_history_future_mainonly_long.rds
 #     This deliberately excludes COVID-study rows because COVID has a different
 #     questionnaire and a different sample.
-#   - History + future figures are plotted by calendar year.
+#   - History + future figures are plotted by calendar month and year.
 #   - Child-grid versions compare only 0-10 vs 11-17 child groups.
 #   - Restricted wife-treatment variants limit the sample to couples where
 #     the husband is not a key worker or is in education.
@@ -154,8 +154,8 @@ HISTORY_FUTURE_OUTCOMES <- c(
   "howlng"
 )
 
-FUTURE_AGGS <- c("wave", "year")
-HISTORY_FUTURE_AGGS <- c("year")
+FUTURE_AGGS <- c("wave", "ym", "year")
+HISTORY_FUTURE_AGGS <- c("ym", "year")
 
 # -----------------------------------------------------------------------------
 # Plot readability controls
@@ -667,7 +667,7 @@ for (tr in TREATMENT_VARS) {
       )
     }
 
-    # Future counts by wave and year
+    # Future counts by wave, month, and year
     for (agg in FUTURE_AGGS) {
       plot_future_treatment_group_counts(
         df = df_future_couple,
@@ -719,7 +719,7 @@ for (tr in TREATMENT_VARS) {
       }
     }
 
-    # Main-survey history + future counts by year
+    # Main-survey history + future counts by month and year
     if (!is.null(df_history_future_couple)) {
       for (agg in HISTORY_FUTURE_AGGS) {
         plot_main_history_future_treatment_group_counts(
