@@ -35,24 +35,24 @@
 }
 
 \newcommand{\eventstudyframes}[5]{%
-\begin{frame}{Event study: #1 --- wife, no couple FE}
+\begin{frame}{Event study: #1 --- wife, no controls}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_noc_#5_nfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- wife, with controls}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_bctrl_#5_nfe_childgroups.png}
 \end{frame}
 
-\begin{frame}{Event study: #1 --- husband, no couple FE}
+\begin{frame}{Event study: #1 --- husband, bo controls}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_noc_#5_nfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- husband, with controls}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_bctrl_#5_nfe_childgroups.png}
-\end{frame}
-
-\begin{frame}{Event study: #1 --- wife, couple FE}
-\centering
-\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_w_noc_#5_cfe_childgroups.png}
-\end{frame}
-
-\begin{frame}{Event study: #1 --- husband, couple FE}
-\centering
-\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_h_noc_#5_cfe_childgroups.png}
 \end{frame}
 }
 
