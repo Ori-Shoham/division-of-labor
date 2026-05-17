@@ -19,6 +19,7 @@
 \usepackage{adjustbox}
 \usepackage{tikz}
 \usepackage{booktabs}
+\usepackage{tabularx}
 
 \newcommand{\figdir}{figures}
 
@@ -34,25 +35,40 @@
   \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
 }
 
+\newcommand{\eventstudybuttonrow}[1]{%
+  \vspace{0.2em}
+  \hfill #1
+}
+
 \newcommand{\eventstudyframes}[5]{%
 \begin{frame}{Event study: #1 --- wife, no controls}
+\hypertarget{es-noc-#2-#3-#4-w-#5}{}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_noc_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-bctrl-#2-#3-#4-w-#5}{\beamergotobutton{With covariates}}}
 \end{frame}
 
-\begin{frame}{Event study: #1 --- wife, with controls}
-\centering
-\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_bctrl_#5_nfe_childgroups.png}
-\end{frame}
-
-\begin{frame}{Event study: #1 --- husband, bo controls}
+\begin{frame}{Event study: #1 --- husband, no controls}
+\hypertarget{es-noc-#2-#3-#4-h-#5}{}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_noc_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-bctrl-#2-#3-#4-h-#5}{\beamergotobutton{With covariates}}}
+\end{frame}
+}
+
+\newcommand{\eventstudycovariateframes}[5]{%
+\begin{frame}{Event study: #1 --- wife, with covariates}
+\hypertarget{es-bctrl-#2-#3-#4-w-#5}{}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_bctrl_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-noc-#2-#3-#4-w-#5}{\beamerreturnbutton{Back to no covariates}}}
 \end{frame}
 
-\begin{frame}{Event study: #1 --- husband, with controls}
+\begin{frame}{Event study: #1 --- husband, with covariates}
+\hypertarget{es-bctrl-#2-#3-#4-h-#5}{}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_bctrl_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-noc-#2-#3-#4-h-#5}{\beamerreturnbutton{Back to no covariates}}}
 \end{frame}
 }
 
@@ -272,6 +288,36 @@ X_c'\gamma
 % =============================================================================
 
 \appendix
+
+\section{Appendix: outcome variable definitions}
+
+\begin{frame}{Outcome variable definitions}
+\centering
+\tiny
+\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight,center}
+\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}X@{}}
+\toprule
+\textbf{Variable} & \textbf{Definition used in the couple-treatment outputs} \\
+\midrule
+\texttt{any\_work} & Indicator for worked positive hours. In COVID waves this uses hours worked last week; in main/future waves this uses positive usual weekly hours among employed or self-employed respondents. \\
+\texttt{hours} & COVID-study hours worked last week. Synthetic pre-COVID rows use Jan--Feb 2020 baseline hours where available. \\
+\texttt{jbhrs} & Main/future usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
+\texttt{workoutside} & Indicator for working outside the home. Equals one for workers who do not always work from home; equals zero for non-workers, zero hours, or always working from home. \\
+\texttt{wfh\_some} & Indicator for working from home always, often, or sometimes. The figure stem uses \texttt{wfh\_any}. Defined only in waves where a WFH question is available. \\
+\texttt{howlng} & Weekly housework hours. COVID raw \texttt{howlng\_cv} is harmonized to \texttt{howlng}; the Jan--Feb 2020 synthetic baseline row has no comparable housework measure. \\
+\texttt{timechcare} & COVID-study childcare / home-schooling hours; synthetic 2019 and Jan--Feb 2020 rows are missing. \\
+\texttt{paygu\_dv} & Usual gross pay per month from current job; main event studies set this to zero for non-workers. \\
+\texttt{fimnlabgrs\_dv} & Gross monthly labour income; main event studies set this to zero for non-workers. \\
+\texttt{fimngrs\_dv} & Gross monthly personal income; main event studies set this to zero for non-workers. \\
+\texttt{husits\_wife\_main\_both} & Indicator equal to one when both spouses' harmonized childcare-responsibility reports imply the wife is mainly responsible. \\
+\bottomrule
+\end{tabularx}
+\end{adjustbox}
+
+\vspace{0.2em}
+\tiny Sources: code documentation in \texttt{work\_groups.R}, \texttt{covid\_loader.R}, \texttt{covid\_panel.R}, \texttt{future\_outcomes.R}, \texttt{couple\_plot\_helpers.R}, and \texttt{event\_study\_regressions.R}.
+\end{frame}
+
 \section{Appendix: wife key worker (non-education), regardless of husband}
 
 \begin{frame}{Work outside (COVID)}
@@ -285,5 +331,22 @@ X_c'\gamma
 \resultfigure{\figdir/future_weekly_hours_year_treat_wife_key_notedu_any_childgrid_spousecols.png}
 \end{frame}
 \eventstudyframes{Weekly hours (future, year)}{wife_key_any}{main_jbhrs}{wife_key_any}{all}
+
+\section{Appendix: event studies with covariates}
+
+\eventstudycovariateframes{Work outside (COVID)}{wife_key_husb_notedu}{covid_workoutside}{wife_key_husb_notedu}{all}
+\eventstudycovariateframes{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
+\eventstudycovariateframes{Housework (COVID)}{wife_key_husb_notedu}{covid_howlng}{wife_key_husb_notedu}{all}
+\eventstudycovariateframes{Weekly hours (future, year)}{wife_key_husb_notedu}{main_jbhrs}{wife_key_husb_notedu}{all}
+\eventstudycovariateframes{Gross monthly pay (future, year)}{wife_key_husb_notedu}{main_paygu_dv}{wife_key_husb_notedu}{all}
+
+\eventstudycovariateframes{Work outside (COVID)}{husb_shutdown}{covid_workoutside}{husb_shutdown}{all}
+\eventstudycovariateframes{WFH any (COVID)}{husb_shutdown}{covid_wfh_some}{husb_shutdown}{all}
+\eventstudycovariateframes{Housework (COVID)}{husb_shutdown}{covid_howlng}{husb_shutdown}{all}
+\eventstudycovariateframes{Weekly hours (future, year)}{husb_shutdown}{main_jbhrs}{husb_shutdown}{all}
+\eventstudycovariateframes{Gross monthly pay (future, year)}{husb_shutdown}{main_paygu_dv}{husb_shutdown}{all}
+
+\eventstudycovariateframes{Work outside (COVID)}{wife_key_any}{covid_workoutside}{wife_key_any}{all}
+\eventstudycovariateframes{Weekly hours (future, year)}{wife_key_any}{main_jbhrs}{wife_key_any}{all}
 
 \end{document}

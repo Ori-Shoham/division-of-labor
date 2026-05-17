@@ -8,7 +8,7 @@
 #   - Runs spouse-specific event studies.
 #   - Estimates separately by baseline child-age category.
 #   - Plots younger/older child-group estimates in the same figure.
-#   - Supports main-study and COVID-study panels.
+#   - Supports main-study, monthly main-study, and COVID-study panels.
 #   - Supports no-controls and baseline-demographic-controls versions.
 #   - Supports no couple fixed effects and couple fixed effects.
 #   - Clusters standard errors at pidp level.
@@ -107,7 +107,7 @@ clean_factor_nonnegative <- function(x, prefix = "cat") {
 row_coalesce_numeric <- function(x, y) {
   x <- clean_numeric_nonnegative(x)
   y <- clean_numeric_nonnegative(y)
-  
+
   dplyr::case_when(
     !is.na(x) ~ x,
     !is.na(y) ~ y,
@@ -118,7 +118,7 @@ row_coalesce_numeric <- function(x, y) {
 row_max_numeric <- function(x, y) {
   x <- clean_numeric_nonnegative(x)
   y <- clean_numeric_nonnegative(y)
-  
+
   dplyr::case_when(
     !is.na(x) & !is.na(y) ~ pmax(x, y),
     !is.na(x) ~ x,
@@ -162,7 +162,7 @@ event_study_clean_negative_codes <- function(x) {
   if (requireNamespace("haven", quietly = TRUE)) {
     x <- haven::zap_labels(x)
   }
-  
+
   x <- suppressWarnings(as.numeric(x))
   x[x %in% c(-9, -8, -7, -2, -1)] <- NA_real_
   x
@@ -170,7 +170,7 @@ event_study_clean_negative_codes <- function(x) {
 
 event_study_clean_binary <- function(x) {
   x <- event_study_clean_negative_codes(x)
-  
+
   dplyr::case_when(
     is.na(x) ~ NA_real_,
     x == 1 ~ 1,
@@ -181,13 +181,13 @@ event_study_clean_binary <- function(x) {
 
 event_study_clean_main_outcome <- function(df, outcome) {
   stopifnot(outcome %in% names(df))
-  
+
   x <- event_study_clean_negative_codes(df[[outcome]])
-  
+
   if (outcome %in% event_study_binary_outcomes()) {
     return(event_study_clean_binary(df[[outcome]]))
   }
-  
+
   if (outcome %in% event_study_zero_if_not_working_outcomes()) {
     if (!("jbstat" %in% names(df))) {
       stop(
@@ -195,26 +195,26 @@ event_study_clean_main_outcome <- function(df, outcome) {
         "event-study cleaning, but jbstat is not in the event-study panel."
       )
     }
-    
+
     emp <- event_study_clean_negative_codes(df$jbstat)
-    
+
     x <- dplyr::case_when(
       is.na(emp) ~ NA_real_,
       !(emp %in% c(1, 2)) ~ 0,
       TRUE ~ x
     )
   }
-  
+
   x
 }
 
 event_study_clean_covid_outcome <- function(df, outcome) {
   stopifnot(outcome %in% names(df))
-  
+
   if (outcome %in% event_study_binary_outcomes()) {
     return(event_study_clean_binary(df[[outcome]]))
   }
-  
+
   # Mirrors COVID descriptive plots:
   # non-binary COVID outcomes are cleaned by dropping negative missing codes.
   # They are not zeroed by work status.
@@ -223,17 +223,17 @@ event_study_clean_covid_outcome <- function(df, outcome) {
 
 event_study_clean_outcome <- function(df,
                                       outcome,
-                                      study = c("main", "covid")) {
+                                      study = c("main", "main_monthly", "covid")) {
   study <- match.arg(study)
-  
-  if (study == "main") {
+
+  if (study %in% c("main", "main_monthly")) {
     return(event_study_clean_main_outcome(df, outcome))
   }
-  
+
   if (study == "covid") {
     return(event_study_clean_covid_outcome(df, outcome))
   }
-  
+
   stop("Unknown study: ", study)
 }
 
@@ -247,7 +247,7 @@ make_event_baseline_controls <- function(df_baseline_couple) {
       couple_id,
       husband_pidp,
       wife_pidp,
-      
+
       # Treatment variables
       treat_wife_key_notedu_husb_not_or_edu =
         clean_binary_01(treat_wife_key_notedu_husb_not_or_edu),
@@ -255,7 +255,7 @@ make_event_baseline_controls <- function(df_baseline_couple) {
         clean_binary_01(treat_wife_key_notedu_any),
       treat_husb_shutdown_wife_not =
         clean_binary_01(treat_husb_shutdown_wife_not),
-      
+
       # Treatment-sample restriction used in robustness versions
       sample_husb_notkey_or_edu = dplyr::case_when(
         is.na(sample_husb_notkey_or_edu) ~ NA,
@@ -265,7 +265,7 @@ make_event_baseline_controls <- function(df_baseline_couple) {
         suppressWarnings(as.numeric(sample_husb_notkey_or_edu)) == 0 ~ FALSE,
         TRUE ~ NA
       ),
-      
+
       # Baseline child groups
       has_child_u10_2019 = dplyr::case_when(
         is.na(has_child_u10_2019) ~ FALSE,
@@ -279,15 +279,15 @@ make_event_baseline_controls <- function(df_baseline_couple) {
         suppressWarnings(as.numeric(has_child_11_17_2019)) == 1 ~ TRUE,
         TRUE ~ FALSE
       ),
-      
+
       # Baseline controls: both spouses' age
       base_age_dv_h = clean_numeric_nonnegative(base_age_dv_h),
       base_age_dv_w = clean_numeric_nonnegative(base_age_dv_w),
-      
+
       # Baseline controls: both spouses' categorical education
       base_isced11_cat_h = clean_factor_nonnegative(base_isced11_dv_h, "isced"),
       base_isced11_cat_w = clean_factor_nonnegative(base_isced11_dv_w, "isced"),
-      
+
       # Baseline controls: children
       n_children_under18_baseline = row_max_numeric(
         base_n_children_18_under_h,
@@ -297,7 +297,7 @@ make_event_baseline_controls <- function(df_baseline_couple) {
         base_n_children_10_under_h,
         base_n_children_10_under_w
       ),
-      
+
       # Baseline controls: region.
       # In most couples this should be identical for both spouses, but coalesce
       # keeps the code robust.
@@ -311,10 +311,10 @@ make_event_baseline_controls <- function(df_baseline_couple) {
 
 attach_event_baseline_controls <- function(df, df_baseline_couple) {
   controls <- make_event_baseline_controls(df_baseline_couple)
-  
+
   # Avoid duplicate-name problems by replacing any stale copies in df.
   drop_cols <- setdiff(names(controls), "couple_id")
-  
+
   df %>%
     dplyr::select(-dplyr::any_of(drop_cols)) %>%
     dplyr::left_join(controls, by = "couple_id")
@@ -329,57 +329,57 @@ add_husits_wife_main_both <- function(df,
   if (all(c("husits_wife_main_w", "husits_wife_main_h") %in% names(df))) {
     wife_says_wife_main <- clean_binary_01(df$husits_wife_main_w)
     husband_says_wife_main <- clean_binary_01(df$husits_wife_main_h)
-    
+
     df[[out_var]] <- dplyr::case_when(
       !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
         as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
       TRUE ~ NA_real_
     )
-    
+
     return(df)
   }
-  
+
   if (all(c("husits_w", "husits_h") %in% names(df))) {
     husits_w <- suppressWarnings(as.numeric(df$husits_w))
     husits_h <- suppressWarnings(as.numeric(df$husits_h))
-    
+
     husits_w <- dplyr::case_when(
       is.na(husits_w) ~ NA_real_,
       husits_w < 0 ~ NA_real_,
       husits_w %in% c(1, 2, 3, 4) ~ husits_w,
       TRUE ~ NA_real_
     )
-    
+
     husits_h <- dplyr::case_when(
       is.na(husits_h) ~ NA_real_,
       husits_h < 0 ~ NA_real_,
       husits_h %in% c(1, 2, 3, 4) ~ husits_h,
       TRUE ~ NA_real_
     )
-    
+
     wife_says_wife_main <- dplyr::case_when(
       is.na(husits_w) ~ NA_real_,
       husits_w == 1 ~ 1,
       husits_w %in% c(2, 3, 4) ~ 0,
       TRUE ~ NA_real_
     )
-    
+
     husband_says_wife_main <- dplyr::case_when(
       is.na(husits_h) ~ NA_real_,
       husits_h == 2 ~ 1,
       husits_h %in% c(1, 3, 4) ~ 0,
       TRUE ~ NA_real_
     )
-    
+
     df[[out_var]] <- dplyr::case_when(
       !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
         as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
       TRUE ~ NA_real_
     )
-    
+
     return(df)
   }
-  
+
   df[[out_var]] <- NA_real_
   df
 }
@@ -398,23 +398,55 @@ add_main_event_time <- function(df,
       year = suppressWarnings(as.integer(year)),
       month = suppressWarnings(as.integer(format(ym, "%m")))
     )
-  
+
   # Match yearly descriptive figures: exclude Jan-Feb 2020 from 2020 points.
   if (exclude_jan_feb_2020) {
     out <- out %>%
       dplyr::filter(!(year == 2020 & !is.na(month) & month <= 2))
   }
-  
+
   # Match yearly descriptive figures: drop 2025.
   if (drop_2025) {
     out <- out %>%
       dplyr::filter(year != 2025 | is.na(year))
   }
-  
+
   out %>%
     dplyr::mutate(
       event_time = year - reference_year,
       event_label = as.character(year),
+      reference_event_time = 0
+    )
+}
+
+year_month_index <- function(x) {
+  x <- as.Date(x)
+  suppressWarnings(as.integer(format(x, "%Y"))) * 12L +
+    suppressWarnings(as.integer(format(x, "%m")))
+}
+
+add_main_monthly_event_time <- function(df,
+                                        reference_ym = as.Date("2019-12-01"),
+                                        start_ym = as.Date("2018-01-01"),
+                                        end_ym = as.Date("2023-12-01")) {
+  reference_ym <- as.Date(reference_ym)
+  start_ym <- as.Date(start_ym)
+  end_ym <- as.Date(end_ym)
+
+  df %>%
+    dplyr::mutate(
+      ym = as.Date(ym),
+      year = suppressWarnings(as.integer(format(ym, "%Y"))),
+      month = suppressWarnings(as.integer(format(ym, "%m")))
+    ) %>%
+    dplyr::filter(
+      !is.na(ym),
+      ym >= start_ym,
+      ym <= end_ym
+    ) %>%
+    dplyr::mutate(
+      event_time = year_month_index(ym) - year_month_index(reference_ym),
+      event_label = format(ym, "%Y-%m"),
       reference_event_time = 0
     )
 }
@@ -470,10 +502,10 @@ choose_covid_reference_event_time <- function(df,
     outcome = outcome,
     study = "covid"
   )
-  
+
   dd <- df %>%
     dplyr::mutate(outcome_clean = outcome_clean)
-  
+
   ref_2019_available <- dd %>%
     dplyr::filter(
       event_time == -1,
@@ -481,9 +513,9 @@ choose_covid_reference_event_time <- function(df,
       !is.na(.data[[treatment_var]])
     ) %>%
     nrow() > 0
-  
+
   if (ref_2019_available) return(-1)
-  
+
   ref_baseline_available <- dd %>%
     dplyr::filter(
       event_time == 0,
@@ -491,9 +523,9 @@ choose_covid_reference_event_time <- function(df,
       !is.na(.data[[treatment_var]])
     ) %>%
     nrow() > 0
-  
+
   if (ref_baseline_available) return(0)
-  
+
   NA_real_
 }
 
@@ -503,13 +535,13 @@ choose_covid_reference_event_time <- function(df,
 
 make_spouse_event_panel <- function(df,
                                     outcomes,
-                                    study = c("main", "covid")) {
+                                    study = c("main", "main_monthly", "covid")) {
   study <- match.arg(study)
-  
+
   common_cols <- names(df)[
     !stringr::str_detect(names(df), "_h$|_w$")
   ]
-  
+
   # These are couple-level controls even though some end in _h / _w.
   # They must be carried to both wife and husband rows.
   baseline_control_cols <- c(
@@ -521,7 +553,7 @@ make_spouse_event_panel <- function(df,
     "n_children_under10_baseline",
     "base_region"
   )
-  
+
   common_cols <- union(
     common_cols,
     c(
@@ -536,27 +568,27 @@ make_spouse_event_panel <- function(df,
       baseline_control_cols
     )
   )
-  
+
   common_cols <- intersect(common_cols, names(df))
-  
+
   aux_vars <- c(
     "jbstat",
     "sempderived"
   )
-  
+
   make_one_spouse <- function(suffix, spouse_label, pidp_var) {
     pidp_vec <- if (pidp_var %in% names(df)) df[[pidp_var]] else NA_real_
-    
+
     out <- df %>%
       dplyr::select(dplyr::all_of(common_cols)) %>%
       dplyr::mutate(
         spouse = spouse_label,
         pidp = pidp_vec
       )
-    
+
     for (vv in union(outcomes, aux_vars)) {
       suffixed_var <- paste0(vv, "_", suffix)
-      
+
       if (suffixed_var %in% names(df)) {
         out[[vv]] <- df[[suffixed_var]]
       } else if (vv %in% names(df)) {
@@ -565,10 +597,10 @@ make_spouse_event_panel <- function(df,
         out[[vv]] <- NA_real_
       }
     }
-    
+
     out
   }
-  
+
   dplyr::bind_rows(
     make_one_spouse("w", "wife", "wife_pidp"),
     make_one_spouse("h", "husband", "husband_pidp")
@@ -583,15 +615,15 @@ make_spouse_event_panel <- function(df,
 filter_child_group <- function(df,
                                child_group = c("u10", "11_17")) {
   child_group <- match.arg(child_group)
-  
+
   if (child_group == "u10") {
     return(df %>% dplyr::filter(has_child_u10_2019))
   }
-  
+
   if (child_group == "11_17") {
     return(df %>% dplyr::filter(has_child_11_17_2019))
   }
-  
+
   df
 }
 
@@ -599,18 +631,18 @@ filter_treatment_sample <- function(df,
                                     treatment_var,
                                     sample_variant = c("all", "husb_notkey_or_edu")) {
   sample_variant <- match.arg(sample_variant)
-  
+
   out <- df
-  
+
   if (sample_variant == "husb_notkey_or_edu") {
     if (!("sample_husb_notkey_or_edu" %in% names(out))) {
       return(out %>% dplyr::slice(0))
     }
-    
+
     out <- out %>%
       dplyr::filter(sample_husb_notkey_or_edu %in% TRUE)
   }
-  
+
   out %>%
     dplyr::filter(
       !is.na(.data[[treatment_var]]),
@@ -642,26 +674,26 @@ build_event_study_formula <- function(outcome,
                                       couple_fe = FALSE,
                                       ref_event_time = 0) {
   controls <- match.arg(controls)
-  
+
   rhs_terms <- c(
     "treated",
     paste0("fixest::i(event_time, treated, ref = ", ref_event_time, ")")
   )
-  
+
   if (controls == "baseline") {
     rhs_terms <- c(rhs_terms, event_study_control_terms())
   }
-  
+
   fixed_effects <- if (couple_fe) {
     "event_time + couple_id"
   } else {
     "event_time"
   }
-  
+
   if (couple_fe) {
     rhs_terms <- setdiff(rhs_terms, "treated")
   }
-  
+
   stats::as.formula(
     paste0(
       outcome,
@@ -679,18 +711,18 @@ estimate_event_study <- function(df,
                                  ref_event_time,
                                  controls = c("none", "baseline"),
                                  couple_fe = FALSE,
-                                 study = c("main", "covid")) {
+                                 study = c("main", "main_monthly", "covid")) {
   check_event_study_packages()
-  
+
   controls <- match.arg(controls)
   study <- match.arg(study)
-  
+
   outcome_value <- event_study_clean_outcome(
     df = df,
     outcome = outcome,
     study = study
   )
-  
+
   dd <- df %>%
     dplyr::mutate(outcome_value = outcome_value) %>%
     dplyr::filter(
@@ -702,18 +734,18 @@ estimate_event_study <- function(df,
     dplyr::mutate(
       "{outcome}" := outcome_value
     )
-  
+
   if (nrow(dd) == 0) return(NULL)
   if (dplyr::n_distinct(dd$treated) < 2) return(NULL)
   if (!any(dd$event_time == ref_event_time)) return(NULL)
-  
+
   fml <- build_event_study_formula(
     outcome = outcome,
     controls = controls,
     couple_fe = couple_fe,
     ref_event_time = ref_event_time
   )
-  
+
   mod <- tryCatch(
     fixest::feols(
       fml = fml,
@@ -735,28 +767,28 @@ estimate_event_study <- function(df,
       NULL
     }
   )
-  
+
   mod
 }
 
 extract_event_study_coefs <- function(model,
                                       ref_event_time,
-                                      study = c("main", "covid")) {
+                                      study = c("main", "main_monthly", "covid")) {
   study <- match.arg(study)
-  
+
   if (is.null(model)) {
     return(tibble::tibble())
   }
-  
+
   ct <- as.data.frame(fixest::coeftable(model))
   ct$term <- rownames(ct)
-  
+
   names(ct) <- names(ct) %>%
     stringr::str_replace_all("Std\\. Error", "std_error") %>%
     stringr::str_replace_all("t value", "statistic") %>%
     stringr::str_replace_all("Pr\\(>\\|t\\|\\)", "p_value") %>%
     stringr::str_replace_all("Estimate", "estimate")
-  
+
   out <- ct %>%
     tibble::as_tibble() %>%
     dplyr::filter(
@@ -786,7 +818,7 @@ extract_event_study_coefs <- function(model,
       conf_high,
       term
     )
-  
+
   ref_row <- tibble::tibble(
     event_time = ref_event_time,
     estimate = 0,
@@ -797,7 +829,7 @@ extract_event_study_coefs <- function(model,
     conf_high = 0,
     term = "reference"
   )
-  
+
   dplyr::bind_rows(out, ref_row) %>%
     dplyr::arrange(event_time)
 }
@@ -820,7 +852,7 @@ event_study_outcome_label <- function(outcome) {
     fimnlabgrs_dv = "Gross monthly labour pay",
     fimngrs_dv = "Gross monthly income"
   )
-  
+
   if (outcome %in% names(labels)) labels[[outcome]] else outcome
 }
 
@@ -833,7 +865,7 @@ treatment_label <- function(treatment_var) {
     treat_husb_shutdown_wife_not =
       "Husband shutdown sector; wife not"
   )
-  
+
   if (treatment_var %in% names(labels)) labels[[treatment_var]] else treatment_var
 }
 
@@ -911,7 +943,7 @@ make_event_study_file_stem <- function(study,
 
 safe_save_rds <- function(object, file) {
   dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
-  
+
   ok <- tryCatch(
     {
       saveRDS(object, file)
@@ -922,13 +954,13 @@ safe_save_rds <- function(object, file) {
       FALSE
     }
   )
-  
+
   invisible(ok)
 }
 
 safe_write_csv <- function(object, file) {
   dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
-  
+
   ok <- tryCatch(
     {
       readr::write_csv(object, file)
@@ -939,13 +971,47 @@ safe_write_csv <- function(object, file) {
       FALSE
     }
   )
-  
+
   invisible(ok)
 }
 
 # =============================================================================
 # Plotting
 # =============================================================================
+
+main_monthly_axis_lookup <- function(start_ym = as.Date("2018-01-01"),
+                                     end_ym = as.Date("2023-12-01"),
+                                     reference_ym = as.Date("2019-12-01")) {
+  ym <- seq.Date(as.Date(start_ym), as.Date(end_ym), by = "month")
+
+  tibble::tibble(
+    ym = ym,
+    event_time = year_month_index(ym) - year_month_index(reference_ym),
+    event_label = format(ym, "%Y-%m"),
+    year_label = format(ym, "%Y"),
+    is_year_break = format(ym, "%m") == "01"
+  )
+}
+
+add_main_monthly_x_axis <- function(p, coefs) {
+  monthly_axis <- main_monthly_axis_lookup() %>%
+    dplyr::filter(event_time %in% sort(unique(coefs$event_time)))
+
+  year_axis <- monthly_axis %>%
+    dplyr::filter(is_year_break)
+
+  if (nrow(year_axis) == 0) {
+    year_axis <- monthly_axis
+  }
+
+  p +
+    ggplot2::scale_x_continuous(
+      breaks = year_axis$event_time,
+      labels = year_axis$year_label,
+      minor_breaks = NULL
+    ) +
+    ggplot2::labs(x = "Calendar month")
+}
 
 plot_event_study <- function(coefs,
                              study,
@@ -960,7 +1026,7 @@ plot_event_study <- function(coefs,
   if (is.null(coefs) || nrow(coefs) == 0) {
     return(NULL)
   }
-  
+
   caption_text <- paste(
     paste0("Treatment: ", treatment_label(treatment_var)),
     paste0("Controls: ", controls),
@@ -969,7 +1035,7 @@ plot_event_study <- function(coefs,
     ifelse(couple_fe, "Couple FE: yes", "Couple FE: no"),
     sep = " | "
   )
-  
+
   p <- ggplot2::ggplot(
     coefs,
     ggplot2::aes(x = event_time, y = estimate)
@@ -1005,10 +1071,10 @@ plot_event_study <- function(coefs,
       ),
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
     )
-  
+
   if (study == "main") {
     main_breaks <- sort(unique(coefs$event_time))
-    
+
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = main_breaks,
@@ -1017,12 +1083,16 @@ plot_event_study <- function(coefs,
       ) +
       ggplot2::labs(x = "Calendar year")
   }
-  
+
+  if (study == "main_monthly") {
+    p <- add_main_monthly_x_axis(p, coefs)
+  }
+
   if (study == "covid") {
     covid_axis <- covid_wave_order_lookup() %>%
       dplyr::filter(covid_event_time %in% sort(unique(coefs$event_time))) %>%
       dplyr::arrange(covid_event_time)
-    
+
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = covid_axis$covid_event_time,
@@ -1031,7 +1101,7 @@ plot_event_study <- function(coefs,
       ) +
       ggplot2::labs(x = "COVID-study wave")
   }
-  
+
   p
 }
 
@@ -1047,7 +1117,7 @@ plot_event_study_child_groups <- function(coefs,
   if (is.null(coefs) || nrow(coefs) == 0) {
     return(NULL)
   }
-  
+
   coefs <- coefs %>%
     dplyr::filter(
       !is.na(event_time),
@@ -1064,11 +1134,11 @@ plot_event_study_child_groups <- function(coefs,
         levels = c("Youngest child 0--10", "Youngest child 11--17")
       )
     )
-  
+
   if (nrow(coefs) == 0) {
     return(NULL)
   }
-  
+
   caption_text <- paste(
     paste0("Treatment: ", treatment_label(treatment_var)),
     paste0("Controls: ", controls),
@@ -1077,9 +1147,9 @@ plot_event_study_child_groups <- function(coefs,
     ifelse(couple_fe, "Couple FE: yes", "Couple FE: no"),
     sep = " | "
   )
-  
+
   dodge <- ggplot2::position_dodge(width = 0.35)
-  
+
   p <- ggplot2::ggplot(
     coefs,
     ggplot2::aes(
@@ -1126,10 +1196,10 @@ plot_event_study_child_groups <- function(coefs,
       ),
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
     )
-  
+
   if (study == "main") {
     main_breaks <- sort(unique(coefs$event_time))
-    
+
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = main_breaks,
@@ -1138,12 +1208,16 @@ plot_event_study_child_groups <- function(coefs,
       ) +
       ggplot2::labs(x = "Calendar year")
   }
-  
+
+  if (study == "main_monthly") {
+    p <- add_main_monthly_x_axis(p, coefs)
+  }
+
   if (study == "covid") {
     covid_axis <- covid_wave_order_lookup() %>%
       dplyr::filter(covid_event_time %in% sort(unique(coefs$event_time))) %>%
       dplyr::arrange(covid_event_time)
-    
+
     p <- p +
       ggplot2::scale_x_continuous(
         breaks = covid_axis$covid_event_time,
@@ -1152,7 +1226,7 @@ plot_event_study_child_groups <- function(coefs,
       ) +
       ggplot2::labs(x = "COVID-study wave")
   }
-  
+
   p
 }
 
@@ -1161,9 +1235,9 @@ save_combined_child_group_event_study_plots <- function(results,
   if (is.null(results) || nrow(results) == 0) {
     return(invisible(NULL))
   }
-  
+
   dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
-  
+
   plot_specs <- results %>%
     dplyr::distinct(
       study,
@@ -1175,7 +1249,7 @@ save_combined_child_group_event_study_plots <- function(results,
       couple_fe,
       ref_event_time
     )
-  
+
   purrr::pwalk(
     plot_specs,
     function(study,
@@ -1186,7 +1260,7 @@ save_combined_child_group_event_study_plots <- function(results,
              sample_variant,
              couple_fe,
              ref_event_time) {
-      
+
       dd <- results %>%
         dplyr::filter(
           study == !!study,
@@ -1198,11 +1272,11 @@ save_combined_child_group_event_study_plots <- function(results,
           couple_fe == !!couple_fe,
           ref_event_time == !!ref_event_time
         )
-      
+
       if (nrow(dd) == 0) {
         return(NULL)
       }
-      
+
       p <- plot_event_study_child_groups(
         coefs = dd,
         study = study,
@@ -1214,11 +1288,11 @@ save_combined_child_group_event_study_plots <- function(results,
         couple_fe = couple_fe,
         ref_event_time = ref_event_time
       )
-      
+
       if (is.null(p)) {
         return(NULL)
       }
-      
+
       stem <- paste(
         "es",
         study,
@@ -1232,18 +1306,18 @@ save_combined_child_group_event_study_plots <- function(results,
         sep = "_"
       ) %>%
         sanitize_name()
-      
+
       ggplot2::ggsave(
         filename = file.path(fig_dir, paste0(stem, ".png")),
         plot = p,
         width = 9,
         height = 6
       )
-      
+
       invisible(NULL)
     }
   )
-  
+
   invisible(NULL)
 }
 
@@ -1272,11 +1346,11 @@ run_one_event_study_task <- function(df_spouse,
       treatment_var = treatment_var,
       sample_variant = sample_variant
     )
-  
+
   if (nrow(dd) == 0) {
     return(tibble::tibble())
   }
-  
+
   if (study == "covid" && is.na(ref_event_time)) {
     ref_event_time <- choose_covid_reference_event_time(
       df = dd,
@@ -1284,11 +1358,11 @@ run_one_event_study_task <- function(df_spouse,
       treatment_var = treatment_var
     )
   }
-  
+
   if (is.na(ref_event_time)) {
     return(tibble::tibble())
   }
-  
+
   model <- estimate_event_study(
     df = dd,
     outcome = outcome,
@@ -1298,11 +1372,11 @@ run_one_event_study_task <- function(df_spouse,
     couple_fe = couple_fe,
     study = study
   )
-  
+
   if (is.null(model)) {
     return(tibble::tibble())
   }
-  
+
   coefs <- extract_event_study_coefs(
     model = model,
     ref_event_time = ref_event_time,
@@ -1323,7 +1397,7 @@ run_one_event_study_task <- function(df_spouse,
       n_pidp = dplyr::n_distinct(dd$pidp),
       n_couples = dplyr::n_distinct(dd$couple_id)
     )
-  
+
   stem <- make_event_study_file_stem(
     study = study,
     outcome = outcome,
@@ -1334,24 +1408,24 @@ run_one_event_study_task <- function(df_spouse,
     sample_variant = sample_variant,
     couple_fe = couple_fe
   )
-  
+
   if (save_model) {
     safe_save_rds(
       model,
       file.path(results_dir, paste0(stem, "_model.rds"))
     )
   }
-  
+
   safe_write_csv(
     coefs,
     file.path(results_dir, paste0(stem, "_coefs.csv"))
   )
-  
+
   safe_save_rds(
     coefs,
     file.path(results_dir, paste0(stem, "_coefs.rds"))
   )
-  
+
   if (isTRUE(save_individual_child_plot)) {
     p <- plot_event_study(
       coefs = coefs,
@@ -1365,10 +1439,10 @@ run_one_event_study_task <- function(df_spouse,
       couple_fe = couple_fe,
       ref_event_time = ref_event_time
     )
-    
+
     if (!is.null(p)) {
       dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
-      
+
       ggplot2::ggsave(
         filename = file.path(fig_dir, paste0(stem, ".png")),
         plot = p,
@@ -1377,7 +1451,7 @@ run_one_event_study_task <- function(df_spouse,
       )
     }
   }
-  
+
   coefs
 }
 
@@ -1405,31 +1479,35 @@ run_event_study_batch <- function(df_spouse,
                                   save_combined_child_plots = TRUE) {
   dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
   dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
-  
+
   all_results <- list()
   ii <- 0L
-  
+
   for (outcome in outcomes) {
     if (!(outcome %in% names(df_spouse))) next
     if (all(is.na(df_spouse[[outcome]]))) next
-    
+
     for (tr in treatment_vars) {
       if (!(tr %in% names(df_spouse))) next
-      
+
       sample_variants <- "all"
       if (tr %in% wife_treatment_extra_restriction_vars) {
         sample_variants <- c("all", "husb_notkey_or_edu")
       }
-      
+
       for (sample_variant in sample_variants) {
         for (child_group in child_groups) {
           for (sp in spouses) {
             for (cc in controls_set) {
-              
-              ref_event_time <- if (study == "main") 0 else NA_real_
-              
+
+              ref_event_time <- if (study %in% c("main", "main_monthly")) {
+                0
+              } else {
+                NA_real_
+              }
+
               ii <- ii + 1L
-              
+
               all_results[[ii]] <- run_one_event_study_task(
                 df_spouse = df_spouse,
                 study = study,
@@ -1452,67 +1530,100 @@ run_event_study_batch <- function(df_spouse,
       }
     }
   }
-  
+
   out <- dplyr::bind_rows(all_results)
-  
+
   safe_write_csv(
     out,
     file.path(results_dir, paste0("event_study_", study, "_all_coefficients.csv"))
   )
-  
+
   safe_save_rds(
     out,
     file.path(results_dir, paste0("event_study_", study, "_all_coefficients.rds"))
   )
-  
+
   if (isTRUE(save_combined_child_plots)) {
     save_combined_child_group_event_study_plots(
       results = out,
       fig_dir = fig_dir
     )
   }
-  
+
   out
 }
 
 # =============================================================================
-# Duplicate pidp-year diagnostics
+# Duplicate pidp-time diagnostics
 # =============================================================================
 
-diagnose_pidp_year_duplicates <- function(df_spouse,
-                                          outcomes = NULL) {
+diagnose_pidp_time_duplicates <- function(df_spouse,
+                                          time_vars,
+                                          outcomes = NULL,
+                                          time_label = paste(time_vars, collapse = "_")) {
+  stopifnot(all(time_vars %in% names(df_spouse)))
+
+  n_col <- paste0("n_pidp_", time_label)
+  n_multiple_col <- paste0("n_pidp_", time_label, "_multiple")
+  share_multiple_col <- paste0("share_pidp_", time_label, "_multiple")
+  max_col <- paste0("max_obs_in_pidp_", time_label)
+
   base <- df_spouse %>%
-    dplyr::filter(!is.na(pidp), !is.na(year)) %>%
-    dplyr::count(pidp, year, name = "n_obs") %>%
+    dplyr::filter(!is.na(pidp)) %>%
+    dplyr::filter(dplyr::if_all(dplyr::all_of(time_vars), ~ !is.na(.x))) %>%
+    dplyr::group_by(pidp, dplyr::across(dplyr::all_of(time_vars))) %>%
+    dplyr::summarise(n_obs = dplyr::n(), .groups = "drop") %>%
     dplyr::summarise(
-      n_pidp_year = dplyr::n(),
-      n_pidp_year_multiple = sum(n_obs > 1),
-      share_pidp_year_multiple = mean(n_obs > 1),
-      max_obs_in_pidp_year = max(n_obs),
+      "{n_col}" := dplyr::n(),
+      "{n_multiple_col}" := sum(n_obs > 1),
+      "{share_multiple_col}" := mean(n_obs > 1),
+      "{max_col}" := max(n_obs),
       .groups = "drop"
     )
-  
+
   if (is.null(outcomes)) {
     return(base)
   }
-  
+
   by_outcome <- purrr::map_dfr(outcomes, function(vv) {
     if (!(vv %in% names(df_spouse))) {
       return(tibble::tibble())
     }
-    
+
     df_spouse %>%
-      dplyr::filter(!is.na(pidp), !is.na(year), !is.na(.data[[vv]])) %>%
-      dplyr::count(pidp, year, name = "n_obs") %>%
+      dplyr::filter(!is.na(pidp), !is.na(.data[[vv]])) %>%
+      dplyr::filter(dplyr::if_all(dplyr::all_of(time_vars), ~ !is.na(.x))) %>%
+      dplyr::group_by(pidp, dplyr::across(dplyr::all_of(time_vars))) %>%
+      dplyr::summarise(n_obs = dplyr::n(), .groups = "drop") %>%
       dplyr::summarise(
         outcome = vv,
-        n_pidp_year = dplyr::n(),
-        n_pidp_year_multiple = sum(n_obs > 1),
-        share_pidp_year_multiple = mean(n_obs > 1),
-        max_obs_in_pidp_year = max(n_obs),
+        "{n_col}" := dplyr::n(),
+        "{n_multiple_col}" := sum(n_obs > 1),
+        "{share_multiple_col}" := mean(n_obs > 1),
+        "{max_col}" := max(n_obs),
         .groups = "drop"
       )
   })
-  
+
   list(overall = base, by_outcome = by_outcome)
+}
+
+diagnose_pidp_year_duplicates <- function(df_spouse,
+                                          outcomes = NULL) {
+  diagnose_pidp_time_duplicates(
+    df_spouse = df_spouse,
+    time_vars = "year",
+    outcomes = outcomes,
+    time_label = "year"
+  )
+}
+
+diagnose_pidp_ym_duplicates <- function(df_spouse,
+                                        outcomes = NULL) {
+  diagnose_pidp_time_duplicates(
+    df_spouse = df_spouse,
+    time_vars = "ym",
+    outcomes = outcomes,
+    time_label = "ym"
+  )
 }
