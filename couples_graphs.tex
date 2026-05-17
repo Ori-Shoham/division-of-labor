@@ -18,6 +18,7 @@
 \usepackage{graphicx}
 \usepackage{adjustbox}
 \usepackage{tikz}
+\usepackage{booktabs}
 
 \newcommand{\figdir}{figures}
 
@@ -27,6 +28,32 @@
 
 \newcommand{\countfigure}[1]{%
   \includegraphics[width=\linewidth,height=0.74\textheight,keepaspectratio]{#1}%
+}
+
+\newcommand{\eventfigure}[1]{%
+  \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+}
+
+\newcommand{\eventstudyframes}[5]{%
+\begin{frame}{Event study: #1 --- wife, no couple FE}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_bctrl_#5_nfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- husband, no couple FE}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_bctrl_#5_nfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- wife, couple FE}
+\centering
+\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_w_noc_#5_cfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- husband, couple FE}
+\centering
+\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_h_noc_#5_cfe_childgroups.png}
+\end{frame}
 }
 
 \title{COVID-19, Work Arrangements, and Household Division of Labor}
@@ -110,16 +137,19 @@
 \centering
 \resultfigure{\figdir/covid_workoutside_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Work outside (COVID)}{wife_key_husb_notedu}{covid_workoutside}{wife_key_husb_notedu}{all}
 
 \begin{frame}{WFH any (COVID)}
 \centering
 \resultfigure{\figdir/covid_wfh_any_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
 
 \begin{frame}{Housework (COVID)}
 \centering
 \resultfigure{\figdir/covid_housework_hours_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Housework (COVID)}{wife_key_husb_notedu}{covid_howlng}{wife_key_husb_notedu}{all}
 
 \begin{frame}{Childcare (COVID)}
 \centering
@@ -140,11 +170,13 @@
 \centering
 \resultfigure{\figdir/future_weekly_hours_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Weekly hours (future, year)}{wife_key_husb_notedu}{main_jbhrs}{wife_key_husb_notedu}{all}
 
 \begin{frame}{Gross monthly pay (future, year)}
 \centering
 \resultfigure{\figdir/future_gross_monthly_pay_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Gross monthly pay (future, year)}{wife_key_husb_notedu}{main_paygu_dv}{wife_key_husb_notedu}{all}
 
 % =============================================================================
 % Second treatment
@@ -156,16 +188,19 @@
 \centering
 \resultfigure{\figdir/covid_workoutside_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Work outside (COVID)}{husb_shutdown}{covid_workoutside}{husb_shutdown}{all}
 
 \begin{frame}{WFH any (COVID)}
 \centering
 \resultfigure{\figdir/covid_wfh_any_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{WFH any (COVID)}{husb_shutdown}{covid_wfh_some}{husb_shutdown}{all}
 
 \begin{frame}{Housework (COVID)}
 \centering
 \resultfigure{\figdir/covid_housework_hours_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Housework (COVID)}{husb_shutdown}{covid_howlng}{husb_shutdown}{all}
 
 \begin{frame}{Childcare (COVID)}
 \centering
@@ -186,11 +221,13 @@
 \centering
 \resultfigure{\figdir/future_weekly_hours_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Weekly hours (future, year)}{husb_shutdown}{main_jbhrs}{husb_shutdown}{all}
 
 \begin{frame}{Gross monthly pay (future, year)}
 \centering
 \resultfigure{\figdir/future_gross_monthly_pay_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Gross monthly pay (future, year)}{husb_shutdown}{main_paygu_dv}{husb_shutdown}{all}
 
 % =============================================================================
 % Appendix
@@ -203,10 +240,12 @@
 \centering
 \resultfigure{\figdir/covid_workoutside_wave_treat_wife_key_notedu_any_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Work outside (COVID)}{wife_key_any}{covid_workoutside}{wife_key_any}{all}
 
 \begin{frame}{Weekly hours (future, year)}
 \centering
 \resultfigure{\figdir/future_weekly_hours_year_treat_wife_key_notedu_any_childgrid_spousecols.png}
 \end{frame}
+\eventstudyframes{Weekly hours (future, year)}{wife_key_any}{main_jbhrs}{wife_key_any}{all}
 
 \end{document}
