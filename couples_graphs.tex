@@ -88,6 +88,44 @@
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Event-study methodology}
+\small
+Event studies are estimated separately by study sample, treatment definition, spouse, outcome, and baseline child-age group.
+
+\vspace{0.4em}
+\[
+Y_{ict}
+=
+\alpha_t
++
+\delta T_c
++
+\sum_{\tau \neq \tau_0}
+\beta_{\tau}
+\left[
+\mathbf{1}\{t=\tau\}\times T_c
+\right]
++
+X_c'\gamma
++
+\varepsilon_{ict}.
+\]
+
+\vspace{0.2em}
+\scriptsize
+\begin{itemize}
+  \item \(T_c\): couple-level treatment indicator.
+  \item \(\alpha_t\): period fixed effects.
+  \item \(\tau_0\): omitted reference period.
+  \item Main-study event studies use 2019 as the reference year.
+  \item COVID-study event studies use 2019 where available; WFH/work-outside use Jan--Feb 2020.
+  \item Figures use no couple fixed effects.
+  \item Standard errors are clustered at the person level.
+  \item Baseline covariates: wife and husband age, wife and husband education category, number of children under 18, number of children under 10, and region.
+\end{itemize}
+
+\end{frame}
+
 \section{Sample balance}
 
 \begin{frame}{Baseline balance: main treatment by child age}
