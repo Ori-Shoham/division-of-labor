@@ -66,7 +66,15 @@ source("code/lib/couple_plot_helpers.R")
 source("code/lib/husits_covid_plots.R")
 source("code/lib/couple_treatment_plots.R")
 
-dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
+for (d in c(
+  fig_path_couple_treatment_covid_childgrids,
+  fig_path_couple_treatment_future_childgrids,
+  fig_path_couple_treatment_history_future_childgrids,
+  fig_path_couple_treatment_spousefacets,
+  fig_path_couple_treatment_counts
+)) {
+  dir.create(d, showWarnings = FALSE, recursive = TRUE)
+}
 
 # =============================================================================
 # Load data
@@ -140,23 +148,39 @@ if (!is.null(df_history_future_couple_monthly)) {
 
 TREATMENT_VARS <- c(
   "treat_wife_key_notedu_husb_not_or_edu",
-  "treat_wife_key_notedu_any",
   "treat_husb_shutdown_wife_not"
 )
+
+if (isTRUE(MAKE_WIFE_KEY_ANY_TREATMENT)) {
+  TREATMENT_VARS <- c(
+    "treat_wife_key_notedu_husb_not_or_edu",
+    "treat_wife_key_notedu_any",
+    "treat_husb_shutdown_wife_not"
+  )
+}
 
 TREATMENT_LABS <- list(
   "Wife essential (not education),\nhusband not / education",
   NULL,
   NULL
 )
-names(TREATMENT_LABS) <- TREATMENT_VARS
+names(TREATMENT_LABS) <- c(
+  "treat_wife_key_notedu_husb_not_or_edu",
+  "treat_wife_key_notedu_any",
+  "treat_husb_shutdown_wife_not"
+)
 
 WIFE_TREATMENT_VARS <- c(
   "treat_wife_key_notedu_husb_not_or_edu",
   "treat_wife_key_notedu_any"
 )
+WIFE_TREATMENT_VARS <- intersect(WIFE_TREATMENT_VARS, TREATMENT_VARS)
 
-CHILD_SUBSETS <- c("all", "u10", "11_17")
+CHILD_SUBSETS <- if (isTRUE(MAKE_COUPLE_TREATMENT_SPOUSEFACETS)) {
+  c("all", "u10", "11_17")
+} else {
+  character(0)
+}
 
 COVID_OUTCOMES <- c(
   "any_work",
@@ -230,7 +254,7 @@ for (tr in TREATMENT_VARS) {
           child_subset,
           "_spousefacet.png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_spousefacets,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -252,7 +276,7 @@ for (tr in TREATMENT_VARS) {
         tr,
         "_childgrid_spousecols.png"
       ),
-      fig_path = fig_path,
+      fig_path = fig_path_couple_treatment_covid_childgrids,
       treated_label = TREATMENT_LABS[[tr]],
       axis_text_size = AXIS_TEXT_SIZE,
       axis_title_size = AXIS_TITLE_SIZE,
@@ -263,7 +287,7 @@ for (tr in TREATMENT_VARS) {
     )
     
     # Restricted comparison sample for wife-based treatments only
-    if (tr %in% WIFE_TREATMENT_VARS) {
+    if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
       
       for (child_subset in CHILD_SUBSETS) {
         plot_covid_spouse_treatment_overtime(
@@ -279,7 +303,7 @@ for (tr in TREATMENT_VARS) {
             child_subset,
             "_spousefacet_husb_notkey_or_edu.png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_spousefacets,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -301,7 +325,7 @@ for (tr in TREATMENT_VARS) {
           tr,
           "_childgrid_spousecols_husb_notkey_or_edu.png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_covid_childgrids,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -318,6 +342,7 @@ for (tr in TREATMENT_VARS) {
 # Run future-only figures
 # =============================================================================
 
+if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
 for (tr in TREATMENT_VARS) {
   for (v in FUTURE_OUTCOMES) {
     
@@ -346,7 +371,7 @@ for (tr in TREATMENT_VARS) {
             child_subset,
             "_spousefacet.png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_spousefacets,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -370,7 +395,7 @@ for (tr in TREATMENT_VARS) {
           tr,
           "_childgrid_spousecols.png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_future_childgrids,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -381,7 +406,7 @@ for (tr in TREATMENT_VARS) {
       )
       
       # Restricted comparison sample for wife-based treatments only
-      if (tr %in% WIFE_TREATMENT_VARS) {
+      if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
         
         for (child_subset in CHILD_SUBSETS) {
           plot_future_spouse_treatment_numeric(
@@ -399,7 +424,7 @@ for (tr in TREATMENT_VARS) {
               child_subset,
               "_spousefacet_husb_notkey_or_edu.png"
             ),
-            fig_path = fig_path,
+            fig_path = fig_path_couple_treatment_spousefacets,
             treated_label = TREATMENT_LABS[[tr]],
             axis_text_size = AXIS_TEXT_SIZE,
             axis_title_size = AXIS_TITLE_SIZE,
@@ -423,7 +448,7 @@ for (tr in TREATMENT_VARS) {
             tr,
             "_childgrid_spousecols_husb_notkey_or_edu.png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_future_childgrids,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -436,6 +461,7 @@ for (tr in TREATMENT_VARS) {
     }
   }
 }
+}
 # =============================================================================
 # COVID couple-level husits distribution figures
 # =============================================================================
@@ -444,23 +470,25 @@ if (.has_husits_distribution(df_covid_couple)) {
   
   for (tr in TREATMENT_VARS) {
     
-    plot_covid_husits_distribution(
-      df = df_covid_couple,
-      treatment_var = tr,
-      out_file = paste0(
-        "covid_husits_distribution_wave_",
-        tr,
-        "_treatmentfacets.png"
-      ),
-      fig_path = fig_path,
-      treated_label = TREATMENT_LABS[[tr]],
-      axis_text_size = AXIS_TEXT_SIZE,
-      axis_title_size = AXIS_TITLE_SIZE,
-      strip_text_size = STRIP_TEXT_SIZE,
-      legend_text_size = LEGEND_TEXT_SIZE,
-      legend_title_size = LEGEND_TITLE_SIZE,
-      title_size = TITLE_SIZE
-    )
+    if (isTRUE(MAKE_COUPLE_TREATMENT_SPOUSEFACETS)) {
+      plot_covid_husits_distribution(
+        df = df_covid_couple,
+        treatment_var = tr,
+        out_file = paste0(
+          "covid_husits_distribution_wave_",
+          tr,
+          "_treatmentfacets.png"
+        ),
+        fig_path = fig_path_couple_treatment_spousefacets,
+        treated_label = TREATMENT_LABS[[tr]],
+        axis_text_size = AXIS_TEXT_SIZE,
+        axis_title_size = AXIS_TITLE_SIZE,
+        strip_text_size = STRIP_TEXT_SIZE,
+        legend_text_size = LEGEND_TEXT_SIZE,
+        legend_title_size = LEGEND_TITLE_SIZE,
+        title_size = TITLE_SIZE
+      )
+    }
     
     plot_covid_husits_distribution_childgrid(
       df = df_covid_couple,
@@ -470,7 +498,7 @@ if (.has_husits_distribution(df_covid_couple)) {
         tr,
         "_childgrid_treatmentcols.png"
       ),
-      fig_path = fig_path,
+      fig_path = fig_path_couple_treatment_covid_childgrids,
       treated_label = TREATMENT_LABS[[tr]],
       axis_text_size = AXIS_TEXT_SIZE,
       axis_title_size = AXIS_TITLE_SIZE,
@@ -480,7 +508,7 @@ if (.has_husits_distribution(df_covid_couple)) {
       title_size = TITLE_SIZE
     )
     
-    if (tr %in% WIFE_TREATMENT_VARS) {
+    if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
       
       plot_covid_husits_distribution(
         df = df_covid_couple,
@@ -491,7 +519,7 @@ if (.has_husits_distribution(df_covid_couple)) {
           tr,
           "_treatmentfacets_husb_notkey_or_edu.png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_spousefacets,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -510,7 +538,7 @@ if (.has_husits_distribution(df_covid_couple)) {
           tr,
           "_childgrid_treatmentcols_husb_notkey_or_edu.png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_covid_childgrids,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -555,7 +583,7 @@ if (!is.null(df_history_future_spouse)) {
               child_subset,
               "_spousefacet.png"
             ),
-            fig_path = fig_path,
+            fig_path = fig_path_couple_treatment_spousefacets,
             treated_label = TREATMENT_LABS[[tr]],
             axis_text_size = AXIS_TEXT_SIZE,
             axis_title_size = AXIS_TITLE_SIZE,
@@ -579,7 +607,7 @@ if (!is.null(df_history_future_spouse)) {
             tr,
             "_childgrid_spousecols.png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_history_future_childgrids,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -590,7 +618,7 @@ if (!is.null(df_history_future_spouse)) {
         )
         
         # Restricted comparison sample for wife-based treatments only
-        if (tr %in% WIFE_TREATMENT_VARS) {
+        if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
           
           for (child_subset in CHILD_SUBSETS) {
             plot_main_history_future_spouse_treatment_numeric(
@@ -608,7 +636,7 @@ if (!is.null(df_history_future_spouse)) {
                 child_subset,
                 "_spousefacet_husb_notkey_or_edu.png"
               ),
-              fig_path = fig_path,
+              fig_path = fig_path_couple_treatment_spousefacets,
               treated_label = TREATMENT_LABS[[tr]],
               axis_text_size = AXIS_TEXT_SIZE,
               axis_title_size = AXIS_TITLE_SIZE,
@@ -632,7 +660,7 @@ if (!is.null(df_history_future_spouse)) {
               tr,
               "_childgrid_spousecols_husb_notkey_or_edu.png"
             ),
-            fig_path = fig_path,
+            fig_path = fig_path_couple_treatment_history_future_childgrids,
             treated_label = TREATMENT_LABS[[tr]],
             axis_text_size = AXIS_TEXT_SIZE,
             axis_title_size = AXIS_TITLE_SIZE,
@@ -651,7 +679,7 @@ if (!is.null(df_history_future_spouse)) {
 # Couple-count figures by treatment group
 # =============================================================================
 
-COUNT_REQUIRE_BOTH <- c(FALSE, TRUE)
+COUNT_REQUIRE_BOTH <- if (isTRUE(MAKE_EXPLORATORY_EXTRA)) c(FALSE, TRUE) else FALSE
 
 .count_suffix <- function(require_both_spouses) {
   if (isTRUE(require_both_spouses)) {
@@ -678,7 +706,7 @@ for (tr in TREATMENT_VARS) {
         suffix,
         ".png"
       ),
-      fig_path = fig_path,
+      fig_path = fig_path_couple_treatment_counts,
       treated_label = TREATMENT_LABS[[tr]],
       axis_text_size = AXIS_TEXT_SIZE,
       axis_title_size = AXIS_TITLE_SIZE,
@@ -689,7 +717,7 @@ for (tr in TREATMENT_VARS) {
     )
 
     # Restricted count plots for wife-based treatments
-    if (tr %in% WIFE_TREATMENT_VARS) {
+    if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
       plot_covid_treatment_group_counts(
         df = df_covid_couple,
         treatment_var = tr,
@@ -702,7 +730,7 @@ for (tr in TREATMENT_VARS) {
           suffix,
           ".png"
         ),
-        fig_path = fig_path,
+        fig_path = fig_path_couple_treatment_counts,
         treated_label = TREATMENT_LABS[[tr]],
         axis_text_size = AXIS_TEXT_SIZE,
         axis_title_size = AXIS_TITLE_SIZE,
@@ -714,52 +742,28 @@ for (tr in TREATMENT_VARS) {
     }
 
     # Future counts by wave, month, and year
-    for (agg in FUTURE_AGGS) {
-      df_future_couple_agg <- if (agg == "ym") {
-        df_future_couple_monthly
-      } else {
-        df_future_couple
-      }
+    if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
+      for (agg in FUTURE_AGGS) {
+        df_future_couple_agg <- if (agg == "ym") {
+          df_future_couple_monthly
+        } else {
+          df_future_couple
+        }
 
-      plot_future_treatment_group_counts(
-        df = df_future_couple_agg,
-        treatment_var = tr,
-        agg = agg,
-        require_both_spouses = require_both,
-        out_file = paste0(
-          "future_counts_",
-          agg, "_",
-          tr,
-          "_samplefacets",
-          suffix,
-          ".png"
-        ),
-        fig_path = fig_path,
-        treated_label = TREATMENT_LABS[[tr]],
-        axis_text_size = AXIS_TEXT_SIZE,
-        axis_title_size = AXIS_TITLE_SIZE,
-        strip_text_size = STRIP_TEXT_SIZE,
-        legend_text_size = LEGEND_TEXT_SIZE,
-        legend_title_size = LEGEND_TITLE_SIZE,
-        title_size = TITLE_SIZE
-      )
-
-      if (tr %in% WIFE_TREATMENT_VARS) {
         plot_future_treatment_group_counts(
           df = df_future_couple_agg,
           treatment_var = tr,
           agg = agg,
-          restriction = "husb_notkey_or_edu",
           require_both_spouses = require_both,
           out_file = paste0(
             "future_counts_",
             agg, "_",
             tr,
-            "_samplefacets_husb_notkey_or_edu",
+            "_samplefacets",
             suffix,
             ".png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_counts,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -768,6 +772,32 @@ for (tr in TREATMENT_VARS) {
           legend_title_size = LEGEND_TITLE_SIZE,
           title_size = TITLE_SIZE
         )
+
+        if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
+          plot_future_treatment_group_counts(
+            df = df_future_couple_agg,
+            treatment_var = tr,
+            agg = agg,
+            restriction = "husb_notkey_or_edu",
+            require_both_spouses = require_both,
+            out_file = paste0(
+              "future_counts_",
+              agg, "_",
+              tr,
+              "_samplefacets_husb_notkey_or_edu",
+              suffix,
+              ".png"
+            ),
+            fig_path = fig_path_couple_treatment_counts,
+            treated_label = TREATMENT_LABS[[tr]],
+            axis_text_size = AXIS_TEXT_SIZE,
+            axis_title_size = AXIS_TITLE_SIZE,
+            strip_text_size = STRIP_TEXT_SIZE,
+            legend_text_size = LEGEND_TEXT_SIZE,
+            legend_title_size = LEGEND_TITLE_SIZE,
+            title_size = TITLE_SIZE
+          )
+        }
       }
     }
 
@@ -793,7 +823,7 @@ for (tr in TREATMENT_VARS) {
             suffix,
             ".png"
           ),
-          fig_path = fig_path,
+          fig_path = fig_path_couple_treatment_counts,
           treated_label = TREATMENT_LABS[[tr]],
           axis_text_size = AXIS_TEXT_SIZE,
           axis_title_size = AXIS_TITLE_SIZE,
@@ -803,7 +833,7 @@ for (tr in TREATMENT_VARS) {
           title_size = TITLE_SIZE
         )
 
-        if (tr %in% WIFE_TREATMENT_VARS) {
+        if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
           plot_main_history_future_treatment_group_counts(
             df = df_history_future_couple_agg,
             treatment_var = tr,
@@ -818,7 +848,7 @@ for (tr in TREATMENT_VARS) {
               suffix,
               ".png"
             ),
-            fig_path = fig_path,
+            fig_path = fig_path_couple_treatment_counts,
             treated_label = TREATMENT_LABS[[tr]],
             axis_text_size = AXIS_TEXT_SIZE,
             axis_title_size = AXIS_TITLE_SIZE,
@@ -834,4 +864,4 @@ for (tr in TREATMENT_VARS) {
 }
 
 cat("\nCouple-treatment descriptives complete.\n")
-cat("Figures saved to: ", fig_path, "\n", sep = "")
+cat("Figures saved under: ", fig_path_couple_treatment, "\n", sep = "")

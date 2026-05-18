@@ -19,11 +19,13 @@
 #     from derived/ (RDS) rather than relying on in-memory objects.
 # =============================================================================
 
+source("code/lib/config.R")
+
 # ---- Toggle what to run -------------------------------------------------------
 RUN_CHECK_INPUTS        <- TRUE
 RUN_BUILD_DATA          <- TRUE
 RUN_DESCRIPTIVES        <- TRUE
-RUN_FUTURE_DESCRIPTIVES <- TRUE
+RUN_FUTURE_DESCRIPTIVES <- isTRUE(MAKE_EXPLORATORY_EXTRA)
 RUN_SAMPLE_TABLES       <- TRUE
 RUN_COUPLE_TREATMENT_DESCRIPTIVES <- TRUE
 RUN_EVENT_STUDIES       <- TRUE

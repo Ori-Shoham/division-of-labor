@@ -22,7 +22,16 @@ source("code/lib/config.R")
 source("code/lib/wave_labels.R")
 source("code/lib/future_descriptives_plots.R")
 
+fig_path <- fig_path_descriptives_future
 dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
+
+if (!isTRUE(MAKE_EXPLORATORY_EXTRA)) {
+  cat(
+    "\nFuture outcome descriptives skipped by default. ",
+    "Set MAKE_EXPLORATORY_EXTRA <- TRUE in code/lib/config.R to create them.\n",
+    sep = ""
+  )
+} else {
 
 # =============================================================================
 # Load data
@@ -384,3 +393,4 @@ if (RUN_AUTO_ALL) {
 
 cat("\nFuture outcome descriptives complete.\n")
 cat("Figures saved to: ", fig_path, "\n", sep = "")
+}

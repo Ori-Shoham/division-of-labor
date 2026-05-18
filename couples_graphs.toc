@@ -1,0 +1,8 @@
+\beamer@sectionintoc {1}{Guide}{2}{0}{1}
+\beamer@sectionintoc {2}{Sample balance}{4}{0}{2}
+\beamer@sectionintoc {3}{Counts}{5}{0}{3}
+\beamer@sectionintoc {4}{Treatment: wife key worker (non-education), husband not / education only}{11}{0}{4}
+\beamer@sectionintoc {5}{Treatment: husband shutdown sector, wife not}{33}{0}{5}
+\beamer@sectionintoc {6}{Appendix: outcome variable definitions}{55}{1}{6}
+\beamer@sectionintoc {7}{Appendix: wife key worker (non-education), regardless of husband}{56}{1}{7}
+\beamer@sectionintoc {8}{Appendix: event studies with covariates}{63}{1}{8}

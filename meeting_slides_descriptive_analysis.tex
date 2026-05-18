@@ -34,6 +34,8 @@
 
 % ---- Paths ------------------------------------------------------------------
 \newcommand{\figdir}{figures}
+\newcommand{\descfigdir}{\figdir/descriptives/covid}
+\newcommand{\samplefigdir}{\figdir/sample_composition}
 \newcommand{\tabdir}{tables}
 
 % ---- Helper boxes for missing figures / tables ------------------------------
@@ -240,37 +242,33 @@
 % =============================================================================
 \begin{frame}{April 2020 snapshot: work status by detailed group} \label{app_workstatus_april}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_detailed_groups_perc.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/work_status_april20_detailed_groups_perc.png}
 
 \vspace{0.3em}
 \hyperlink{app_workstatus_may}{\beamerbutton{May}}
 \hspace{0.4em}
 \hyperlink{app_workstatus_couples}{\beamerbutton{Couples only}}
-\hspace{0.4em}
-\hyperlink{app_workstatus_industry}{\beamerbutton{By industry}}
 \end{frame}
 
 \begin{frame}{April 2020 snapshot: furlough by detailed group} \label{app_furlough_april}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_detailed_groups_perc.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/furlough_april20_detailed_groups_perc.png}
 
 \vspace{0.3em}
 \hyperlink{app_furlough_overtime}{\beamerbutton{Over time}}
 \hspace{0.4em}
 \hyperlink{app_furlough_couples}{\beamerbutton{Couples only}}
-\hspace{0.4em}
-\hyperlink{app_furlough_industry}{\beamerbutton{By industry}}
 \end{frame}
 
 \begin{frame}{Self-reported key-worker status and type by detailed group}
 \begin{columns}[T,onlytextwidth]
   \column{0.49\textwidth}
   \centering
-  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/keyworker_def_explore_detailed_groups_april20.png}
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\descfigdir/keyworker_def_explore_detailed_groups_april20.png}
 
   \column{0.49\textwidth}
   \centering
-  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\figdir/keywork_sector_def_explore_detailed_groups_may20.png}
+  \safeincludegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{\descfigdir/keywork_sector_def_explore_detailed_groups_may20.png}
 \end{columns}
 \end{frame}
 
@@ -279,12 +277,12 @@
 % =============================================================================
 \begin{frame}{Short-run employment disruption: did people work at all?}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/worked_at_all_detailed_groups_overtime.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/worked_at_all_detailed_groups_overtime.png}
 \end{frame}
 
 \begin{frame}{Short-run intensive margin: hours worked by detailed group}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/hours_detailed_groups_overtime.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/hours_detailed_groups_overtime.png}
 \end{frame}
 
 % =============================================================================
@@ -292,17 +290,17 @@
 % =============================================================================
 \begin{frame}{Work arrangement margin I: working outside the home}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/workoutside_overtime_detailed_groups.png}
 \end{frame}
 
 \begin{frame}{Work arrangement margin II: working from home at least sometimes}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/wfh_some_overtime_detailed_groups.png}
 \end{frame}
 
 \begin{frame}{Distribution of WFH intensity by detailed group}
 \centering
-\safeincludegraphics[width=0.96\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_detailed_groups_overtime.png}
+\safeincludegraphics[width=0.96\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/wfh_detailed_groups_overtime.png}
 \end{frame}
 
 
@@ -311,33 +309,13 @@
 
 \begin{frame}{Weekly childcare hours by detailed group (couples sample)}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/timechcare_overtime_detailed_groups_couples.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/timechcare_overtime_detailed_groups_couples.png}
 \end{frame}
 
 \begin{frame}{Weekly house work hours by detailed group (couples sample)}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/howlng_overtime_detailed_groups_couples.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/howlng_overtime_detailed_groups_couples.png}
 \end{frame}
-% =============================================================================
-% Longer-run follow-up
-% =============================================================================
-\begin{frame}{Longer-run follow-up: working outside by detailed group}
-\centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_workoutside_by_group_industry_based_detailed_year.png}
-\end{frame}
-
-\begin{frame}{Longer-run follow-up: WFH at least sometimes by detailed group}
-\centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_wfh_some_by_group_industry_based_detailed_year.png}
-\end{frame}
-
-\begin{frame}{Longer-run follow-up: weekly work hours by detailed group}
-\centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/future_all_jbhrs_by_group_industry_based_detailed_year.png}
-\end{frame}
-
-
-
 % =============================================================================
 % Optional follow-up outcomes
 % =============================================================================
@@ -492,7 +470,7 @@
 
 \begin{frame}{Appendix: work status by detailed group, May 2020} \label{app_workstatus_may}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_may20_detailed_groups_perc.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/work_status_may20_detailed_groups_perc.png}
 
 \vspace{0.3em}
 
@@ -501,15 +479,7 @@
 
 \begin{frame}{Appendix: work status by detailed group, couples sample} \label{app_workstatus_couples}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_detailed_groups_perc_couples.png}
-
-\vspace{0.3em}
-\hyperlink{app_workstatus_april}{\beamerbutton{back}}
-\end{frame}
-
-\begin{frame}{Appendix: work status by industry, April 2020} \label{app_workstatus_industry}
-\centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/work_status_april20_ind_perc.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/work_status_april20_detailed_groups_perc_couples.png}
 
 \vspace{0.3em}
 \hyperlink{app_workstatus_april}{\beamerbutton{back}}
@@ -517,7 +487,7 @@
 
 \begin{frame}{Appendix: furlough by detailed group, over time} \label{app_furlough_overtime}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_overtime_detailed_groups.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/furlough_overtime_detailed_groups.png}
 
 \vspace{0.3em}
 \hyperlink{app_furlough_april}{\beamerbutton{back}}
@@ -525,15 +495,7 @@
 
 \begin{frame}{Appendix: furlough by detailed group, couples sample} \label{app_furlough_couples}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_detailed_groups_perc_couples.png}
-
-\vspace{0.3em}
-\hyperlink{app_furlough_april}{\beamerbutton{back}}
-\end{frame}
-
-\begin{frame}{Appendix: furlough by industry, April 2020} \label{app_furlough_industry}
-\centering
-\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\figdir/furlough_april20_ind_perc.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.72\textheight,keepaspectratio]{\descfigdir/furlough_april20_detailed_groups_perc_couples.png}
 
 \vspace{0.3em}
 \hyperlink{app_furlough_april}{\beamerbutton{back}}
@@ -541,22 +503,22 @@
 
 \begin{frame}{Appendix: detailed group version of work outside}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/workoutside_overtime_detailed_groups.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/workoutside_overtime_detailed_groups.png}
 \end{frame}
 
 \begin{frame}{Appendix: detailed group version of WFH-some}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/wfh_some_overtime_detailed_groups.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\descfigdir/wfh_some_overtime_detailed_groups.png}
 \end{frame}
 
 \begin{frame}{Appendix: couple workoutside composition over time}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_workoutside_covid_wave_share.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\samplefigdir/couple_workoutside_covid_wave_share.png}
 \end{frame}
 
 \begin{frame}{Appendix: couple WFH-some composition over time}
 \centering
-\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\figdir/couple_wfh_some_covid_wave_share.png}
+\safeincludegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{\samplefigdir/couple_wfh_some_covid_wave_share.png}
 \end{frame}
 
 \end{document}

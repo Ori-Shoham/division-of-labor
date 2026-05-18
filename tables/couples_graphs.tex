@@ -20,6 +20,9 @@
 \usepackage{tikz}
 
 \newcommand{\figdir}{figures}
+\newcommand{\ctcountdir}{\figdir/couple_treatment/counts}
+\newcommand{\ctcoviddir}{\figdir/couple_treatment/covid_childgrids}
+\newcommand{\cthistfutdir}{\figdir/couple_treatment/history_future_childgrids}
 
 \newcommand{\resultfigure}[1]{%
   \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{#1}%
@@ -49,7 +52,7 @@
   \item \textbf{Columns}: wife / husband outcomes.
   \item \textbf{Rows}: couples with youngest child age 0--10 vs.\ 11--17 at baseline.
   \item \textbf{COVID figures}: COVID-study waves.
-  \item \textbf{Future figures}: annual aggregates from main-study follow-up waves.
+  \item \textbf{History + future figures}: regular main-study waves before and after 2020.
 \end{itemize}
 
 \vspace{0.4em}
@@ -57,7 +60,6 @@
 \begin{itemize}
   \item \textbf{Main}: wife key worker (non-education), husband not key worker or education only.
   \item \textbf{Second}: husband in shutdown sector, wife not.
-  \item \textbf{Appendix}: wife key worker (non-education), regardless of husband.
 \end{itemize}
 \end{frame}
 
@@ -69,22 +71,22 @@
 
 \begin{frame}{Counts: wife key / husband not or edu --- COVID}
 \centering
-\countfigure{\figdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
+\countfigure{\ctcountdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: wife key / husband not or edu --- future}
+\begin{frame}{Counts: wife key / husband not or edu --- history + future}
 \centering
-\countfigure{\figdir/future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
+\countfigure{\ctcountdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
 \end{frame}
 
 \begin{frame}{Counts: husband shutdown / wife not --- COVID}
 \centering
-\countfigure{\figdir/covid_counts_wave_treat_husb_shutdown_wife_not_samplefacets.png}
+\countfigure{\ctcountdir/covid_counts_wave_treat_husb_shutdown_wife_not_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: husband shutdown / wife not --- future}
+\begin{frame}{Counts: husband shutdown / wife not --- history + future}
 \centering
-\countfigure{\figdir/future_counts_year_treat_husb_shutdown_wife_not_samplefacets.png}
+\countfigure{\ctcountdir/main_history_future_counts_year_treat_husb_shutdown_wife_not_samplefacets.png}
 \end{frame}
 
 % =============================================================================
@@ -95,42 +97,32 @@
 
 \begin{frame}{Work outside (COVID)}
 \centering
-\resultfigure{\figdir/covid_workoutside_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_workoutside_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{WFH any (COVID)}
 \centering
-\resultfigure{\figdir/covid_wfh_any_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_wfh_any_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{Housework (COVID)}
 \centering
-\resultfigure{\figdir/covid_housework_hours_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_housework_hours_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{Childcare (COVID)}
 \centering
-\resultfigure{\figdir/covid_childcare_hours_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_childcare_hours_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{Work outside (future, year)}
+\begin{frame}{Weekly hours (history + future, year)}
 \centering
-\resultfigure{\figdir/future_workoutside_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\cthistfutdir/main_history_future_weekly_hours_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{WFH any (future, year)}
+\begin{frame}{Gross monthly pay (history + future, year)}
 \centering
-\resultfigure{\figdir/future_wfh_any_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
-\end{frame}
-
-\begin{frame}{Weekly hours (future, year)}
-\centering
-\resultfigure{\figdir/future_weekly_hours_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
-\end{frame}
-
-\begin{frame}{Gross monthly pay (future, year)}
-\centering
-\resultfigure{\figdir/future_gross_monthly_pay_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
+\resultfigure{\cthistfutdir/main_history_future_gross_monthly_pay_year_treat_wife_key_notedu_husb_not_or_edu_childgrid_spousecols.png}
 \end{frame}
 
 % =============================================================================
@@ -141,59 +133,36 @@
 
 \begin{frame}{Work outside (COVID)}
 \centering
-\resultfigure{\figdir/covid_workoutside_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_workoutside_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{WFH any (COVID)}
 \centering
-\resultfigure{\figdir/covid_wfh_any_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_wfh_any_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{Housework (COVID)}
 \centering
-\resultfigure{\figdir/covid_housework_hours_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_housework_hours_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
 \begin{frame}{Childcare (COVID)}
 \centering
-\resultfigure{\figdir/covid_childcare_hours_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\ctcoviddir/covid_childcare_hours_wave_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{Work outside (future, year)}
+\begin{frame}{Weekly hours (history + future, year)}
 \centering
-\resultfigure{\figdir/future_workoutside_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\cthistfutdir/main_history_future_weekly_hours_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{WFH any (future, year)}
+\begin{frame}{Gross monthly pay (history + future, year)}
 \centering
-\resultfigure{\figdir/future_wfh_any_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
-\end{frame}
-
-\begin{frame}{Weekly hours (future, year)}
-\centering
-\resultfigure{\figdir/future_weekly_hours_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
-\end{frame}
-
-\begin{frame}{Gross monthly pay (future, year)}
-\centering
-\resultfigure{\figdir/future_gross_monthly_pay_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
+\resultfigure{\cthistfutdir/main_history_future_gross_monthly_pay_year_treat_husb_shutdown_wife_not_childgrid_spousecols.png}
 \end{frame}
 
 % =============================================================================
 % Appendix
 % =============================================================================
-
-\appendix
-\section{Appendix: wife key worker (non-education), regardless of husband}
-
-\begin{frame}{Work outside (COVID)}
-\centering
-\resultfigure{\figdir/covid_workoutside_wave_treat_wife_key_notedu_any_childgrid_spousecols.png}
-\end{frame}
-
-\begin{frame}{Weekly hours (future, year)}
-\centering
-\resultfigure{\figdir/future_weekly_hours_year_treat_wife_key_notedu_any_childgrid_spousecols.png}
-\end{frame}
 
 \end{document}

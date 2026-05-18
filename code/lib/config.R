@@ -34,6 +34,43 @@ pol_path <- "policies"
 fig_path <- "figures"
 tab_path <- "tables"
 
+# ---- Figure pipeline controls -------------------------------------------------
+# Defaults keep the shareable pipeline lean. Flip these flags to regenerate the
+# broader exploratory figure families without changing plotting helpers.
+MAKE_EXPLORATORY_EXTRA <- FALSE
+MAKE_FUTURE_ONLY_TREATMENT <- FALSE
+MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS <- FALSE
+MAKE_WIFE_KEY_ANY_TREATMENT <- FALSE
+MAKE_COUPLE_TREATMENT_SPOUSEFACETS <- FALSE
+MAKE_EVENT_STUDIES_COUPLE_FE <- FALSE
+MAKE_EVENT_STUDIES_BASELINE_CONTROLS <- TRUE
+
+# Organized figure output folders.
+fig_path_descriptives_covid <- file.path(fig_path, "descriptives", "covid")
+fig_path_descriptives_future <- file.path(fig_path, "descriptives", "future")
+fig_path_sample_composition <- file.path(fig_path, "sample_composition")
+fig_path_couple_treatment <- file.path(fig_path, "couple_treatment")
+fig_path_couple_treatment_covid_childgrids <- file.path(
+  fig_path_couple_treatment,
+  "covid_childgrids"
+)
+fig_path_couple_treatment_future_childgrids <- file.path(
+  fig_path_couple_treatment,
+  "future_childgrids"
+)
+fig_path_couple_treatment_history_future_childgrids <- file.path(
+  fig_path_couple_treatment,
+  "history_future_childgrids"
+)
+fig_path_couple_treatment_spousefacets <- file.path(
+  fig_path_couple_treatment,
+  "spousefacets"
+)
+fig_path_couple_treatment_counts <- file.path(
+  fig_path_couple_treatment,
+  "counts"
+)
+
 # ---- Policy files -------------------------------------------------------------
 soc_path <- file.path(pol_path, "SOC.csv")
 sic_path <- file.path(pol_path, "SIC.csv")

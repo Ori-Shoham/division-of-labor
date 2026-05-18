@@ -57,13 +57,24 @@ dir.create(event_results_dir, showWarnings = FALSE, recursive = TRUE)
 # Settings
 # =============================================================================
 
-RUN_COUPLE_FE_SET <- c(FALSE, TRUE)
+RUN_COUPLE_FE_SET <- if (isTRUE(MAKE_EVENT_STUDIES_COUPLE_FE)) {
+  c(FALSE, TRUE)
+} else {
+  FALSE
+}
 
 TREATMENT_VARS <- c(
   "treat_wife_key_notedu_husb_not_or_edu",
-  "treat_wife_key_notedu_any",
   "treat_husb_shutdown_wife_not"
 )
+
+if (isTRUE(MAKE_WIFE_KEY_ANY_TREATMENT)) {
+  TREATMENT_VARS <- c(
+    "treat_wife_key_notedu_husb_not_or_edu",
+    "treat_wife_key_notedu_any",
+    "treat_husb_shutdown_wife_not"
+  )
+}
 
 CHILD_GROUPS <- c("u10", "11_17")
 SPOUSES <- c("wife", "husband")
@@ -71,8 +82,24 @@ SPOUSES <- c("wife", "husband")
 # Important:
 #   - baseline controls are run only without couple FE.
 #   - with couple FE, baseline controls are collinear with couple fixed effects.
-CONTROLS_SET_NO_FE <- c("none", "baseline")
+CONTROLS_SET_NO_FE <- if (isTRUE(MAKE_EVENT_STUDIES_BASELINE_CONTROLS)) {
+  c("none", "baseline")
+} else {
+  "none"
+}
 CONTROLS_SET_COUPLE_FE <- c("none")
+
+WIFE_TREATMENT_EXTRA_RESTRICTION_VARS <- if (isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
+  intersect(
+    c(
+      "treat_wife_key_notedu_husb_not_or_edu",
+      "treat_wife_key_notedu_any"
+    ),
+    TREATMENT_VARS
+  )
+} else {
+  character(0)
+}
 
 MAIN_OUTCOMES <- c(
   "workoutside",
@@ -311,6 +338,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
       save_combined_child_plots = TRUE
@@ -351,6 +379,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
       save_combined_child_plots = TRUE
@@ -391,6 +420,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
       save_combined_child_plots = TRUE

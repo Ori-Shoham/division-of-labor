@@ -20,6 +20,7 @@ source("code/lib/config.R")
 source("code/lib/wave_labels.R")
 source("code/lib/descriptives_plots.R")
 
+fig_path <- fig_path_descriptives_covid
 dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
 
 # ---- Load datasets -----------------------------------------------------------
@@ -38,14 +39,24 @@ MIN_N_DEFAULT <- 25
 # Grouping variables used repeatedly throughout the script
 .group_specs <- list(
   list(
-    by = "group_industry_based",
-    stem = "groups"
-  ),
-  list(
     by = "group_industry_based_detailed",
     stem = "detailed_groups"
   )
 )
+
+if (isTRUE(MAKE_EXPLORATORY_EXTRA)) {
+  .group_specs <- c(
+    list(
+      list(
+        by = "group_industry_based",
+        stem = "groups"
+      )
+    ),
+    .group_specs
+  )
+}
+
+.bar_perc_flags <- if (isTRUE(MAKE_EXPLORATORY_EXTRA)) c(FALSE, TRUE) else TRUE
 
 .numeric_overtime_specs <- list(
   list(var = "howlng_cv",
@@ -68,6 +79,7 @@ MIN_N_DEFAULT <- 25
 # =============================================================================
 # SECTION A: Industry plots (April / May)
 # =============================================================================
+if (isTRUE(MAKE_EXPLORATORY_EXTRA)) {
 for (spec in .dataset_specs) {
 
   df <- spec$df
@@ -144,6 +156,7 @@ for (spec in .dataset_specs) {
     )
   }
 }
+}
 
 # =============================================================================
 # SECTION B: Group plots (April/May) + Over-time plots
@@ -161,7 +174,7 @@ for (spec in .dataset_specs) {
       list(wave = "ca", tag = "april20"),
       list(wave = "cb", tag = "may20")
     )) {
-      for (perc_flag in c(FALSE, TRUE)) {
+      for (perc_flag in .bar_perc_flags) {
         plot_worked_at_all_bar(
           df = df,
           wave_code = wave_info$wave,
@@ -184,7 +197,7 @@ for (spec in .dataset_specs) {
       list(wave = "ca", tag = "april20"),
       list(wave = "cb", tag = "may20")
     )) {
-      for (perc_flag in c(FALSE, TRUE)) {
+      for (perc_flag in .bar_perc_flags) {
         plot_work_status_bar(
           df = df,
           wave_code = wave_info$wave,
@@ -434,77 +447,79 @@ for (spec in .dataset_specs) {
     fig_path = fig_path
   )
   
-  # ---------------------------------------------------------------------------
-  # Industry-level comparison figures
-  # ---------------------------------------------------------------------------
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "ca",
-    by = "industry",
-    detailed_fill = FALSE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keyworker_def_explore_industry_april20", suffix, ".png"),
-    fig_path = fig_path
-  )
+  if (isTRUE(MAKE_EXPLORATORY_EXTRA)) {
+    # -------------------------------------------------------------------------
+    # Industry-level comparison figures
+    # -------------------------------------------------------------------------
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "ca",
+      by = "industry",
+      detailed_fill = FALSE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keyworker_def_explore_industry_april20", suffix, ".png"),
+      fig_path = fig_path
+    )
 
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "cb",
-    by = "industry",
-    detailed_fill = FALSE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keyworker_def_explore_industry_may20", suffix, ".png"),
-    fig_path = fig_path
-  )
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "cb",
+      by = "industry",
+      detailed_fill = FALSE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keyworker_def_explore_industry_may20", suffix, ".png"),
+      fig_path = fig_path
+    )
 
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "cb",
-    by = "industry",
-    detailed_fill = TRUE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keywork_sector_def_explore_industry_may20", suffix, ".png"),
-    fig_path = fig_path
-  )
-  
-  # ---------------------------------------------------------------------------
-  # Occupation-level comparison figures
-  # ---------------------------------------------------------------------------
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "ca",
-    by = "occupation",
-    detailed_fill = FALSE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keyworker_def_explore_occupation_april20", suffix, ".png"),
-    fig_path = fig_path
-  )
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "cb",
+      by = "industry",
+      detailed_fill = TRUE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keywork_sector_def_explore_industry_may20", suffix, ".png"),
+      fig_path = fig_path
+    )
+    
+    # -------------------------------------------------------------------------
+    # Occupation-level comparison figures
+    # -------------------------------------------------------------------------
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "ca",
+      by = "occupation",
+      detailed_fill = FALSE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keyworker_def_explore_occupation_april20", suffix, ".png"),
+      fig_path = fig_path
+    )
 
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "cb",
-    by = "occupation",
-    detailed_fill = FALSE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keyworker_def_explore_occupation_may20", suffix, ".png"),
-    fig_path = fig_path
-  )
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "cb",
+      by = "occupation",
+      detailed_fill = FALSE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keyworker_def_explore_occupation_may20", suffix, ".png"),
+      fig_path = fig_path
+    )
 
-  plot_keyworker_definition_compare(
-    df = df,
-    wave_code = "cb",
-    by = "occupation",
-    detailed_fill = TRUE,
-    min_n = MIN_N_DEFAULT,
-    order_desc = TRUE,
-    out_file = paste0("keywork_sector_def_explore_occupation_may20", suffix, ".png"),
-    fig_path = fig_path
-  )
+    plot_keyworker_definition_compare(
+      df = df,
+      wave_code = "cb",
+      by = "occupation",
+      detailed_fill = TRUE,
+      min_n = MIN_N_DEFAULT,
+      order_desc = TRUE,
+      out_file = paste0("keywork_sector_def_explore_occupation_may20", suffix, ".png"),
+      fig_path = fig_path
+    )
+  }
 }
 
 cat("\nDescriptives complete (full + couples).\n")
