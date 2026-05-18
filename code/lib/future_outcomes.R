@@ -154,9 +154,10 @@ build_future_outcomes_long <- function(path_main, future_waves, min_ym = NULL) {
   
   out <- dplyr::bind_rows(dfs)
   
-  # When J/K are included as future-outcome waves, keep regular-wave interviews
-  # from January 2020 onward. Yearly plots/regressions can drop Jan-Feb 2020
-  # before constructing 2020 values; monthly outputs keep those months.
+  # When J/K are included as future-outcome waves, min_ym controls whether this
+  # file is used for the main future sample or for plot-only monthly panels.
+  # The main future sample starts in March 2020; monthly figures can pass a
+  # January 2020 cutoff so Jan-Feb 2020 remain visible only in ym outputs.
   if (!is.null(min_ym)) {
     out <- out %>%
       dplyr::filter(!is.na(ym), ym >= min_ym)

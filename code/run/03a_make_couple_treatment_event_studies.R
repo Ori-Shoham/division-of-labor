@@ -108,6 +108,17 @@ df_main_couple <- readRDS(
   file.path(der_path, "couple_history_future_mainonly_long.rds")
 )
 
+main_monthly_file <- file.path(der_path, "couple_history_future_mainonly_monthly_long.rds")
+df_main_monthly_couple <- if (file.exists(main_monthly_file)) {
+  readRDS(main_monthly_file)
+} else {
+  stop(
+    "Monthly main-study panel not found: ",
+    main_monthly_file,
+    ". Rerun code/run/01_build_data.R before making monthly event-study plots."
+  )
+}
+
 df_covid_couple <- readRDS(
   file.path(der_path, "df_sample_long_covid_couplelevel.rds")
 )
@@ -141,7 +152,11 @@ saveRDS(
 # Prepare monthly main-study spouse panel
 # =============================================================================
 
-df_main_monthly_couple_prepped <- df_main_couple_common %>%
+df_main_monthly_couple_common <- df_main_monthly_couple %>%
+  attach_event_baseline_controls(df_base_couple) %>%
+  add_husits_wife_main_both()
+
+df_main_monthly_couple_prepped <- df_main_monthly_couple_common %>%
   add_main_monthly_event_time(
     reference_ym = as.Date("2019-12-01"),
     start_ym = as.Date("2018-01-01"),

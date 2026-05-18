@@ -412,7 +412,7 @@ cat("\n--- Step 5: Build future outcomes (L/M/N or L–O as configured) ---\n")
 df_future_long <- build_future_outcomes_long(
   path_main    = path_main,
   future_waves = future_waves,
-  min_ym = future_outcomes_start
+  min_ym = future_outcomes_monthly_start
 )
 
 # Add indicators comparing later partner status to baseline partner
@@ -485,6 +485,14 @@ df_future_long <- df_future_long %>%
     )
   )
 
+# Keep a plot-only copy with Jan-Feb 2020 for monthly descriptive and event
+# study figures. The main future sample used in tables/wide files starts in
+# March 2020 below.
+df_future_long_monthly <- df_future_long
+
+df_future_long <- df_future_long_monthly %>%
+  dplyr::filter(!is.na(ym), ym >= future_outcomes_start)
+
 saveRDS(
   df_future_long,
   file.path(der_path, "future_outcomes_long_lmo.rds")
@@ -492,6 +500,14 @@ saveRDS(
 
 cat("Future outcomes long saved to: ",
     file.path(der_path, "future_outcomes_long_lmo.rds"), "\n", sep = "")
+
+saveRDS(
+  df_future_long_monthly,
+  file.path(der_path, "future_outcomes_long_lmo_monthly.rds")
+)
+
+cat("Monthly future outcomes long saved to: ",
+    file.path(der_path, "future_outcomes_long_lmo_monthly.rds"), "\n", sep = "")
 
 # =============================================================================
 # Step 5b: Couple-level future outcomes long
@@ -527,6 +543,35 @@ saveRDS(
 cat("Future couple-level long saved to: ",
     file.path(der_path, "future_outcomes_couple_long_lmo.rds"), "\n", sep = "")
 
+df_future_couple_long_monthly <- build_future_couple_long(
+  df_future_long = df_future_long_monthly,
+  roster         = couple_roster
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel %>%
+      dplyr::select(
+        couple_id,
+        youngest_child_2019,
+        has_child_u10_2019,
+        has_child_11_17_2019,
+        child_age_group_2019,
+        treat_wife_key_notedu_husb_not_or_edu,
+        treat_wife_key_notedu_any,
+        sample_husb_notkey_or_edu,
+        treat_husb_shutdown_wife_not,
+        dplyr::starts_with("hist_")
+      ),
+    by = "couple_id"
+  )
+
+saveRDS(
+  df_future_couple_long_monthly,
+  file.path(der_path, "future_outcomes_couple_long_lmo_monthly.rds")
+)
+
+cat("Monthly future couple-level long saved to: ",
+    file.path(der_path, "future_outcomes_couple_long_lmo_monthly.rds"), "\n", sep = "")
+
 # =============================================================================
 # Step 5c: Ready-to-plot stacked history + baseline + COVID + future panels
 # =============================================================================
@@ -538,7 +583,7 @@ cat("\n--- Step 5c: Build stacked history/baseline/COVID/future plotting panels 
 #   - pre-baseline regular-wave history
 #   - the individual baseline row
 #   - Jan-Feb 2020 COVID baseline and COVID-study rows
-#   - Jan 2020 onward regular-wave future outcomes
+#   - March 2020 onward regular-wave future outcomes
 df_person_history_future_long <- build_person_history_future_long(
   df_history_long = df_prebaseline_history_long,
   df_baseline     = df_baseline_analytic,
@@ -590,6 +635,19 @@ saveRDS(
   file.path(der_path, "person_history_future_mainonly_long.rds")
 )
 
+df_person_history_future_mainonly_monthly_long <- build_person_history_future_long(
+  df_history_long = df_prebaseline_history_long,
+  df_baseline     = df_baseline_analytic,
+  df_covid_long   = NULL,
+  df_future_long  = df_future_long_monthly,
+  include_covid   = FALSE
+)
+
+saveRDS(
+  df_person_history_future_mainonly_monthly_long,
+  file.path(der_path, "person_history_future_mainonly_monthly_long.rds")
+)
+
 df_couple_history_future_mainonly_long <- build_couple_history_future_long(
   df_couple_history_long = df_prebaseline_couple_history_long,
   df_baseline_couple     = s2019_baseline_couplelevel,
@@ -601,6 +659,19 @@ df_couple_history_future_mainonly_long <- build_couple_history_future_long(
 saveRDS(
   df_couple_history_future_mainonly_long,
   file.path(der_path, "couple_history_future_mainonly_long.rds")
+)
+
+df_couple_history_future_mainonly_monthly_long <- build_couple_history_future_long(
+  df_couple_history_long = df_prebaseline_couple_history_long,
+  df_baseline_couple     = s2019_baseline_couplelevel,
+  df_covid_couple_long   = NULL,
+  df_future_couple_long  = df_future_couple_long_monthly,
+  include_covid          = FALSE
+)
+
+saveRDS(
+  df_couple_history_future_mainonly_monthly_long,
+  file.path(der_path, "couple_history_future_mainonly_monthly_long.rds")
 )
 
 cat("Main-study-only stacked panels saved to: ", der_path, "\n", sep = "")

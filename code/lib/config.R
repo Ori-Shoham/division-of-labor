@@ -60,7 +60,8 @@ cache_path   <- file.path(data_out_root, "cache")
 # ---- Waves -------------------------------------------------------------------
 covid_waves  <- c("ca", "cb", "cc", "cd", "ce", "cf", "cg", "ch", "ci")
 future_waves <- c("j", "k", "l", "m", "n", "o")
-future_outcomes_start <- as.Date("2020-01-01")
+future_outcomes_start <- as.Date("2020-03-01")
+future_outcomes_monthly_start <- as.Date("2020-01-01")
 
 # Candidate waves used to construct pre-baseline histories.
 # The history builder then keeps only waves strictly prior to each individual's

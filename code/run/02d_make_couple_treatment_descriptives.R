@@ -75,7 +75,22 @@ dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
 df_covid_couple  <- readRDS(file.path(der_path, "df_sample_long_covid_couplelevel.rds"))
 df_future_couple <- readRDS(file.path(der_path, "future_outcomes_couple_long_lmo.rds"))
 
+future_monthly_file <- file.path(der_path, "future_outcomes_couple_long_lmo_monthly.rds")
+df_future_couple_monthly <- if (file.exists(future_monthly_file)) {
+  readRDS(future_monthly_file)
+} else {
+  stop(
+    "Monthly future couple file not found: ",
+    future_monthly_file,
+    ". Rerun code/run/01_build_data.R before making monthly descriptive plots."
+  )
+}
+
 history_future_file <- file.path(der_path, "couple_history_future_mainonly_long.rds")
+history_future_monthly_file <- file.path(
+  der_path,
+  "couple_history_future_mainonly_monthly_long.rds"
+)
 
 if (file.exists(history_future_file)) {
   df_history_future_couple <- readRDS(history_future_file)
@@ -88,14 +103,35 @@ if (file.exists(history_future_file)) {
   df_history_future_couple <- NULL
 }
 
+if (is.null(df_history_future_couple)) {
+  df_history_future_couple_monthly <- NULL
+} else if (file.exists(history_future_monthly_file)) {
+  df_history_future_couple_monthly <- readRDS(history_future_monthly_file)
+} else {
+  stop(
+    "Monthly history + future stacked couple file not found: ",
+    history_future_monthly_file,
+    ". Rerun code/run/01_build_data.R before making monthly descriptive plots."
+  )
+}
+
 # Convert to spouse-long
 df_covid_spouse  <- reshape_couple_long_to_spouse_long(df_covid_couple)
 df_future_spouse <- reshape_couple_long_to_spouse_long(df_future_couple)
+df_future_spouse_monthly <- reshape_couple_long_to_spouse_long(df_future_couple_monthly)
 
 if (!is.null(df_history_future_couple)) {
   df_history_future_spouse <- reshape_couple_long_to_spouse_long(df_history_future_couple)
 } else {
   df_history_future_spouse <- NULL
+}
+
+if (!is.null(df_history_future_couple_monthly)) {
+  df_history_future_spouse_monthly <- reshape_couple_long_to_spouse_long(
+    df_history_future_couple_monthly
+  )
+} else {
+  df_history_future_spouse_monthly <- NULL
 }
 
 # =============================================================================
@@ -288,11 +324,16 @@ for (tr in TREATMENT_VARS) {
     if (!.has_data(df_future_spouse, v)) next
     
     for (agg in FUTURE_AGGS) {
+      df_future_spouse_agg <- if (agg == "ym") {
+        df_future_spouse_monthly
+      } else {
+        df_future_spouse
+      }
       
       # Standard spouse-facet versions
       for (child_subset in CHILD_SUBSETS) {
         plot_future_spouse_treatment_numeric(
-          df = df_future_spouse,
+          df = df_future_spouse_agg,
           var = v,
           treatment_var = tr,
           child_subset = child_subset,
@@ -318,7 +359,7 @@ for (tr in TREATMENT_VARS) {
       
       # Child-group facet-grid comparison
       plot_future_spouse_treatment_childgrid(
-        df = df_future_spouse,
+        df = df_future_spouse_agg,
         var = v,
         treatment_var = tr,
         agg = agg,
@@ -344,7 +385,7 @@ for (tr in TREATMENT_VARS) {
         
         for (child_subset in CHILD_SUBSETS) {
           plot_future_spouse_treatment_numeric(
-            df = df_future_spouse,
+            df = df_future_spouse_agg,
             var = v,
             treatment_var = tr,
             child_subset = child_subset,
@@ -370,7 +411,7 @@ for (tr in TREATMENT_VARS) {
         }
         
         plot_future_spouse_treatment_childgrid(
-          df = df_future_spouse,
+          df = df_future_spouse_agg,
           var = v,
           treatment_var = tr,
           agg = agg,
@@ -492,11 +533,16 @@ if (!is.null(df_history_future_spouse)) {
       if (!.has_data(df_history_future_spouse, v)) next
       
       for (agg in HISTORY_FUTURE_AGGS) {
+        df_history_future_spouse_agg <- if (agg == "ym") {
+          df_history_future_spouse_monthly
+        } else {
+          df_history_future_spouse
+        }
         
         # Standard spouse-facet versions
         for (child_subset in CHILD_SUBSETS) {
           plot_main_history_future_spouse_treatment_numeric(
-            df = df_history_future_spouse,
+            df = df_history_future_spouse_agg,
             var = v,
             treatment_var = tr,
             child_subset = child_subset,
@@ -522,7 +568,7 @@ if (!is.null(df_history_future_spouse)) {
         
         # Child-group facet-grid comparison
         plot_main_history_future_spouse_treatment_childgrid(
-          df = df_history_future_spouse,
+          df = df_history_future_spouse_agg,
           var = v,
           treatment_var = tr,
           agg = agg,
@@ -548,7 +594,7 @@ if (!is.null(df_history_future_spouse)) {
           
           for (child_subset in CHILD_SUBSETS) {
             plot_main_history_future_spouse_treatment_numeric(
-              df = df_history_future_spouse,
+              df = df_history_future_spouse_agg,
               var = v,
               treatment_var = tr,
               child_subset = child_subset,
@@ -574,7 +620,7 @@ if (!is.null(df_history_future_spouse)) {
           }
           
           plot_main_history_future_spouse_treatment_childgrid(
-            df = df_history_future_spouse,
+            df = df_history_future_spouse_agg,
             var = v,
             treatment_var = tr,
             agg = agg,
@@ -669,8 +715,14 @@ for (tr in TREATMENT_VARS) {
 
     # Future counts by wave, month, and year
     for (agg in FUTURE_AGGS) {
+      df_future_couple_agg <- if (agg == "ym") {
+        df_future_couple_monthly
+      } else {
+        df_future_couple
+      }
+
       plot_future_treatment_group_counts(
-        df = df_future_couple,
+        df = df_future_couple_agg,
         treatment_var = tr,
         agg = agg,
         require_both_spouses = require_both,
@@ -694,7 +746,7 @@ for (tr in TREATMENT_VARS) {
 
       if (tr %in% WIFE_TREATMENT_VARS) {
         plot_future_treatment_group_counts(
-          df = df_future_couple,
+          df = df_future_couple_agg,
           treatment_var = tr,
           agg = agg,
           restriction = "husb_notkey_or_edu",
@@ -722,8 +774,14 @@ for (tr in TREATMENT_VARS) {
     # Main-survey history + future counts by month and year
     if (!is.null(df_history_future_couple)) {
       for (agg in HISTORY_FUTURE_AGGS) {
+        df_history_future_couple_agg <- if (agg == "ym") {
+          df_history_future_couple_monthly
+        } else {
+          df_history_future_couple
+        }
+
         plot_main_history_future_treatment_group_counts(
-          df = df_history_future_couple,
+          df = df_history_future_couple_agg,
           treatment_var = tr,
           agg = agg,
           require_both_spouses = require_both,
@@ -747,7 +805,7 @@ for (tr in TREATMENT_VARS) {
 
         if (tr %in% WIFE_TREATMENT_VARS) {
           plot_main_history_future_treatment_group_counts(
-            df = df_history_future_couple,
+            df = df_history_future_couple_agg,
             treatment_var = tr,
             agg = agg,
             restriction = "husb_notkey_or_edu",
