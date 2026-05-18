@@ -128,9 +128,48 @@ add_treatment_group_scales <- function(p,
     )
 }
 
+.drop_jan_feb_2020_for_yearly <- function(dd, agg, ym_var = "ym") {
+  if (
+    agg != "year" ||
+    is.null(dd) ||
+    nrow(dd) == 0 ||
+    !(ym_var %in% names(dd))
+  ) {
+    return(dd)
+  }
+
+  dd %>%
+    dplyr::mutate(
+      .plot_ym = as.Date(.data[[ym_var]]),
+      .plot_year = suppressWarnings(as.integer(format(.plot_ym, "%Y"))),
+      .plot_month = suppressWarnings(as.integer(format(.plot_ym, "%m")))
+    ) %>%
+    dplyr::filter(!(.plot_year == 2020 & !is.na(.plot_month) & .plot_month <= 2)) %>%
+    dplyr::select(-.plot_ym, -.plot_year, -.plot_month)
+}
+
+.monthly_2018_2023_breaks <- function() {
+  seq(
+    from = as.Date("2018-01-01"),
+    to = as.Date("2023-10-01"),
+    by = "3 months"
+  )
+}
+
+.apply_monthly_2018_2023_x_scale <- function(p) {
+  p +
+    ggplot2::scale_x_date(
+      limits = c(as.Date("2018-01-01"), as.Date("2023-12-01")),
+      breaks = .monthly_2018_2023_breaks(),
+      date_labels = "%b %Y"
+    )
+}
+
 .apply_regular_wave_time_labels <- function(p, dd, agg) {
   if (agg == "year") {
     .add_yearly_x_breaks(p, dd, time_var = "time")
+  } else if (agg == "ym") {
+    .apply_monthly_2018_2023_x_scale(p)
   } else {
     .apply_time_labels(p, dd, agg = agg)
   }
@@ -284,6 +323,7 @@ plot_future_treatment_group_counts <- function(
     filter_couple_plot_restriction(restriction = restriction)
   
   dd <- df %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     filter_observed_couple_rows_for_counts(
       vars = outcome_vars,
       require_both_spouses = require_both_spouses
@@ -367,7 +407,7 @@ plot_future_treatment_group_counts <- function(
         labels = wl_future$wave_lab_short
       )
   } else {
-    p <- .apply_time_labels(p, dd, agg = agg)
+    p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
   }
   
   ggsave(
@@ -641,6 +681,7 @@ plot_future_spouse_treatment_numeric <- function(
   
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     add_treatment_group_label(
       treatment_var = treatment_var,
       treated_label = treated_label
@@ -728,7 +769,7 @@ plot_future_spouse_treatment_numeric <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_time_labels(p, dd_plot, agg = agg)
+  p <- .apply_regular_wave_time_labels(p, dd_plot, agg = agg)
   
   if (prep$is_binary) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -786,6 +827,7 @@ plot_future_spouse_treatment_childgrid <- function(
   
   dd <- df %>%
     filter_couples_for_child_grid() %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     add_treatment_group_label(
       treatment_var = treatment_var,
       treated_label = treated_label
@@ -880,7 +922,7 @@ plot_future_spouse_treatment_childgrid <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_time_labels(p, dd_plot, agg = agg)
+  p <- .apply_regular_wave_time_labels(p, dd_plot, agg = agg)
   
   if (prep$is_binary) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -958,6 +1000,7 @@ plot_main_history_future_spouse_treatment_numeric <- function(
   
   dd <- df %>%
     filter_couples_by_child_subset(child_subset = child_subset) %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     add_treatment_group_label(
       treatment_var = treatment_var,
       treated_label = treated_label
@@ -1100,6 +1143,7 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
   
   dd <- df %>%
     filter_couples_for_child_grid() %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     add_treatment_group_label(
       treatment_var = treatment_var,
       treated_label = treated_label
@@ -1232,6 +1276,7 @@ plot_main_history_future_treatment_group_counts <- function(
   }
   
   dd <- df %>%
+    .drop_jan_feb_2020_for_yearly(agg = agg) %>%
     filter_observed_couple_rows_for_counts(
       vars = outcome_vars,
       require_both_spouses = require_both_spouses

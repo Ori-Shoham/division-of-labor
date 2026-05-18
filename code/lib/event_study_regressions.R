@@ -439,6 +439,8 @@ add_main_monthly_event_time <- function(df,
       year = suppressWarnings(as.integer(format(ym, "%Y"))),
       month = suppressWarnings(as.integer(format(ym, "%m")))
     ) %>%
+    # Monthly event studies keep Jan-Feb 2020; only yearly plots/regressions
+    # drop those months before constructing 2020 values.
     dplyr::filter(
       !is.na(ym),
       ym >= start_ym,
@@ -994,20 +996,16 @@ main_monthly_axis_lookup <- function(start_ym = as.Date("2018-01-01"),
 }
 
 add_main_monthly_x_axis <- function(p, coefs) {
-  monthly_axis <- main_monthly_axis_lookup() %>%
-    dplyr::filter(event_time %in% sort(unique(coefs$event_time)))
+  monthly_axis <- main_monthly_axis_lookup()
 
   year_axis <- monthly_axis %>%
     dplyr::filter(is_year_break)
-
-  if (nrow(year_axis) == 0) {
-    year_axis <- monthly_axis
-  }
 
   p +
     ggplot2::scale_x_continuous(
       breaks = year_axis$event_time,
       labels = year_axis$year_label,
+      limits = range(monthly_axis$event_time, na.rm = TRUE),
       minor_breaks = NULL
     ) +
     ggplot2::labs(x = "Calendar month")

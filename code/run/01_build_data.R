@@ -538,7 +538,7 @@ cat("\n--- Step 5c: Build stacked history/baseline/COVID/future plotting panels 
 #   - pre-baseline regular-wave history
 #   - the individual baseline row
 #   - Jan-Feb 2020 COVID baseline and COVID-study rows
-#   - post-March 2020 regular-wave future outcomes
+#   - Jan 2020 onward regular-wave future outcomes
 df_person_history_future_long <- build_person_history_future_long(
   df_history_long = df_prebaseline_history_long,
   df_baseline     = df_baseline_analytic,

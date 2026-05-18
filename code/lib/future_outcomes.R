@@ -154,8 +154,9 @@ build_future_outcomes_long <- function(path_main, future_waves, min_ym = NULL) {
   
   out <- dplyr::bind_rows(dfs)
   
-  # When J/K are included as future-outcome waves, keep only post-February-2020
-  # interviews so the future-outcomes branch starts after the pre-COVID baseline.
+  # When J/K are included as future-outcome waves, keep regular-wave interviews
+  # from January 2020 onward. Yearly plots/regressions can drop Jan-Feb 2020
+  # before constructing 2020 values; monthly outputs keep those months.
   if (!is.null(min_ym)) {
     out <- out %>%
       dplyr::filter(!is.na(ym), ym >= min_ym)
