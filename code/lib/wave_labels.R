@@ -13,6 +13,7 @@
 #   - This file is the single source of truth for:
 #       * COVID-study waves
 #       * Future/main-study waves
+#       * Main-study history + baseline + future plotting waves
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -113,6 +114,53 @@ future_wave_label_lookup <- function() {
 }
 
 # -----------------------------------------------------------------------------
+# Main-study history + baseline + future wave labels
+#
+# This scale is used for stacked main-survey-only couple panels. The baseline
+# row is distinguished from later main-survey follow-up rows by tagging the
+# baseline source wave as baseline_i / baseline_j / baseline_k.
+# -----------------------------------------------------------------------------
+main_history_future_wave_label_lookup <- function() {
+  tibble::tibble(
+    wave = c(
+      "a", "b", "c", "d", "e", "f", "g", "h",
+      "baseline_i", "i",
+      "baseline_j", "j",
+      "baseline_k", "k",
+      "l", "m", "n", "o"
+    ),
+    wave_label_short = c(
+      "Wave 1", "Wave 2", "Wave 3", "Wave 4",
+      "Wave 5", "Wave 6", "Wave 7", "Wave 8",
+      "2019 base (W9)", "Wave 9",
+      "2019 base (W10)", "Wave 10",
+      "2019 base (W11)", "Wave 11",
+      "Wave 12", "Wave 13", "Wave 14", "Wave 15"
+    ),
+    wave_label_full = c(
+      "Wave 1",
+      "Wave 2",
+      "Wave 3",
+      "Wave 4",
+      "Wave 5",
+      "Wave 6",
+      "Wave 7",
+      "Wave 8",
+      "2019 baseline (Wave 9)",
+      "Wave 9",
+      "2019 baseline (Wave 10)",
+      "Wave 10",
+      "2019 baseline (Wave 11)",
+      "Wave 11",
+      "Wave 12",
+      "Wave 13",
+      "Wave 14",
+      "Wave 15"
+    )
+  )
+}
+
+# -----------------------------------------------------------------------------
 # Backward-compatible main lookup
 #
 # Historically this file exposed wave_label_lookup() for COVID-study labels.
@@ -128,12 +176,17 @@ wave_label_lookup <- function() {
 # Supported scales:
 #   - "covid"
 #   - "future"
+#   - "main_history_future"
 # -----------------------------------------------------------------------------
-time_label_lookup <- function(scale = c("covid", "future")) {
+time_label_lookup <- function(scale = c("covid", "future", "main_history_future")) {
   scale <- match.arg(scale)
   
   if (scale == "covid") {
     return(covid_wave_label_lookup())
+  }
+
+  if (scale == "main_history_future") {
+    return(main_history_future_wave_label_lookup())
   }
   
   future_wave_label_lookup()
@@ -145,8 +198,9 @@ time_label_lookup <- function(scale = c("covid", "future")) {
 # Example:
 #   time_label_map("covid", which = "short")
 #   time_label_map("future", which = "short")
+#   time_label_map("main_history_future", which = "short")
 # -----------------------------------------------------------------------------
-time_label_map <- function(scale = c("covid", "future"),
+time_label_map <- function(scale = c("covid", "future", "main_history_future"),
                            which = c("short", "full")) {
   scale <- match.arg(scale)
   which <- match.arg(which)
@@ -166,7 +220,7 @@ time_label_map <- function(scale = c("covid", "future"),
 # If a code is not found in the lookup, keep the original value.
 # -----------------------------------------------------------------------------
 label_time_values <- function(x,
-                              scale = c("covid", "future"),
+                              scale = c("covid", "future", "main_history_future"),
                               which = c("short", "full")) {
   scale <- match.arg(scale)
   which <- match.arg(which)

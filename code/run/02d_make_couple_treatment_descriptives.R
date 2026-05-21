@@ -99,6 +99,14 @@ history_future_monthly_file <- file.path(
   der_path,
   "couple_history_future_mainonly_monthly_long.rds"
 )
+history_future_both_in_covid_file <- file.path(
+  der_path,
+  "couple_history_future_mainonly_long_both_in_covid.rds"
+)
+history_future_both_in_covid_monthly_file <- file.path(
+  der_path,
+  "couple_history_future_mainonly_monthly_long_both_in_covid.rds"
+)
 
 if (file.exists(history_future_file)) {
   df_history_future_couple <- readRDS(history_future_file)
@@ -123,6 +131,31 @@ if (is.null(df_history_future_couple)) {
   )
 }
 
+if (file.exists(history_future_both_in_covid_file)) {
+  df_history_future_couple_both_in_covid <- readRDS(history_future_both_in_covid_file)
+} else {
+  warning(
+    "COVID-observed history + future stacked couple file not found: ",
+    history_future_both_in_covid_file,
+    ". COVID-observed history + future treatment plots will be skipped."
+  )
+  df_history_future_couple_both_in_covid <- NULL
+}
+
+if (is.null(df_history_future_couple_both_in_covid)) {
+  df_history_future_couple_monthly_both_in_covid <- NULL
+} else if (file.exists(history_future_both_in_covid_monthly_file)) {
+  df_history_future_couple_monthly_both_in_covid <- readRDS(
+    history_future_both_in_covid_monthly_file
+  )
+} else {
+  stop(
+    "Monthly COVID-observed history + future stacked couple file not found: ",
+    history_future_both_in_covid_monthly_file,
+    ". Rerun code/run/01_build_data.R before making monthly descriptive plots."
+  )
+}
+
 # Convert to spouse-long
 df_covid_spouse  <- reshape_couple_long_to_spouse_long(df_covid_couple)
 df_future_spouse <- reshape_couple_long_to_spouse_long(df_future_couple)
@@ -141,6 +174,43 @@ if (!is.null(df_history_future_couple_monthly)) {
 } else {
   df_history_future_spouse_monthly <- NULL
 }
+
+if (!is.null(df_history_future_couple_both_in_covid)) {
+  df_history_future_spouse_both_in_covid <- reshape_couple_long_to_spouse_long(
+    df_history_future_couple_both_in_covid
+  )
+} else {
+  df_history_future_spouse_both_in_covid <- NULL
+}
+
+if (!is.null(df_history_future_couple_monthly_both_in_covid)) {
+  df_history_future_spouse_monthly_both_in_covid <- reshape_couple_long_to_spouse_long(
+    df_history_future_couple_monthly_both_in_covid
+  )
+} else {
+  df_history_future_spouse_monthly_both_in_covid <- NULL
+}
+
+history_future_sample_specs <- purrr::compact(list(
+  if (!is.null(df_history_future_spouse)) {
+    list(
+      suffix = "",
+      couple = df_history_future_couple,
+      couple_monthly = df_history_future_couple_monthly,
+      spouse = df_history_future_spouse,
+      spouse_monthly = df_history_future_spouse_monthly
+    )
+  },
+  if (!is.null(df_history_future_spouse_both_in_covid)) {
+    list(
+      suffix = "_both_in_covid",
+      couple = df_history_future_couple_both_in_covid,
+      couple_monthly = df_history_future_couple_monthly_both_in_covid,
+      spouse = df_history_future_spouse_both_in_covid,
+      spouse_monthly = df_history_future_spouse_monthly_both_in_covid
+    )
+  }
+))
 
 # =============================================================================
 # Settings
@@ -554,17 +624,22 @@ if (.has_husits_distribution(df_covid_couple)) {
 # Run main-survey history + future figures
 # =============================================================================
 
-if (!is.null(df_history_future_spouse)) {
+if (length(history_future_sample_specs) > 0) {
+  for (sample_spec in history_future_sample_specs) {
+    history_future_suffix <- sample_spec$suffix
+    df_history_future_spouse_variant <- sample_spec$spouse
+    df_history_future_spouse_monthly_variant <- sample_spec$spouse_monthly
+    
   for (tr in TREATMENT_VARS) {
     for (v in HISTORY_FUTURE_OUTCOMES) {
       
-      if (!.has_data(df_history_future_spouse, v)) next
+      if (!.has_data(df_history_future_spouse_variant, v)) next
       
       for (agg in HISTORY_FUTURE_AGGS) {
         df_history_future_spouse_agg <- if (agg == "ym") {
-          df_history_future_spouse_monthly
+          df_history_future_spouse_monthly_variant
         } else {
-          df_history_future_spouse
+          df_history_future_spouse_variant
         }
         
         # Standard spouse-facet versions
@@ -581,6 +656,7 @@ if (!is.null(df_history_future_spouse)) {
               agg, "_",
               tr, "_",
               child_subset,
+              history_future_suffix,
               "_spousefacet.png"
             ),
             fig_path = fig_path_couple_treatment_spousefacets,
@@ -605,6 +681,7 @@ if (!is.null(df_history_future_spouse)) {
             couple_plot_var_stem(v), "_",
             agg, "_",
             tr,
+            history_future_suffix,
             "_childgrid_spousecols.png"
           ),
           fig_path = fig_path_couple_treatment_history_future_childgrids,
@@ -634,6 +711,7 @@ if (!is.null(df_history_future_spouse)) {
                 agg, "_",
                 tr, "_",
                 child_subset,
+                history_future_suffix,
                 "_spousefacet_husb_notkey_or_edu.png"
               ),
               fig_path = fig_path_couple_treatment_spousefacets,
@@ -658,6 +736,7 @@ if (!is.null(df_history_future_spouse)) {
               couple_plot_var_stem(v), "_",
               agg, "_",
               tr,
+              history_future_suffix,
               "_childgrid_spousecols_husb_notkey_or_edu.png"
             ),
             fig_path = fig_path_couple_treatment_history_future_childgrids,
@@ -672,6 +751,7 @@ if (!is.null(df_history_future_spouse)) {
         }
       }
     }
+  }
   }
 }
 
@@ -802,12 +882,17 @@ for (tr in TREATMENT_VARS) {
     }
 
     # Main-survey history + future counts by month and year
-    if (!is.null(df_history_future_couple)) {
+    if (length(history_future_sample_specs) > 0) {
+      for (sample_spec in history_future_sample_specs) {
+        history_future_suffix <- sample_spec$suffix
+        df_history_future_couple_variant <- sample_spec$couple
+        df_history_future_couple_monthly_variant <- sample_spec$couple_monthly
+        
       for (agg in HISTORY_FUTURE_AGGS) {
         df_history_future_couple_agg <- if (agg == "ym") {
-          df_history_future_couple_monthly
+          df_history_future_couple_monthly_variant
         } else {
-          df_history_future_couple
+          df_history_future_couple_variant
         }
 
         plot_main_history_future_treatment_group_counts(
@@ -820,6 +905,7 @@ for (tr in TREATMENT_VARS) {
             agg, "_",
             tr,
             "_samplefacets",
+            history_future_suffix,
             suffix,
             ".png"
           ),
@@ -845,6 +931,7 @@ for (tr in TREATMENT_VARS) {
               agg, "_",
               tr,
               "_samplefacets_husb_notkey_or_edu",
+              history_future_suffix,
               suffix,
               ".png"
             ),
@@ -858,6 +945,7 @@ for (tr in TREATMENT_VARS) {
             title_size = TITLE_SIZE
           )
         }
+      }
       }
     }
   }

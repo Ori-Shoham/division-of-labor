@@ -101,6 +101,8 @@ WIFE_TREATMENT_EXTRA_RESTRICTION_VARS <- if (isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_
   character(0)
 }
 
+MAIN_SAMPLE_VARIANTS <- c("all", "both_in_covid")
+
 MAIN_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
@@ -131,8 +133,16 @@ df_base_couple <- readRDS(
   file.path(samples_path, "s2019_baseline_couplelevel.rds")
 )
 
+df_base_couple_both_in_covid <- readRDS(
+  file.path(samples_path, "s2019_baseline_couplelevel_both_in_covid.rds")
+)
+
 df_main_couple <- readRDS(
   file.path(der_path, "couple_history_future_mainonly_long.rds")
+)
+
+df_main_couple_both_in_covid <- readRDS(
+  file.path(der_path, "couple_history_future_mainonly_long_both_in_covid.rds")
 )
 
 main_monthly_file <- file.path(der_path, "couple_history_future_mainonly_monthly_long.rds")
@@ -142,6 +152,20 @@ df_main_monthly_couple <- if (file.exists(main_monthly_file)) {
   stop(
     "Monthly main-study panel not found: ",
     main_monthly_file,
+    ". Rerun code/run/01_build_data.R before making monthly event-study plots."
+  )
+}
+
+main_monthly_both_in_covid_file <- file.path(
+  der_path,
+  "couple_history_future_mainonly_monthly_long_both_in_covid.rds"
+)
+df_main_monthly_couple_both_in_covid <- if (file.exists(main_monthly_both_in_covid_file)) {
+  readRDS(main_monthly_both_in_covid_file)
+} else {
+  stop(
+    "Monthly COVID-observed main-study panel not found: ",
+    main_monthly_both_in_covid_file,
     ". Rerun code/run/01_build_data.R before making monthly event-study plots."
   )
 }
@@ -175,6 +199,27 @@ saveRDS(
   file.path(event_results_dir, "main_spouse_panel.rds")
 )
 
+df_main_couple_both_in_covid_common <- df_main_couple_both_in_covid %>%
+  attach_event_baseline_controls(df_base_couple_both_in_covid) %>%
+  add_husits_wife_main_both()
+
+df_main_couple_both_in_covid_prepped <- df_main_couple_both_in_covid_common %>%
+  add_main_event_time(
+    reference_year = 2019,
+    exclude_jan_feb_2020 = TRUE
+  )
+
+df_main_spouse_both_in_covid <- make_spouse_event_panel(
+  df = df_main_couple_both_in_covid_prepped,
+  outcomes = MAIN_OUTCOMES,
+  study = "main"
+)
+
+saveRDS(
+  df_main_spouse_both_in_covid,
+  file.path(event_results_dir, "main_spouse_panel_both_in_covid.rds")
+)
+
 # =============================================================================
 # Prepare monthly main-study spouse panel
 # =============================================================================
@@ -199,6 +244,28 @@ df_main_monthly_spouse <- make_spouse_event_panel(
 saveRDS(
   df_main_monthly_spouse,
   file.path(event_results_dir, "main_monthly_spouse_panel.rds")
+)
+
+df_main_monthly_couple_both_in_covid_common <- df_main_monthly_couple_both_in_covid %>%
+  attach_event_baseline_controls(df_base_couple_both_in_covid) %>%
+  add_husits_wife_main_both()
+
+df_main_monthly_couple_both_in_covid_prepped <- df_main_monthly_couple_both_in_covid_common %>%
+  add_main_monthly_event_time(
+    reference_ym = as.Date("2019-12-01"),
+    start_ym = as.Date("2018-01-01"),
+    end_ym = as.Date("2023-12-01")
+  )
+
+df_main_monthly_spouse_both_in_covid <- make_spouse_event_panel(
+  df = df_main_monthly_couple_both_in_covid_prepped,
+  outcomes = MAIN_OUTCOMES,
+  study = "main_monthly"
+)
+
+saveRDS(
+  df_main_monthly_spouse_both_in_covid,
+  file.path(event_results_dir, "main_monthly_spouse_panel_both_in_covid.rds")
 )
 
 # =============================================================================
@@ -247,6 +314,28 @@ if (is.list(main_dup_diag)) {
   )
 }
 
+main_dup_diag_both_in_covid <- diagnose_pidp_year_duplicates(
+  df_spouse = df_main_spouse_both_in_covid,
+  outcomes = MAIN_OUTCOMES
+)
+
+saveRDS(
+  main_dup_diag_both_in_covid,
+  file.path(event_results_dir, "diag_main_pidp_year_dups_both_in_covid.rds")
+)
+
+if (is.list(main_dup_diag_both_in_covid)) {
+  readr::write_csv(
+    main_dup_diag_both_in_covid$overall,
+    file.path(event_results_dir, "diag_main_pidp_year_dups_overall_both_in_covid.csv")
+  )
+
+  readr::write_csv(
+    main_dup_diag_both_in_covid$by_outcome,
+    file.path(event_results_dir, "diag_main_pidp_year_dups_by_outcome_both_in_covid.csv")
+  )
+}
+
 # =============================================================================
 # Duplicate pidp-month diagnostics
 # =============================================================================
@@ -270,6 +359,28 @@ if (is.list(main_monthly_dup_diag)) {
   readr::write_csv(
     main_monthly_dup_diag$by_outcome,
     file.path(event_results_dir, "diag_main_monthly_pidp_ym_dups_by_outcome.csv")
+  )
+}
+
+main_monthly_dup_diag_both_in_covid <- diagnose_pidp_ym_duplicates(
+  df_spouse = df_main_monthly_spouse_both_in_covid,
+  outcomes = MAIN_OUTCOMES
+)
+
+saveRDS(
+  main_monthly_dup_diag_both_in_covid,
+  file.path(event_results_dir, "diag_main_monthly_pidp_ym_dups_both_in_covid.rds")
+)
+
+if (is.list(main_monthly_dup_diag_both_in_covid)) {
+  readr::write_csv(
+    main_monthly_dup_diag_both_in_covid$overall,
+    file.path(event_results_dir, "diag_main_monthly_pidp_ym_dups_overall_both_in_covid.csv")
+  )
+
+  readr::write_csv(
+    main_monthly_dup_diag_both_in_covid$by_outcome,
+    file.path(event_results_dir, "diag_main_monthly_pidp_ym_dups_by_outcome_both_in_covid.csv")
   )
 }
 
@@ -338,6 +449,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      sample_variants = MAIN_SAMPLE_VARIANTS,
       wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
@@ -379,6 +491,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      sample_variants = MAIN_SAMPLE_VARIANTS,
       wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
@@ -420,6 +533,7 @@ for (tr in TREATMENT_VARS) {
       couple_fe = run_couple_fe,
       fig_dir = treatment_fe_fig_dir,
       results_dir = treatment_fe_results_dir,
+      sample_variants = "all",
       wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
@@ -651,13 +765,13 @@ readr::write_csv(
 cat("\nEvent-study result coverage:\n")
 print(
   all_results %>%
-    dplyr::count(study, treatment_var, couple_fe, controls)
+    dplyr::count(study, treatment_var, couple_fe, controls, sample_variant)
 )
 
 cat("\nEvent-study result coverage including monthly main-study:\n")
 print(
   all_with_main_monthly_results %>%
-    dplyr::count(study, treatment_var, couple_fe, controls)
+    dplyr::count(study, treatment_var, couple_fe, controls, sample_variant)
 )
 
 cat("\nEvent-study regressions complete.\n")

@@ -126,7 +126,38 @@ subset_couples_with_young_child_2019 <- function(df, max_age = 10) {
 }
 
 collapse_to_unique_couples <- function(df) {
-  df %>%
+  out <- df
+  
+  if ("period" %in% names(out)) {
+    out <- out %>%
+      dplyr::mutate(
+        .sample_table_period_order = dplyr::case_when(
+          period == "baseline" ~ 1L,
+          period == "future" ~ 2L,
+          period == "history" ~ 3L,
+          period == "covid_baseline" ~ 4L,
+          period == "covid" ~ 5L,
+          TRUE ~ 99L
+        )
+      )
+  }
+  
+  arrange_cols <- c("couple_id")
+  if (".sample_table_period_order" %in% names(out)) {
+    arrange_cols <- c(arrange_cols, ".sample_table_period_order")
+  }
+  if ("time_order" %in% names(out)) {
+    arrange_cols <- c(arrange_cols, "time_order")
+  }
+  if ("wave_order" %in% names(out)) {
+    arrange_cols <- c(arrange_cols, "wave_order")
+  }
+  if ("ym" %in% names(out)) {
+    arrange_cols <- c(arrange_cols, "ym")
+  }
+  
+  out %>%
+    dplyr::arrange(!!!rlang::syms(arrange_cols)) %>%
     dplyr::distinct(couple_id, .keep_all = TRUE)
 }
 
@@ -733,7 +764,7 @@ make_joint_wfh_some_status <- function(df) {
 }
 
 build_time_axis_lookup <- function(time_values,
-                                   time_scale = c("covid_wave", "future_wave", "year")) {
+                                   time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year")) {
   time_scale <- match.arg(time_scale)
   
   time_values <- unique(as.character(time_values))
@@ -759,6 +790,16 @@ build_time_axis_lookup <- function(time_values,
     return(wl %>% dplyr::filter(time_value %in% time_values))
   }
   
+  if (time_scale == "main_history_future_wave") {
+    wl <- main_history_future_wave_label_lookup() %>%
+      dplyr::transmute(
+        time_value = as.character(wave),
+        time_label = wave_label_short
+      )
+    
+    return(wl %>% dplyr::filter(time_value %in% time_values))
+  }
+  
   tibble::tibble(
     time_value = as.character(sort(unique(as.numeric(time_values)))),
     time_label = as.character(sort(unique(as.numeric(time_values))))
@@ -767,7 +808,7 @@ build_time_axis_lookup <- function(time_values,
 
 make_binary_composition <- function(df,
                                     time_var,
-                                    time_scale = c("covid_wave", "future_wave", "year"),
+                                    time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year"),
                                     joint_status_fn,
                                     status_var,
                                     status_levels) {
@@ -812,7 +853,7 @@ make_binary_composition <- function(df,
 
 make_workoutside_composition <- function(df,
                                          time_var,
-                                         time_scale = c("covid_wave", "future_wave", "year")) {
+                                         time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year")) {
   status_levels <- c(
     "Neither spouse works outside",
     "Husband only works outside",
@@ -832,7 +873,7 @@ make_workoutside_composition <- function(df,
 
 make_wfh_some_composition <- function(df,
                                       time_var,
-                                      time_scale = c("covid_wave", "future_wave", "year")) {
+                                      time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year")) {
   status_levels <- c(
     "Neither spouse WFH at least sometimes",
     "Husband only WFH at least sometimes",
@@ -852,7 +893,7 @@ make_wfh_some_composition <- function(df,
 
 plot_binary_composition <- function(df,
                                     time_var,
-                                    time_scale = c("covid_wave", "future_wave", "year"),
+                                    time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year"),
                                     composition_fn,
                                     fill_var,
                                     use_shares = TRUE,
@@ -878,6 +919,7 @@ plot_binary_composition <- function(df,
     x_lab <- dplyr::case_when(
       time_scale == "covid_wave"  ~ "COVID study wave",
       time_scale == "future_wave" ~ "Main study wave",
+      time_scale == "main_history_future_wave" ~ "Main-survey wave",
       time_scale == "year"        ~ "Calendar year"
     )
   }
@@ -922,7 +964,7 @@ plot_binary_composition <- function(df,
 
 plot_workoutside_composition <- function(df,
                                          time_var,
-                                         time_scale = c("covid_wave", "future_wave", "year"),
+                                         time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year"),
                                          use_shares = TRUE,
                                          x_lab = NULL,
                                          y_lab = NULL,
@@ -942,7 +984,7 @@ plot_workoutside_composition <- function(df,
 
 plot_wfh_some_composition <- function(df,
                                       time_var,
-                                      time_scale = c("covid_wave", "future_wave", "year"),
+                                      time_scale = c("covid_wave", "future_wave", "main_history_future_wave", "year"),
                                       use_shares = TRUE,
                                       x_lab = NULL,
                                       y_lab = NULL,

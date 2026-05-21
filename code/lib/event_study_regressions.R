@@ -631,12 +631,26 @@ filter_child_group <- function(df,
 
 filter_treatment_sample <- function(df,
                                     treatment_var,
-                                    sample_variant = c("all", "husb_notkey_or_edu")) {
+                                    sample_variant = c(
+                                      "all",
+                                      "both_in_covid",
+                                      "husb_notkey_or_edu",
+                                      "both_in_covid_husb_notkey_or_edu"
+                                    )) {
   sample_variant <- match.arg(sample_variant)
 
   out <- df
 
-  if (sample_variant == "husb_notkey_or_edu") {
+  if (sample_variant %in% c("both_in_covid", "both_in_covid_husb_notkey_or_edu")) {
+    if (!("both_in_covid" %in% names(out))) {
+      return(out %>% dplyr::slice(0))
+    }
+    
+    out <- out %>%
+      dplyr::filter(both_in_covid %in% TRUE)
+  }
+  
+  if (sample_variant %in% c("husb_notkey_or_edu", "both_in_covid_husb_notkey_or_edu")) {
     if (!("sample_husb_notkey_or_edu" %in% names(out))) {
       return(out %>% dplyr::slice(0))
     }
@@ -895,7 +909,9 @@ event_study_treatment_slug <- function(treatment_var) {
 event_study_sample_slug <- function(sample_variant) {
   dplyr::case_when(
     sample_variant == "all" ~ "all",
+    sample_variant == "both_in_covid" ~ "bic",
     sample_variant == "husb_notkey_or_edu" ~ "hne",
+    sample_variant == "both_in_covid_husb_notkey_or_edu" ~ "bic_hne",
     TRUE ~ sanitize_name(sample_variant)
   )
 }
@@ -1467,6 +1483,7 @@ run_event_study_batch <- function(df_spouse,
                                   couple_fe = FALSE,
                                   fig_dir,
                                   results_dir,
+                                  sample_variants = "all",
                                   wife_treatment_extra_restriction_vars =
                                     c(
                                       "treat_wife_key_notedu_husb_not_or_edu",
@@ -1488,12 +1505,20 @@ run_event_study_batch <- function(df_spouse,
     for (tr in treatment_vars) {
       if (!(tr %in% names(df_spouse))) next
 
-      sample_variants <- "all"
+      sample_variants_this_tr <- sample_variants
       if (tr %in% wife_treatment_extra_restriction_vars) {
-        sample_variants <- c("all", "husb_notkey_or_edu")
+        restricted_variants <- dplyr::case_when(
+          sample_variants == "all" ~ "husb_notkey_or_edu",
+          sample_variants == "both_in_covid" ~ "both_in_covid_husb_notkey_or_edu",
+          TRUE ~ NA_character_
+        )
+        sample_variants_this_tr <- c(
+          sample_variants,
+          restricted_variants[!is.na(restricted_variants)]
+        )
       }
 
-      for (sample_variant in sample_variants) {
+      for (sample_variant in sample_variants_this_tr) {
         for (child_group in child_groups) {
           for (sp in spouses) {
             for (cc in controls_set) {

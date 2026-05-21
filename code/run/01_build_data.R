@@ -309,7 +309,7 @@ saveRDS(
 cat("Baseline couple-level sample saved to: ",
     file.path(samples_path, "s2019_baseline_couplelevel.rds"), "\n", sep = "")
 
-# Optional restricted roster: couples where both spouses appear in COVID
+# Restricted roster: couples where both spouses appear in COVID
 couple_roster_covid_both <- couple_roster %>%
   dplyr::filter(both_in_covid)
 
@@ -320,6 +320,22 @@ saveRDS(
 
 cat("COVID-observed couple roster saved to: ",
     file.path(samples_path, "baseline_couple_roster_both_in_covid.rds"), "\n", sep = "")
+
+s2019_baseline_couplelevel_both_in_covid <- build_baseline_couple_dataset(
+  df_baseline = df_baseline_analytic,
+  roster      = couple_roster_covid_both
+) %>%
+  add_couple_baseline_treatments() %>%
+  add_baseline_couple_husits_direction()
+
+saveRDS(
+  s2019_baseline_couplelevel_both_in_covid,
+  file.path(samples_path, "s2019_baseline_couplelevel_both_in_covid.rds")
+)
+
+cat("COVID-observed baseline couple-level sample saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel_both_in_covid.rds"),
+    "\n", sep = "")
 
 # Build couple-level pre-baseline history files.
 df_prebaseline_couple_history_long <- build_prebaseline_couple_history_long(
@@ -334,6 +350,20 @@ saveRDS(
 
 cat("Pre-baseline couple-wave history saved to: ",
     file.path(der_path, "prebaseline_couple_history_long.rds"), "\n", sep = "")
+
+df_prebaseline_couple_history_long_both_in_covid <- build_prebaseline_couple_history_long(
+  df_history_long = df_prebaseline_history_long,
+  roster          = couple_roster_covid_both
+)
+
+saveRDS(
+  df_prebaseline_couple_history_long_both_in_covid,
+  file.path(der_path, "prebaseline_couple_history_long_both_in_covid.rds")
+)
+
+cat("COVID-observed pre-baseline couple-wave history saved to: ",
+    file.path(der_path, "prebaseline_couple_history_long_both_in_covid.rds"),
+    "\n", sep = "")
 
 print_history_coverage(
   df_prebaseline_couple_history_long,
@@ -356,6 +386,21 @@ saveRDS(
 cat("Pre-baseline couple-level history summary saved to: ",
     file.path(der_path, "prebaseline_couple_history_summary.rds"), "\n", sep = "")
 
+df_prebaseline_couple_history_summary_both_in_covid <- summarise_prebaseline_couple_history(
+  df_couple_history_long = df_prebaseline_couple_history_long_both_in_covid,
+  df_history_summary     = df_prebaseline_history_summary,
+  roster                 = couple_roster_covid_both
+)
+
+saveRDS(
+  df_prebaseline_couple_history_summary_both_in_covid,
+  file.path(der_path, "prebaseline_couple_history_summary_both_in_covid.rds")
+)
+
+cat("COVID-observed pre-baseline couple-level history summary saved to: ",
+    file.path(der_path, "prebaseline_couple_history_summary_both_in_covid.rds"),
+    "\n", sep = "")
+
 # Attach compact pre-baseline history summaries to the baseline couple sample and
 # overwrite the earlier saved version so downstream sample files include history.
 s2019_baseline_couplelevel <- s2019_baseline_couplelevel %>%
@@ -372,6 +417,33 @@ saveRDS(
 cat("Baseline couple-level sample + pre-baseline history saved to: ",
     file.path(samples_path, "s2019_baseline_couplelevel.rds"), "\n", sep = "")
 
+s2019_baseline_couplelevel_both_in_covid <- s2019_baseline_couplelevel_both_in_covid %>%
+  dplyr::left_join(
+    df_prebaseline_couple_history_summary_both_in_covid,
+    by = c("couple_id", "husband_pidp", "wife_pidp")
+  )
+
+saveRDS(
+  s2019_baseline_couplelevel_both_in_covid,
+  file.path(samples_path, "s2019_baseline_couplelevel_both_in_covid.rds")
+)
+
+cat("COVID-observed baseline couple-level sample + pre-baseline history saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel_both_in_covid.rds"),
+    "\n", sep = "")
+
+couple_analysis_attach_cols <- c(
+  "couple_id",
+  "youngest_child_2019",
+  "has_child_u10_2019",
+  "has_child_11_17_2019",
+  "child_age_group_2019",
+  "treat_wife_key_notedu_husb_not_or_edu",
+  "treat_wife_key_notedu_any",
+  "sample_husb_notkey_or_edu",
+  "treat_husb_shutdown_wife_not"
+)
+
 # Build strict couple-wave COVID panel:
 # one row per couple x wave, keeping only waves where both spouses are observed
 df_covid_couple_long <- build_covid_couple_long(
@@ -382,15 +454,7 @@ df_covid_couple_long <- build_covid_couple_long(
   dplyr::left_join(
     s2019_baseline_couplelevel %>%
       dplyr::select(
-        couple_id,
-        youngest_child_2019,
-        has_child_u10_2019,
-        has_child_11_17_2019,
-        child_age_group_2019,
-        treat_wife_key_notedu_husb_not_or_edu,
-        treat_wife_key_notedu_any,
-        sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not,
+        dplyr::all_of(couple_analysis_attach_cols),
         dplyr::starts_with("hist_")
       ),
     by = "couple_id"
@@ -521,15 +585,7 @@ df_future_couple_long <- build_future_couple_long(
   dplyr::left_join(
     s2019_baseline_couplelevel %>%
       dplyr::select(
-        couple_id,
-        youngest_child_2019,
-        has_child_u10_2019,
-        has_child_11_17_2019,
-        child_age_group_2019,
-        treat_wife_key_notedu_husb_not_or_edu,
-        treat_wife_key_notedu_any,
-        sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not,
+        dplyr::all_of(couple_analysis_attach_cols),
         dplyr::starts_with("hist_")
       ),
     by = "couple_id"
@@ -543,6 +599,28 @@ saveRDS(
 cat("Future couple-level long saved to: ",
     file.path(der_path, "future_outcomes_couple_long_lmo.rds"), "\n", sep = "")
 
+df_future_couple_long_both_in_covid <- build_future_couple_long(
+  df_future_long = df_future_long,
+  roster         = couple_roster_covid_both
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel_both_in_covid %>%
+      dplyr::select(
+        dplyr::all_of(couple_analysis_attach_cols),
+        dplyr::starts_with("hist_")
+      ),
+    by = "couple_id"
+  )
+
+saveRDS(
+  df_future_couple_long_both_in_covid,
+  file.path(der_path, "future_outcomes_couple_long_lmo_both_in_covid.rds")
+)
+
+cat("COVID-observed future couple-level long saved to: ",
+    file.path(der_path, "future_outcomes_couple_long_lmo_both_in_covid.rds"),
+    "\n", sep = "")
+
 df_future_couple_long_monthly <- build_future_couple_long(
   df_future_long = df_future_long_monthly,
   roster         = couple_roster
@@ -550,15 +628,7 @@ df_future_couple_long_monthly <- build_future_couple_long(
   dplyr::left_join(
     s2019_baseline_couplelevel %>%
       dplyr::select(
-        couple_id,
-        youngest_child_2019,
-        has_child_u10_2019,
-        has_child_11_17_2019,
-        child_age_group_2019,
-        treat_wife_key_notedu_husb_not_or_edu,
-        treat_wife_key_notedu_any,
-        sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not,
+        dplyr::all_of(couple_analysis_attach_cols),
         dplyr::starts_with("hist_")
       ),
     by = "couple_id"
@@ -571,6 +641,28 @@ saveRDS(
 
 cat("Monthly future couple-level long saved to: ",
     file.path(der_path, "future_outcomes_couple_long_lmo_monthly.rds"), "\n", sep = "")
+
+df_future_couple_long_monthly_both_in_covid <- build_future_couple_long(
+  df_future_long = df_future_long_monthly,
+  roster         = couple_roster_covid_both
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel_both_in_covid %>%
+      dplyr::select(
+        dplyr::all_of(couple_analysis_attach_cols),
+        dplyr::starts_with("hist_")
+      ),
+    by = "couple_id"
+  )
+
+saveRDS(
+  df_future_couple_long_monthly_both_in_covid,
+  file.path(der_path, "future_outcomes_couple_long_lmo_monthly_both_in_covid.rds")
+)
+
+cat("COVID-observed monthly future couple-level long saved to: ",
+    file.path(der_path, "future_outcomes_couple_long_lmo_monthly_both_in_covid.rds"),
+    "\n", sep = "")
 
 # =============================================================================
 # Step 5c: Ready-to-plot stacked history + baseline + COVID + future panels
@@ -674,6 +766,32 @@ saveRDS(
   file.path(der_path, "couple_history_future_mainonly_monthly_long.rds")
 )
 
+df_couple_history_future_mainonly_long_both_in_covid <- build_couple_history_future_long(
+  df_couple_history_long = df_prebaseline_couple_history_long_both_in_covid,
+  df_baseline_couple     = s2019_baseline_couplelevel_both_in_covid,
+  df_covid_couple_long   = NULL,
+  df_future_couple_long  = df_future_couple_long_both_in_covid,
+  include_covid          = FALSE
+)
+
+saveRDS(
+  df_couple_history_future_mainonly_long_both_in_covid,
+  file.path(der_path, "couple_history_future_mainonly_long_both_in_covid.rds")
+)
+
+df_couple_history_future_mainonly_monthly_long_both_in_covid <- build_couple_history_future_long(
+  df_couple_history_long = df_prebaseline_couple_history_long_both_in_covid,
+  df_baseline_couple     = s2019_baseline_couplelevel_both_in_covid,
+  df_covid_couple_long   = NULL,
+  df_future_couple_long  = df_future_couple_long_monthly_both_in_covid,
+  include_covid          = FALSE
+)
+
+saveRDS(
+  df_couple_history_future_mainonly_monthly_long_both_in_covid,
+  file.path(der_path, "couple_history_future_mainonly_monthly_long_both_in_covid.rds")
+)
+
 cat("Main-study-only stacked panels saved to: ", der_path, "\n", sep = "")
 
 print_history_coverage(
@@ -738,15 +856,7 @@ df_future_couple_wide <- build_future_couple_wide(
   dplyr::left_join(
     s2019_baseline_couplelevel %>%
       dplyr::select(
-        couple_id,
-        youngest_child_2019,
-        has_child_u10_2019,
-        has_child_11_17_2019,
-        child_age_group_2019,
-        treat_wife_key_notedu_husb_not_or_edu,
-        treat_wife_key_notedu_any,
-        sample_husb_notkey_or_edu,
-        treat_husb_shutdown_wife_not,
+        dplyr::all_of(couple_analysis_attach_cols),
         dplyr::starts_with("hist_")
       ),
     by = "couple_id"
@@ -760,6 +870,28 @@ saveRDS(
 cat("Future couple-level wide saved to: ",
     file.path(der_path, "future_outcomes_couple_wide_lmo.rds"), "\n", sep = "")
 
+df_future_couple_wide_both_in_covid <- build_future_couple_wide(
+  df_future_wide = df_future_wide,
+  roster         = couple_roster_covid_both
+) %>%
+  dplyr::left_join(
+    s2019_baseline_couplelevel_both_in_covid %>%
+      dplyr::select(
+        dplyr::all_of(couple_analysis_attach_cols),
+        dplyr::starts_with("hist_")
+      ),
+    by = "couple_id"
+  )
+
+saveRDS(
+  df_future_couple_wide_both_in_covid,
+  file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds")
+)
+
+cat("COVID-observed future couple-level wide saved to: ",
+    file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds"),
+    "\n", sep = "")
+
 # Same baseline couple sample, now with future outcomes attached where available
 s2019_baseline_couplelevel_plus_lmo <- df_future_couple_wide
 
@@ -771,17 +903,15 @@ saveRDS(
 cat("Baseline couple-level sample + future wide saved to: ",
     file.path(samples_path, "s2019_baseline_couplelevel_plus_lmo.rds"), "\n", sep = "")
 
-# Optional: future couple-wide subset where both spouses appear in COVID
-df_future_couple_wide_covidboth <- df_future_couple_wide %>%
-  dplyr::filter(both_in_covid)
+s2019_baseline_couplelevel_plus_lmo_both_in_covid <- df_future_couple_wide_both_in_covid
 
 saveRDS(
-  df_future_couple_wide_covidboth,
-  file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds")
+  s2019_baseline_couplelevel_plus_lmo_both_in_covid,
+  file.path(samples_path, "s2019_baseline_couplelevel_plus_lmo_both_in_covid.rds")
 )
 
-cat("Future couple-level wide (both spouses in COVID) saved to: ",
-    file.path(der_path, "future_outcomes_couple_wide_lmo_both_in_covid.rds"),
+cat("COVID-observed baseline couple-level sample + future wide saved to: ",
+    file.path(samples_path, "s2019_baseline_couplelevel_plus_lmo_both_in_covid.rds"),
     "\n", sep = "")
 
 # =============================================================================
