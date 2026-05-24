@@ -308,6 +308,9 @@ FUTURE_ONLY_AGGS_TO_PLOT <- if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
   c("ym", "year")
 }
 
+DESCRIPTIVE_MONTHLY_START_YM <- as.Date("2019-01-01")
+DESCRIPTIVE_MONTHLY_END_YM <- as.Date("2021-12-01")
+
 # -----------------------------------------------------------------------------
 # Plot readability controls
 # -----------------------------------------------------------------------------
@@ -469,7 +472,9 @@ for (tr in TREATMENT_VARS) {
           strip_text_size = STRIP_TEXT_SIZE,
           legend_text_size = LEGEND_TEXT_SIZE,
           legend_title_size = LEGEND_TITLE_SIZE,
-          title_size = TITLE_SIZE
+          title_size = TITLE_SIZE,
+          monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+          monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
         )
       }
       
@@ -493,7 +498,9 @@ for (tr in TREATMENT_VARS) {
         strip_text_size = STRIP_TEXT_SIZE,
         legend_text_size = LEGEND_TEXT_SIZE,
         legend_title_size = LEGEND_TITLE_SIZE,
-        title_size = TITLE_SIZE
+        title_size = TITLE_SIZE,
+        monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+        monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
       )
       
       # Restricted comparison sample for wife-based treatments only
@@ -522,7 +529,9 @@ for (tr in TREATMENT_VARS) {
             strip_text_size = STRIP_TEXT_SIZE,
             legend_text_size = LEGEND_TEXT_SIZE,
             legend_title_size = LEGEND_TITLE_SIZE,
-            title_size = TITLE_SIZE
+            title_size = TITLE_SIZE,
+            monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+            monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
           )
         }
         
@@ -546,7 +555,9 @@ for (tr in TREATMENT_VARS) {
           strip_text_size = STRIP_TEXT_SIZE,
           legend_text_size = LEGEND_TEXT_SIZE,
           legend_title_size = LEGEND_TITLE_SIZE,
-          title_size = TITLE_SIZE
+          title_size = TITLE_SIZE,
+          monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+          monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
         )
       }
     }
@@ -650,7 +661,7 @@ if (length(history_future_sample_specs) > 0) {
     history_future_suffix <- sample_spec$suffix
     df_history_future_spouse_variant <- sample_spec$spouse
     df_history_future_spouse_monthly_variant <- sample_spec$spouse_monthly
-    
+
   for (tr in TREATMENT_VARS) {
     for (v in HISTORY_FUTURE_OUTCOMES) {
       
@@ -687,7 +698,9 @@ if (length(history_future_sample_specs) > 0) {
             strip_text_size = STRIP_TEXT_SIZE,
             legend_text_size = LEGEND_TEXT_SIZE,
             legend_title_size = LEGEND_TITLE_SIZE,
-            title_size = TITLE_SIZE
+            title_size = TITLE_SIZE,
+            monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+            monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
           )
         }
         
@@ -712,7 +725,9 @@ if (length(history_future_sample_specs) > 0) {
           strip_text_size = STRIP_TEXT_SIZE,
           legend_text_size = LEGEND_TEXT_SIZE,
           legend_title_size = LEGEND_TITLE_SIZE,
-          title_size = TITLE_SIZE
+          title_size = TITLE_SIZE,
+          monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+          monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
         )
         
         # Restricted comparison sample for wife-based treatments only
@@ -742,7 +757,9 @@ if (length(history_future_sample_specs) > 0) {
               strip_text_size = STRIP_TEXT_SIZE,
               legend_text_size = LEGEND_TEXT_SIZE,
               legend_title_size = LEGEND_TITLE_SIZE,
-              title_size = TITLE_SIZE
+              title_size = TITLE_SIZE,
+              monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+              monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
             )
           }
           
@@ -767,7 +784,9 @@ if (length(history_future_sample_specs) > 0) {
             strip_text_size = STRIP_TEXT_SIZE,
             legend_text_size = LEGEND_TEXT_SIZE,
             legend_title_size = LEGEND_TITLE_SIZE,
-            title_size = TITLE_SIZE
+            title_size = TITLE_SIZE,
+            monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+            monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
           )
         }
       }
@@ -871,7 +890,9 @@ for (tr in TREATMENT_VARS) {
           strip_text_size = STRIP_TEXT_SIZE,
           legend_text_size = LEGEND_TEXT_SIZE,
           legend_title_size = LEGEND_TITLE_SIZE,
-          title_size = TITLE_SIZE
+          title_size = TITLE_SIZE,
+          monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+          monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
         )
 
         if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
@@ -896,7 +917,9 @@ for (tr in TREATMENT_VARS) {
             strip_text_size = STRIP_TEXT_SIZE,
             legend_text_size = LEGEND_TEXT_SIZE,
             legend_title_size = LEGEND_TITLE_SIZE,
-            title_size = TITLE_SIZE
+            title_size = TITLE_SIZE,
+            monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+            monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
           )
         }
       }
@@ -908,7 +931,7 @@ for (tr in TREATMENT_VARS) {
         history_future_suffix <- sample_spec$suffix
         df_history_future_couple_variant <- sample_spec$couple
         df_history_future_couple_monthly_variant <- sample_spec$couple_monthly
-        
+
       for (agg in HISTORY_FUTURE_AGGS) {
         df_history_future_couple_agg <- if (agg == "ym") {
           df_history_future_couple_monthly_variant
@@ -937,7 +960,9 @@ for (tr in TREATMENT_VARS) {
           strip_text_size = STRIP_TEXT_SIZE,
           legend_text_size = LEGEND_TEXT_SIZE,
           legend_title_size = LEGEND_TITLE_SIZE,
-          title_size = TITLE_SIZE
+          title_size = TITLE_SIZE,
+          monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+          monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
         )
 
         if (tr %in% WIFE_TREATMENT_VARS && isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_VARIANTS)) {
@@ -963,7 +988,9 @@ for (tr in TREATMENT_VARS) {
             strip_text_size = STRIP_TEXT_SIZE,
             legend_text_size = LEGEND_TEXT_SIZE,
             legend_title_size = LEGEND_TITLE_SIZE,
-            title_size = TITLE_SIZE
+            title_size = TITLE_SIZE,
+            monthly_start_ym = DESCRIPTIVE_MONTHLY_START_YM,
+            monthly_end_ym = DESCRIPTIVE_MONTHLY_END_YM
           )
         }
       }

@@ -115,16 +115,23 @@ add_treatment_group_scales <- function(p,
     )
 }
 
-.filter_monthly_2018_2023 <- function(dd, time_var = "time") {
+.filter_monthly_window <- function(dd,
+                                   time_var = "time",
+                                   monthly_start_ym = as.Date("2019-01-01"),
+                                   monthly_end_ym = as.Date("2021-12-01")) {
   if (is.null(dd) || nrow(dd) == 0 || !(time_var %in% names(dd))) {
     return(dd)
   }
 
+  monthly_start_ym <- as.Date(monthly_start_ym)
+  monthly_end_ym <- as.Date(monthly_end_ym)
+
   dd %>%
+    dplyr::mutate("{time_var}" := as.Date(.data[[time_var]])) %>%
     dplyr::filter(
       !is.na(.data[[time_var]]),
-      .data[[time_var]] >= as.Date("2018-01-01"),
-      .data[[time_var]] <= as.Date("2023-12-01")
+      .data[[time_var]] >= monthly_start_ym,
+      .data[[time_var]] <= monthly_end_ym
     )
 }
 
@@ -148,28 +155,45 @@ add_treatment_group_scales <- function(p,
     dplyr::select(-.plot_ym, -.plot_year, -.plot_month)
 }
 
-.monthly_2018_2023_breaks <- function() {
+.monthly_window_breaks <- function(monthly_start_ym = as.Date("2019-01-01"),
+                                   monthly_end_ym = as.Date("2021-12-01")) {
   seq(
-    from = as.Date("2018-01-01"),
-    to = as.Date("2023-10-01"),
+    from = as.Date(monthly_start_ym),
+    to = as.Date(monthly_end_ym),
     by = "3 months"
   )
 }
 
-.apply_monthly_2018_2023_x_scale <- function(p) {
+.apply_monthly_window_x_scale <- function(p,
+                                          monthly_start_ym = as.Date("2019-01-01"),
+                                          monthly_end_ym = as.Date("2021-12-01")) {
+  monthly_start_ym <- as.Date(monthly_start_ym)
+  monthly_end_ym <- as.Date(monthly_end_ym)
+
   p +
     ggplot2::scale_x_date(
-      limits = c(as.Date("2018-01-01"), as.Date("2023-12-01")),
-      breaks = .monthly_2018_2023_breaks(),
+      limits = c(monthly_start_ym, monthly_end_ym),
+      breaks = .monthly_window_breaks(
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym
+      ),
       date_labels = "%b %Y"
     )
 }
 
-.apply_regular_wave_time_labels <- function(p, dd, agg) {
+.apply_regular_wave_time_labels <- function(p,
+                                            dd,
+                                            agg,
+                                            monthly_start_ym = as.Date("2019-01-01"),
+                                            monthly_end_ym = as.Date("2021-12-01")) {
   if (agg == "year") {
     .add_yearly_x_breaks(p, dd, time_var = "time")
   } else if (agg == "ym") {
-    .apply_monthly_2018_2023_x_scale(p)
+    .apply_monthly_window_x_scale(
+      p,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym
+    )
   } else {
     .apply_time_labels(p, dd, agg = agg)
   }
@@ -312,7 +336,9 @@ plot_future_treatment_group_counts <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
@@ -346,7 +372,13 @@ plot_future_treatment_group_counts <- function(
       !is.na(treatment_group),
       !is.na(time)
     ) %>%
-    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
+    { if (agg == "ym") {
+      .filter_monthly_window(
+        .,
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym
+      )
+    } else . } %>%
     dplyr::group_by(sample_group, time, treatment_group) %>%
     dplyr::summarise(
       n_couples = dplyr::n_distinct(couple_id),
@@ -407,7 +439,13 @@ plot_future_treatment_group_counts <- function(
         labels = wl_future$wave_lab_short
       )
   } else {
-    p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
+    p <- .apply_regular_wave_time_labels(
+      p,
+      dd,
+      agg = agg,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym
+    )
   }
   
   ggsave(
@@ -657,7 +695,9 @@ plot_future_spouse_treatment_numeric <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   child_subset <- match.arg(child_subset)
   agg <- match.arg(agg)
@@ -727,7 +767,11 @@ plot_future_spouse_treatment_numeric <- function(
     )
 
   if (agg == "ym") {
-    dd_plot <- .filter_monthly_2018_2023(dd_plot)
+    dd_plot <- .filter_monthly_window(
+      dd_plot,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym
+    )
   }
   
   p <- ggplot(
@@ -769,7 +813,13 @@ plot_future_spouse_treatment_numeric <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_regular_wave_time_labels(p, dd_plot, agg = agg)
+  p <- .apply_regular_wave_time_labels(
+    p,
+    dd_plot,
+    agg = agg,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   
   if (prep$is_binary) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -804,7 +854,9 @@ plot_future_spouse_treatment_childgrid <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   agg <- match.arg(agg)
   
@@ -883,7 +935,11 @@ plot_future_spouse_treatment_childgrid <- function(
     )
 
   if (agg == "ym") {
-    dd_plot <- .filter_monthly_2018_2023(dd_plot)
+    dd_plot <- .filter_monthly_window(
+      dd_plot,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym
+    )
   }
   
   p <- ggplot(
@@ -922,7 +978,13 @@ plot_future_spouse_treatment_childgrid <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_regular_wave_time_labels(p, dd_plot, agg = agg)
+  p <- .apply_regular_wave_time_labels(
+    p,
+    dd_plot,
+    agg = agg,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   
   if (prep$is_binary) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -967,7 +1029,9 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   child_subset <- match.arg(child_subset)
   agg <- match.arg(agg)
@@ -1027,7 +1091,13 @@ plot_main_history_future_spouse_treatment_numeric <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
-    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
+    { if (agg == "ym") {
+      .filter_monthly_window(
+        .,
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym
+      )
+    } else . } %>%
     dplyr::group_by(time, spouse, treatment_group) %>%
     dplyr::summarise(
       mean_y = mean(value, na.rm = TRUE),
@@ -1074,7 +1144,13 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
+  p <- .apply_regular_wave_time_labels(
+    p,
+    dd,
+    agg = agg,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -1111,7 +1187,9 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   agg <- match.arg(agg)
   
@@ -1171,7 +1249,13 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
-    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
+    { if (agg == "ym") {
+      .filter_monthly_window(
+        .,
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym
+      )
+    } else . } %>%
     dplyr::group_by(time, spouse, child_group_plot, treatment_group) %>%
     dplyr::summarise(
       mean_y = mean(value, na.rm = TRUE),
@@ -1218,7 +1302,13 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
+  p <- .apply_regular_wave_time_labels(
+    p,
+    dd,
+    agg = agg,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   
   if (couple_plot_is_binary(var)) {
     p <- p + scale_y_continuous(labels = scales::percent_format())
@@ -1256,7 +1346,9 @@ plot_main_history_future_treatment_group_counts <- function(
     strip_text_size = 12,
     legend_text_size = 11,
     legend_title_size = 11,
-    title_size = 14
+    title_size = 14,
+    monthly_start_ym = as.Date("2019-01-01"),
+    monthly_end_ym = as.Date("2021-12-01")
 ) {
   agg <- match.arg(agg)
   stopifnot(treatment_var %in% names(df))
@@ -1300,7 +1392,13 @@ plot_main_history_future_treatment_group_counts <- function(
       !is.na(time),
       !(exclude_2025 & agg == "year" & time == 2025)
     ) %>%
-    { if (agg == "ym") .filter_monthly_2018_2023(.) else . } %>%
+    { if (agg == "ym") {
+      .filter_monthly_window(
+        .,
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym
+      )
+    } else . } %>%
     dplyr::group_by(sample_group, time, treatment_group) %>%
     dplyr::summarise(
       n_couples = dplyr::n_distinct(couple_id),
@@ -1351,7 +1449,13 @@ plot_main_history_future_treatment_group_counts <- function(
     treated_label = treated_label
   )
   
-  p <- .apply_regular_wave_time_labels(p, dd, agg = agg)
+  p <- .apply_regular_wave_time_labels(
+    p,
+    dd,
+    agg = agg,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   
   ggsave(
     filename = out_file,
