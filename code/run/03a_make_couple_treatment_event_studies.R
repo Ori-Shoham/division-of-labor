@@ -103,16 +103,17 @@ WIFE_TREATMENT_EXTRA_RESTRICTION_VARS <- if (isTRUE(MAKE_RESTRICTED_HUSB_NOTKEY_
 
 MAIN_SAMPLE_VARIANTS <- c("all", "both_in_covid")
 
+MAIN_MONTHLY_REFERENCE_YM <- as.Date("2019-12-01")
+MAIN_MONTHLY_START_YM <- as.Date("2019-01-01")
+MAIN_MONTHLY_END_YM <- as.Date("2021-12-01")
+
 MAIN_OUTCOMES <- c(
-  "workoutside",
-  "wfh_some",
   "any_work",
   "jbhrs",
   "paygu_dv",
   "fimnlabgrs_dv",
   "fimngrs_dv",
-  "howlng",
-  "husits_wife_main_both"
+  "howlng"
 )
 
 COVID_OUTCOMES <- c(
@@ -121,7 +122,6 @@ COVID_OUTCOMES <- c(
   "any_work",
   "hours",
   "howlng",
-  "timechcare",
   "husits_wife_main_both"
 )
 
@@ -230,9 +230,9 @@ df_main_monthly_couple_common <- df_main_monthly_couple %>%
 
 df_main_monthly_couple_prepped <- df_main_monthly_couple_common %>%
   add_main_monthly_event_time(
-    reference_ym = as.Date("2019-12-01"),
-    start_ym = as.Date("2018-01-01"),
-    end_ym = as.Date("2023-12-01")
+    reference_ym = MAIN_MONTHLY_REFERENCE_YM,
+    start_ym = MAIN_MONTHLY_START_YM,
+    end_ym = MAIN_MONTHLY_END_YM
   )
 
 df_main_monthly_spouse <- make_spouse_event_panel(
@@ -252,9 +252,9 @@ df_main_monthly_couple_both_in_covid_common <- df_main_monthly_couple_both_in_co
 
 df_main_monthly_couple_both_in_covid_prepped <- df_main_monthly_couple_both_in_covid_common %>%
   add_main_monthly_event_time(
-    reference_ym = as.Date("2019-12-01"),
-    start_ym = as.Date("2018-01-01"),
-    end_ym = as.Date("2023-12-01")
+    reference_ym = MAIN_MONTHLY_REFERENCE_YM,
+    start_ym = MAIN_MONTHLY_START_YM,
+    end_ym = MAIN_MONTHLY_END_YM
   )
 
 df_main_monthly_spouse_both_in_covid <- make_spouse_event_panel(
@@ -495,7 +495,10 @@ for (tr in TREATMENT_VARS) {
       wife_treatment_extra_restriction_vars = WIFE_TREATMENT_EXTRA_RESTRICTION_VARS,
       save_model = TRUE,
       save_individual_child_plots = FALSE,
-      save_combined_child_plots = TRUE
+      save_combined_child_plots = TRUE,
+      monthly_reference_ym = MAIN_MONTHLY_REFERENCE_YM,
+      monthly_start_ym = MAIN_MONTHLY_START_YM,
+      monthly_end_ym = MAIN_MONTHLY_END_YM
     )
 
     saveRDS(

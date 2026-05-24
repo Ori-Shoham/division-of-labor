@@ -427,8 +427,8 @@ year_month_index <- function(x) {
 
 add_main_monthly_event_time <- function(df,
                                         reference_ym = as.Date("2019-12-01"),
-                                        start_ym = as.Date("2018-01-01"),
-                                        end_ym = as.Date("2023-12-01")) {
+                                        start_ym = as.Date("2019-01-01"),
+                                        end_ym = as.Date("2021-12-01")) {
   reference_ym <- as.Date(reference_ym)
   start_ym <- as.Date(start_ym)
   end_ym <- as.Date(end_ym)
@@ -645,11 +645,11 @@ filter_treatment_sample <- function(df,
     if (!("both_in_covid" %in% names(out))) {
       return(out %>% dplyr::slice(0))
     }
-    
+
     out <- out %>%
       dplyr::filter(both_in_covid %in% TRUE)
   }
-  
+
   if (sample_variant %in% c("husb_notkey_or_edu", "both_in_covid_husb_notkey_or_edu")) {
     if (!("sample_husb_notkey_or_edu" %in% names(out))) {
       return(out %>% dplyr::slice(0))
@@ -997,8 +997,8 @@ safe_write_csv <- function(object, file) {
 # Plotting
 # =============================================================================
 
-main_monthly_axis_lookup <- function(start_ym = as.Date("2018-01-01"),
-                                     end_ym = as.Date("2023-12-01"),
+main_monthly_axis_lookup <- function(start_ym = as.Date("2019-01-01"),
+                                     end_ym = as.Date("2021-12-01"),
                                      reference_ym = as.Date("2019-12-01")) {
   ym <- seq.Date(as.Date(start_ym), as.Date(end_ym), by = "month")
 
@@ -1011,8 +1011,16 @@ main_monthly_axis_lookup <- function(start_ym = as.Date("2018-01-01"),
   )
 }
 
-add_main_monthly_x_axis <- function(p, coefs) {
-  monthly_axis <- main_monthly_axis_lookup()
+add_main_monthly_x_axis <- function(p,
+                                    coefs,
+                                    monthly_start_ym = as.Date("2019-01-01"),
+                                    monthly_end_ym = as.Date("2021-12-01"),
+                                    monthly_reference_ym = as.Date("2019-12-01")) {
+  monthly_axis <- main_monthly_axis_lookup(
+    start_ym = monthly_start_ym,
+    end_ym = monthly_end_ym,
+    reference_ym = monthly_reference_ym
+  )
 
   year_axis <- monthly_axis %>%
     dplyr::filter(is_year_break)
@@ -1036,7 +1044,10 @@ plot_event_study <- function(coefs,
                              controls,
                              sample_variant,
                              couple_fe = FALSE,
-                             ref_event_time = 0) {
+                             ref_event_time = 0,
+                             monthly_start_ym = as.Date("2019-01-01"),
+                             monthly_end_ym = as.Date("2021-12-01"),
+                             monthly_reference_ym = as.Date("2019-12-01")) {
   if (is.null(coefs) || nrow(coefs) == 0) {
     return(NULL)
   }
@@ -1099,7 +1110,13 @@ plot_event_study <- function(coefs,
   }
 
   if (study == "main_monthly") {
-    p <- add_main_monthly_x_axis(p, coefs)
+    p <- add_main_monthly_x_axis(
+      p = p,
+      coefs = coefs,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym,
+      monthly_reference_ym = monthly_reference_ym
+    )
   }
 
   if (study == "covid") {
@@ -1127,7 +1144,10 @@ plot_event_study_child_groups <- function(coefs,
                                           controls,
                                           sample_variant,
                                           couple_fe = FALSE,
-                                          ref_event_time = 0) {
+                                          ref_event_time = 0,
+                                          monthly_start_ym = as.Date("2019-01-01"),
+                                          monthly_end_ym = as.Date("2021-12-01"),
+                                          monthly_reference_ym = as.Date("2019-12-01")) {
   if (is.null(coefs) || nrow(coefs) == 0) {
     return(NULL)
   }
@@ -1224,7 +1244,13 @@ plot_event_study_child_groups <- function(coefs,
   }
 
   if (study == "main_monthly") {
-    p <- add_main_monthly_x_axis(p, coefs)
+    p <- add_main_monthly_x_axis(
+      p = p,
+      coefs = coefs,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym,
+      monthly_reference_ym = monthly_reference_ym
+    )
   }
 
   if (study == "covid") {
@@ -1245,7 +1271,10 @@ plot_event_study_child_groups <- function(coefs,
 }
 
 save_combined_child_group_event_study_plots <- function(results,
-                                                        fig_dir) {
+                                                        fig_dir,
+                                                        monthly_start_ym = as.Date("2019-01-01"),
+                                                        monthly_end_ym = as.Date("2021-12-01"),
+                                                        monthly_reference_ym = as.Date("2019-12-01")) {
   if (is.null(results) || nrow(results) == 0) {
     return(invisible(NULL))
   }
@@ -1300,7 +1329,10 @@ save_combined_child_group_event_study_plots <- function(results,
         controls = controls,
         sample_variant = sample_variant,
         couple_fe = couple_fe,
-        ref_event_time = ref_event_time
+        ref_event_time = ref_event_time,
+        monthly_start_ym = monthly_start_ym,
+        monthly_end_ym = monthly_end_ym,
+        monthly_reference_ym = monthly_reference_ym
       )
 
       if (is.null(p)) {
@@ -1352,7 +1384,10 @@ run_one_event_study_task <- function(df_spouse,
                                      fig_dir,
                                      results_dir,
                                      save_model = TRUE,
-                                     save_individual_child_plot = FALSE) {
+                                     save_individual_child_plot = FALSE,
+                                     monthly_start_ym = as.Date("2019-01-01"),
+                                     monthly_end_ym = as.Date("2021-12-01"),
+                                     monthly_reference_ym = as.Date("2019-12-01")) {
   dd <- df_spouse %>%
     dplyr::filter(spouse == !!spouse) %>%
     filter_child_group(child_group) %>%
@@ -1451,7 +1486,10 @@ run_one_event_study_task <- function(df_spouse,
       controls = controls,
       sample_variant = sample_variant,
       couple_fe = couple_fe,
-      ref_event_time = ref_event_time
+      ref_event_time = ref_event_time,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym,
+      monthly_reference_ym = monthly_reference_ym
     )
 
     if (!is.null(p)) {
@@ -1491,7 +1529,10 @@ run_event_study_batch <- function(df_spouse,
                                     ),
                                   save_model = TRUE,
                                   save_individual_child_plots = FALSE,
-                                  save_combined_child_plots = TRUE) {
+                                  save_combined_child_plots = TRUE,
+                                  monthly_start_ym = as.Date("2019-01-01"),
+                                  monthly_end_ym = as.Date("2021-12-01"),
+                                  monthly_reference_ym = as.Date("2019-12-01")) {
   dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
   dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -1545,7 +1586,10 @@ run_event_study_batch <- function(df_spouse,
                 fig_dir = fig_dir,
                 results_dir = results_dir,
                 save_model = save_model,
-                save_individual_child_plot = save_individual_child_plots
+                save_individual_child_plot = save_individual_child_plots,
+                monthly_start_ym = monthly_start_ym,
+                monthly_end_ym = monthly_end_ym,
+                monthly_reference_ym = monthly_reference_ym
               )
             }
           }
@@ -1569,7 +1613,10 @@ run_event_study_batch <- function(df_spouse,
   if (isTRUE(save_combined_child_plots)) {
     save_combined_child_group_event_study_plots(
       results = out,
-      fig_dir = fig_dir
+      fig_dir = fig_dir,
+      monthly_start_ym = monthly_start_ym,
+      monthly_end_ym = monthly_end_ym,
+      monthly_reference_ym = monthly_reference_ym
     )
   }
 

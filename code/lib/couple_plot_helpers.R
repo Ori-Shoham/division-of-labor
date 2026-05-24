@@ -256,6 +256,80 @@ add_treatment_group_label <- function(df,
 # -----------------------------------------------------------------------------
 # Variable labels / stems / units for couple-treatment figures
 # -----------------------------------------------------------------------------
+.couple_clean_binary_01 <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  dplyr::case_when(
+    is.na(x) ~ NA_real_,
+    x == 1 ~ 1,
+    x == 0 ~ 0,
+    x < 0 ~ NA_real_,
+    TRUE ~ NA_real_
+  )
+}
+
+add_husits_wife_main_both <- function(df,
+                                      out_var = "husits_wife_main_both") {
+  if (is.null(df)) {
+    return(df)
+  }
+
+  if (all(c("husits_wife_main_w", "husits_wife_main_h") %in% names(df))) {
+    wife_says_wife_main <- .couple_clean_binary_01(df$husits_wife_main_w)
+    husband_says_wife_main <- .couple_clean_binary_01(df$husits_wife_main_h)
+
+    df[[out_var]] <- dplyr::case_when(
+      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
+        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
+      TRUE ~ NA_real_
+    )
+
+    return(df)
+  }
+
+  if (all(c("husits_w", "husits_h") %in% names(df))) {
+    husits_w <- suppressWarnings(as.numeric(df$husits_w))
+    husits_h <- suppressWarnings(as.numeric(df$husits_h))
+
+    husits_w <- dplyr::case_when(
+      is.na(husits_w) ~ NA_real_,
+      husits_w < 0 ~ NA_real_,
+      husits_w %in% c(1, 2, 3, 4) ~ husits_w,
+      TRUE ~ NA_real_
+    )
+
+    husits_h <- dplyr::case_when(
+      is.na(husits_h) ~ NA_real_,
+      husits_h < 0 ~ NA_real_,
+      husits_h %in% c(1, 2, 3, 4) ~ husits_h,
+      TRUE ~ NA_real_
+    )
+
+    wife_says_wife_main <- dplyr::case_when(
+      is.na(husits_w) ~ NA_real_,
+      husits_w == 1 ~ 1,
+      husits_w %in% c(2, 3, 4) ~ 0,
+      TRUE ~ NA_real_
+    )
+
+    husband_says_wife_main <- dplyr::case_when(
+      is.na(husits_h) ~ NA_real_,
+      husits_h == 2 ~ 1,
+      husits_h %in% c(1, 3, 4) ~ 0,
+      TRUE ~ NA_real_
+    )
+
+    df[[out_var]] <- dplyr::case_when(
+      !is.na(wife_says_wife_main) & !is.na(husband_says_wife_main) ~
+        as.numeric(wife_says_wife_main == 1 & husband_says_wife_main == 1),
+      TRUE ~ NA_real_
+    )
+
+    return(df)
+  }
+
+  df
+}
+
 couple_plot_var_label <- function(var) {
   dplyr::case_when(
     var == "any_work"      ~ "Worked positive hours",
@@ -269,6 +343,7 @@ couple_plot_var_label <- function(var) {
     var == "paygu_dv"      ~ "Gross monthly pay",
     var == "fimnlabgrs_dv" ~ "Gross monthly labour income",
     var == "fimngrs_dv"    ~ "Gross monthly personal income",
+    var == "husits_wife_main_both" ~ "Both spouses report wife mainly responsible for childcare",
     TRUE                   ~ var
   )
 }
@@ -286,6 +361,7 @@ couple_plot_var_stem <- function(var) {
     var == "paygu_dv"      ~ "gross_monthly_pay",
     var == "fimnlabgrs_dv" ~ "gross_monthly_labour_income",
     var == "fimngrs_dv"    ~ "gross_monthly_personal_income",
+    var == "husits_wife_main_both" ~ "childcare_responsibility",
     TRUE                   ~ var
   )
 }
@@ -309,7 +385,7 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
 }
 
 couple_plot_is_binary <- function(var) {
-  var %in% c("any_work", "workoutside", "wfh_some")
+  var %in% c("any_work", "workoutside", "wfh_some", "husits_wife_main_both")
 }
 
 # -----------------------------------------------------------------------------

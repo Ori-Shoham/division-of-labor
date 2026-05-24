@@ -21,6 +21,7 @@
 #     - wfh_some   (your "wfh_any")
 #     - howlng
 #     - timechcare
+#     - husits_wife_main_both
 #
 #   Future outcomes:
 #     - any_work
@@ -41,7 +42,8 @@
 #     - howlng
 #
 # Notes:
-#   - Future outcomes are saved at wave, month, and year aggregation.
+#   - Future-only WFH/work-outside outcomes are saved at month and year
+#     aggregation even when the broader future-only switch is off.
 #   - History + future figures use the main-survey-only stacked couple panel:
 #       couple_history_future_mainonly_long.rds
 #     This deliberately excludes COVID-study rows because COVID has a different
@@ -156,6 +158,8 @@ if (is.null(df_history_future_couple_both_in_covid)) {
   )
 }
 
+df_covid_couple <- add_husits_wife_main_both(df_covid_couple)
+
 # Convert to spouse-long
 df_covid_spouse  <- reshape_couple_long_to_spouse_long(df_covid_couple)
 df_future_spouse <- reshape_couple_long_to_spouse_long(df_future_couple)
@@ -258,7 +262,8 @@ COVID_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
   "howlng",
-  "timechcare"
+  "timechcare",
+  "husits_wife_main_both"
 )
 
 FUTURE_OUTCOMES <- c(
@@ -271,6 +276,17 @@ FUTURE_OUTCOMES <- c(
   "fimngrs_dv",
   "howlng"
 )
+
+REQUIRED_FUTURE_ONLY_OUTCOMES <- c(
+  "workoutside",
+  "wfh_some"
+)
+
+FUTURE_ONLY_OUTCOMES_TO_PLOT <- if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
+  FUTURE_OUTCOMES
+} else {
+  intersect(FUTURE_OUTCOMES, REQUIRED_FUTURE_ONLY_OUTCOMES)
+}
 
 # Main-survey variables with comparable history and future values.
 # WFH/workoutside are intentionally excluded here because the regular pre-2020
@@ -286,6 +302,11 @@ HISTORY_FUTURE_OUTCOMES <- c(
 
 FUTURE_AGGS <- c("wave", "ym", "year")
 HISTORY_FUTURE_AGGS <- c("ym", "year")
+FUTURE_ONLY_AGGS_TO_PLOT <- if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
+  FUTURE_AGGS
+} else {
+  c("ym", "year")
+}
 
 # -----------------------------------------------------------------------------
 # Plot readability controls
@@ -412,13 +433,13 @@ for (tr in TREATMENT_VARS) {
 # Run future-only figures
 # =============================================================================
 
-if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
+if (length(FUTURE_ONLY_OUTCOMES_TO_PLOT) > 0) {
 for (tr in TREATMENT_VARS) {
-  for (v in FUTURE_OUTCOMES) {
+  for (v in FUTURE_ONLY_OUTCOMES_TO_PLOT) {
     
     if (!.has_data(df_future_spouse, v)) next
     
-    for (agg in FUTURE_AGGS) {
+    for (agg in FUTURE_ONLY_AGGS_TO_PLOT) {
       df_future_spouse_agg <- if (agg == "ym") {
         df_future_spouse_monthly
       } else {
