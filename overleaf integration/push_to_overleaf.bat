@@ -4,6 +4,8 @@ setlocal
 set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%..") do set "REPO_DIR=%%~fI"
 set "SYNC_REF=refs/overleaf-sync/last-synced"
+set "OVERLEAF_EXCLUDED_FILE=couples_graphs.pdf"
+set "TEMP_INDEX=%TEMP%\overleaf_push_index_%RANDOM%%RANDOM%.idx"
 
 echo.
 echo Pushing the current committed files to Overleaf without sending GitHub history...
@@ -98,7 +100,33 @@ if not "%OVERLEAF_HEAD%"=="%LAST_SYNCED%" (
 )
 
 echo Creating a small Overleaf commit from the current committed file tree...
+echo Excluding from Overleaf push: %OVERLEAF_EXCLUDED_FILE%
+
+set "GIT_INDEX_FILE=%TEMP_INDEX%"
+git read-tree HEAD
+if errorlevel 1 (
+  echo.
+  echo Could not prepare the temporary Overleaf index.
+  set "GIT_INDEX_FILE="
+  if exist "%TEMP_INDEX%" del /f /q "%TEMP_INDEX%"
+  pause
+  exit /b 1
+)
+
+git rm --cached --quiet --ignore-unmatch -- "%OVERLEAF_EXCLUDED_FILE%"
+if errorlevel 1 (
+  echo.
+  echo Could not remove %OVERLEAF_EXCLUDED_FILE% from the temporary Overleaf index.
+  set "GIT_INDEX_FILE="
+  if exist "%TEMP_INDEX%" del /f /q "%TEMP_INDEX%"
+  pause
+  exit /b 1
+)
+
 for /f "usebackq delims=" %%T in (`git write-tree`) do set "HEAD_TREE=%%T"
+set "GIT_INDEX_FILE="
+if exist "%TEMP_INDEX%" del /f /q "%TEMP_INDEX%"
+
 if "%HEAD_TREE%"=="" (
   echo.
   echo Could not read the current file tree.
