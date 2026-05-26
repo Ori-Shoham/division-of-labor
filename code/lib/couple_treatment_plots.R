@@ -164,10 +164,37 @@ add_treatment_group_scales <- function(p,
   )
 }
 
+.monthly_effective_start <- function(dd = NULL,
+                                     time_var = "time",
+                                     monthly_start_ym = as.Date("2019-01-01"),
+                                     monthly_end_ym = as.Date("2021-12-01")) {
+  monthly_start_ym <- as.Date(monthly_start_ym)
+  monthly_end_ym <- as.Date(monthly_end_ym)
+
+  if (is.null(dd) || nrow(dd) == 0 || !(time_var %in% names(dd))) {
+    return(monthly_start_ym)
+  }
+
+  first_observed_ym <- suppressWarnings(min(as.Date(dd[[time_var]]), na.rm = TRUE))
+  if (is.na(first_observed_ym) || !is.finite(as.numeric(first_observed_ym))) {
+    return(monthly_start_ym)
+  }
+
+  effective_start_ym <- max(monthly_start_ym, as.Date(first_observed_ym))
+  min(effective_start_ym, monthly_end_ym)
+}
+
 .apply_monthly_window_x_scale <- function(p,
+                                          dd = NULL,
+                                          time_var = "time",
                                           monthly_start_ym = as.Date("2019-01-01"),
                                           monthly_end_ym = as.Date("2021-12-01")) {
-  monthly_start_ym <- as.Date(monthly_start_ym)
+  monthly_start_ym <- .monthly_effective_start(
+    dd = dd,
+    time_var = time_var,
+    monthly_start_ym = monthly_start_ym,
+    monthly_end_ym = monthly_end_ym
+  )
   monthly_end_ym <- as.Date(monthly_end_ym)
 
   p +
@@ -191,6 +218,8 @@ add_treatment_group_scales <- function(p,
   } else if (agg == "ym") {
     .apply_monthly_window_x_scale(
       p,
+      dd = dd,
+      time_var = "time",
       monthly_start_ym = monthly_start_ym,
       monthly_end_ym = monthly_end_ym
     )

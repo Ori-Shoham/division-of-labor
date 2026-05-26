@@ -89,12 +89,12 @@
 \resultfigure{\ctcoviddir/covid_childcare_responsibility_wave_#1_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{Childcare responsibility (COVID) --- wife report}
+\begin{frame}{Childcare responsibility, wife report (COVID)}
 \centering
 \resultfigure{\ctcoviddir/covid_husits_distribution_wave_#1_childgrid_treatmentcols_wife_report.png}
 \end{frame}
 
-\begin{frame}{Childcare responsibility (COVID) --- husband report}
+\begin{frame}{Childcare responsibility, husband report (COVID)}
 \centering
 \resultfigure{\ctcoviddir/covid_husits_distribution_wave_#1_childgrid_treatmentcols_husband_report.png}
 \end{frame}
@@ -102,37 +102,37 @@
 }
 
 \newcommand{\futureframes}[3]{%
-\begin{frame}{#1 (future, year)}
+\begin{frame}{#1 (main study, year)}
 \centering
 \resultfigure{\ctfutdir/future_#2_year_#3_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{#1 (future, month)}
+\begin{frame}{#1 (main study, month)}
 \centering
 \resultfigure{\ctfutdir/future_#2_ym_#3_childgrid_spousecols.png}
 \end{frame}
 }
 
 \newcommand{\histfutureframes}[4]{%
-\begin{frame}{#1 (history + future, year)}
+\begin{frame}{#1 (main study, year)}
 \centering
 \resultfigure{\cthistfutdir/main_history_future_#2_year_#3#4_childgrid_spousecols.png}
 \end{frame}
 
-\begin{frame}{#1 (history + future, month)}
+\begin{frame}{#1 (main study, month)}
 \centering
 \resultfigure{\cthistfutdir/main_history_future_#2_ym_#3#4_childgrid_spousecols.png}
 \end{frame}
 }
 
 \newcommand{\mainyearmontheventframes}[5]{%
-\eventstudyframes{#1 (main, year)}{#2}{main_#3}{#4}{#5}
-\eventstudyframes{#1 (main, month)}{#2}{main_monthly_#3}{#4}{#5}
+\eventstudyframes{#1 (main study, year)}{#2}{main_#3}{#4}{#5}
+\eventstudyframes{#1 (main study, month)}{#2}{main_monthly_#3}{#4}{#5}
 }
 
 \newcommand{\mainyearmontheventcovariateframes}[5]{%
-\eventstudycovariateframes{#1 (main, year)}{#2}{main_#3}{#4}{#5}
-\eventstudycovariateframes{#1 (main, month)}{#2}{main_monthly_#3}{#4}{#5}
+\eventstudycovariateframes{#1 (main study, year)}{#2}{main_#3}{#4}{#5}
+\eventstudycovariateframes{#1 (main study, month)}{#2}{main_monthly_#3}{#4}{#5}
 }
 
 \newcommand{\sharedoutcomeblock}[9]{%
@@ -162,8 +162,8 @@
   \item \textbf{Columns}: wife / husband outcomes.
   \item \textbf{Rows}: couples with youngest child age 0--10 vs.\ 11--17 at baseline.
   \item \textbf{COVID figures}: COVID-study waves.
-  \item \textbf{History + future figures}: regular main-study waves before and after 2020, limited to couples observed in the COVID sample.
-  \item \textbf{Appendix}: full-sample history + future versions and covariate event-study figures.
+  \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample.
+  \item \textbf{Appendix}: full-sample main-study versions and covariate event-study figures.
 \end{itemize}
 
 \vspace{0.4em}
@@ -231,32 +231,32 @@ X_c'\gamma
 
 \section{Counts}
 
-\begin{frame}{Counts: wife key / husband not or edu --- COVID}
+\begin{frame}{Counts: wife key / husband not or edu (COVID)}
 \centering
 \countfigure{\ctcountdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: wife key / husband not or edu --- history + future, COVID sample}
+\begin{frame}{Counts: wife key / husband not or edu (main study, year), COVID sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets_both_in_covid.png}
 \end{frame}
 
-\begin{frame}{Counts: wife key / husband not or edu --- history + future, month, COVID sample}
+\begin{frame}{Counts: wife key / husband not or edu (main study, month), COVID sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_ym_treat_wife_key_notedu_husb_not_or_edu_samplefacets_both_in_covid.png}
 \end{frame}
 
-\begin{frame}{Counts: husband shutdown / wife not --- COVID}
+\begin{frame}{Counts: husband shutdown / wife not (COVID)}
 \centering
 \countfigure{\ctcountdir/covid_counts_wave_treat_husb_shutdown_wife_not_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: husband shutdown / wife not --- history + future, COVID sample}
+\begin{frame}{Counts: husband shutdown / wife not (main study, year), COVID sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_year_treat_husb_shutdown_wife_not_samplefacets_both_in_covid.png}
 \end{frame}
 
-\begin{frame}{Counts: husband shutdown / wife not --- history + future, month, COVID sample}
+\begin{frame}{Counts: husband shutdown / wife not (main study, month), COVID sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_ym_treat_husb_shutdown_wife_not_samplefacets_both_in_covid.png}
 \end{frame}
@@ -333,9 +333,9 @@ X_c'\gamma
 \toprule
 \textbf{Variable} & \textbf{Definition used in the couple-treatment outputs} \\
 \midrule
-\texttt{any\_work} & Indicator for worked positive hours. In COVID waves this uses hours worked last week; in main/future waves this uses positive usual weekly hours among employed or self-employed respondents. \\
+\texttt{any\_work} & Indicator for worked positive hours. In COVID waves this uses hours worked last week; in main-study waves this uses positive usual weekly hours among employed or self-employed respondents. \\
 \texttt{hours} & COVID-study hours worked last week. Synthetic pre-COVID rows use Jan--Feb 2020 baseline hours where available. \\
-\texttt{jbhrs} & Main/future usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
+\texttt{jbhrs} & Main-study usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
 \texttt{workoutside} & Indicator for working outside the home. Equals one for workers who do not always work from home; equals zero for non-workers, zero hours, or always working from home. \\
 \texttt{wfh\_some} & Indicator for working from home always, often, or sometimes. The figure stem uses \texttt{wfh\_any}. Defined only in waves where a WFH question is available. \\
 \texttt{paygu\_dv} & Usual gross pay per month from current job; main event studies set this to zero for non-workers. \\
@@ -348,17 +348,20 @@ X_c'\gamma
 \end{adjustbox}
 
 \vspace{0.2em}
+\tiny \emph{Interpretation note:} COVID-study work outcomes are short-run, last-week measures; regular/main-study outcomes are usual-week measures. Thus \texttt{hours} and \texttt{jbhrs} are comparable as weekly-hours outcomes but not identical questionnaire concepts.
+
+\vspace{0.2em}
 \tiny Sources: code documentation in \texttt{work\_groups.R}, \texttt{covid\_loader.R}, \texttt{covid\_panel.R}, \texttt{future\_outcomes.R}, \texttt{couple\_plot\_helpers.R}, and \texttt{event\_study\_regressions.R}.
 \end{frame}
 
-\section{Appendix: full-sample history + future descriptives}
+\section{Appendix: full-sample main-study descriptives}
 
-\begin{frame}{Counts: wife key / husband not or edu --- history + future, full sample}
+\begin{frame}{Counts: wife key / husband not or edu (main study, year), full sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: wife key / husband not or edu --- history + future, month, full sample}
+\begin{frame}{Counts: wife key / husband not or edu (main study, month), full sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_ym_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
 \end{frame}
@@ -369,12 +372,12 @@ X_c'\gamma
 \histfutureframes{Gross monthly labour income, full sample}{gross_monthly_labour_income}{treat_wife_key_notedu_husb_not_or_edu}{}
 \histfutureframes{Housework hours, full sample}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
 
-\begin{frame}{Counts: husband shutdown / wife not --- history + future, full sample}
+\begin{frame}{Counts: husband shutdown / wife not (main study, year), full sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_year_treat_husb_shutdown_wife_not_samplefacets.png}
 \end{frame}
 
-\begin{frame}{Counts: husband shutdown / wife not --- history + future, month, full sample}
+\begin{frame}{Counts: husband shutdown / wife not (main study, month), full sample}
 \centering
 \countfigure{\ctcountdir/main_history_future_counts_ym_treat_husb_shutdown_wife_not_samplefacets.png}
 \end{frame}

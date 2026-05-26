@@ -1011,6 +1011,45 @@ main_monthly_axis_lookup <- function(start_ym = as.Date("2019-01-01"),
   )
 }
 
+main_monthly_axis_breaks <- function(start_ym = as.Date("2019-01-01"),
+                                     end_ym = as.Date("2021-12-01"),
+                                     reference_ym = as.Date("2019-12-01")) {
+  ym <- seq.Date(as.Date(start_ym), as.Date(end_ym), by = "3 months")
+
+  tibble::tibble(
+    ym = ym,
+    event_time = year_month_index(ym) - year_month_index(reference_ym),
+    event_label = format(ym, "%b %Y")
+  )
+}
+
+main_monthly_effective_axis_start <- function(coefs,
+                                              monthly_axis,
+                                              start_ym = as.Date("2019-01-01")) {
+  start_ym <- as.Date(start_ym)
+
+  if (is.null(coefs) || nrow(coefs) == 0 || !("event_time" %in% names(coefs))) {
+    return(start_ym)
+  }
+
+  first_event_time <- suppressWarnings(min(coefs$event_time, na.rm = TRUE))
+  if (is.na(first_event_time) || !is.finite(first_event_time)) {
+    return(start_ym)
+  }
+
+  first_observed_ym <- monthly_axis %>%
+    dplyr::filter(event_time >= first_event_time) %>%
+    dplyr::arrange(event_time) %>%
+    dplyr::slice_head(n = 1) %>%
+    dplyr::pull(ym)
+
+  if (length(first_observed_ym) == 0 || is.na(first_observed_ym)) {
+    return(start_ym)
+  }
+
+  max(start_ym, as.Date(first_observed_ym))
+}
+
 add_main_monthly_x_axis <- function(p,
                                     coefs,
                                     monthly_start_ym = as.Date("2019-01-01"),
@@ -1022,14 +1061,26 @@ add_main_monthly_x_axis <- function(p,
     reference_ym = monthly_reference_ym
   )
 
-  year_axis <- monthly_axis %>%
-    dplyr::filter(is_year_break)
+  effective_start_ym <- main_monthly_effective_axis_start(
+    coefs = coefs,
+    monthly_axis = monthly_axis,
+    start_ym = monthly_start_ym
+  )
+
+  monthly_axis_breaks <- main_monthly_axis_breaks(
+    start_ym = effective_start_ym,
+    end_ym = monthly_end_ym,
+    reference_ym = monthly_reference_ym
+  )
+
+  monthly_axis_visible <- monthly_axis %>%
+    dplyr::filter(ym >= effective_start_ym)
 
   p +
     ggplot2::scale_x_continuous(
-      breaks = year_axis$event_time,
-      labels = year_axis$year_label,
-      limits = range(monthly_axis$event_time, na.rm = TRUE),
+      breaks = monthly_axis_breaks$event_time,
+      labels = monthly_axis_breaks$event_label,
+      limits = range(monthly_axis_visible$event_time, na.rm = TRUE),
       minor_breaks = NULL
     ) +
     ggplot2::labs(x = "Calendar month")
