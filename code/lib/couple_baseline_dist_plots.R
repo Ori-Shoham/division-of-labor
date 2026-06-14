@@ -374,6 +374,8 @@ plot_covid_work_status_childgrid <- function(
     "Not employed"          = "#bdd7e7"
   )
 
+  wl <- wave_labels()
+
   df_plot <- df_couple %>%
     filter_couples_for_child_grid() %>%
     add_treatment_group_label(treatment_var = treatment_var, treated_label = treated_label) %>%
@@ -390,9 +392,8 @@ plot_covid_work_status_childgrid <- function(
 
   if (nrow(df_plot) == 0) return(invisible(NULL))
 
-  spouse_title <- if (spouse == "wife") "wife" else "husband"
-
-  p <- ggplot(df_plot, aes(x = wave, y = share, fill = status_label)) +
+  p <- ggplot(df_plot, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+                           y = share, fill = status_label)) +
     geom_col(position = "stack", width = 0.85) +
     facet_grid(
       rows = vars(child_group_plot),
@@ -408,25 +409,19 @@ plot_covid_work_status_childgrid <- function(
       expand = expansion(mult = c(0, 0.02))
     ) +
     labs(
-      title = paste0(
-        "Work status last week — ", spouse_title,
-        " (COVID waves, couples with children)"
-      ),
-      x = "Wave",
-      y = "Share"
+      title = NULL,
+      x     = NULL,
+      y     = "Share"
     ) +
-    theme_bw(base_size = axis_text_size) +
-    theme(
-      axis.text.x  = element_text(angle = 45, hjust = 1, size = axis_text_size),
-      axis.text.y  = element_text(size = axis_text_size),
-      axis.title   = element_text(size = axis_title_size),
-      strip.text   = element_text(size = strip_text_size),
-      legend.text  = element_text(size = legend_text_size),
-      legend.position = "bottom",
-      plot.title   = element_text(size = title_size),
-      panel.grid.minor   = element_blank(),
-      panel.grid.major.x = element_blank()
-    )
+    theme_minimal() +
+    theme_couple_facets(
+      axis_text_size   = axis_text_size,
+      axis_title_size  = axis_title_size,
+      strip_text_size  = strip_text_size,
+      legend_text_size = legend_text_size,
+      title_size       = title_size
+    ) +
+    theme(panel.grid.major.x = element_blank())
 
   out_path <- file.path(fig_path, out_file)
   ggsave(out_path, plot = p, width = width, height = height, dpi = 150)

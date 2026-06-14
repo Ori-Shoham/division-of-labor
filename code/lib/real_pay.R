@@ -61,6 +61,59 @@ load_real_pay_deflator <- function(
   idx
 }
 
+# -----------------------------------------------------------------------------
+# impute_ym_median_month
+#
+# Builds a Date (first of month) from raw UKHLS interview-date components,
+# imputing a missing interview month as the median month among observations
+# that share the same interview year within the same wave load.
+#
+# Args:
+#   intdaty_dv : integer vector of interview years  (negative = UKHLS missing)
+#   intdatm_dv : integer vector of interview months (negative = UKHLS missing)
+#
+# Returns a Date vector (NA where year is also missing or unresolvable).
+# -----------------------------------------------------------------------------
+impute_ym_median_month <- function(intdaty_dv, intdatm_dv) {
+  year  <- suppressWarnings(as.integer(intdaty_dv))
+  month <- suppressWarnings(as.integer(intdatm_dv))
+
+  year[!is.na(year)   & year  < 0] <- NA_integer_
+  month[!is.na(month) & month < 0] <- NA_integer_
+
+  needs_imputation <- !is.na(year) & is.na(month)
+
+  if (any(needs_imputation)) {
+    fully_observed <- !is.na(year) & !is.na(month)
+    if (any(fully_observed)) {
+      median_by_year <- tapply(
+        month[fully_observed],
+        year[fully_observed],
+        function(m) as.integer(round(stats::median(m)))
+      )
+      imputed <- median_by_year[as.character(year[needs_imputation])]
+      month[needs_imputation] <- as.integer(imputed)
+      n_ok  <- sum(!is.na(as.integer(imputed)))
+      n_gap <- sum( is.na(as.integer(imputed)))
+    } else {
+      n_ok  <- 0L
+      n_gap <- sum(needs_imputation)
+    }
+    if (n_ok  > 0) message("Imputed interview month for ", n_ok,
+                           " obs using median month within interview year.")
+    if (n_gap > 0) warning(n_gap,
+                           " obs have missing interview month with no year-mates",
+                           " to impute from — ym set to NA.")
+  }
+
+  dplyr::if_else(
+    !is.na(year) & !is.na(month),
+    as.Date(sprintf("%04d-%02d-01", year, month)),
+    as.Date(NA_character_)
+  )
+}
+
+# -----------------------------------------------------------------------------
 add_real_pay_vars <- function(df,
                               ym_col = "ym",
                               vars = REAL_PAY_VARIABLES,
@@ -95,14 +148,17 @@ add_real_pay_vars <- function(df,
     lapply(cleaned_values, function(x) !is.na(x))
   )
 
-  if (any(has_monetary_value & is.na(ym))) {
-    stop(
-      "Cannot deflate monetary values with missing month in column: ",
-      ym_col
+  n_missing_ym <- sum(has_monetary_value & is.na(ym))
+  if (n_missing_ym > 0) {
+    warning(
+      n_missing_ym, " observation(s) have monetary values but missing '",
+      ym_col, "' — real-pay values set to NA for those rows."
     )
   }
 
-  needed_ym <- unique(as.character(ym[has_monetary_value]))
+  # Exclude NA months from the coverage check; deflator_lookup[as.character(NA)]
+  # returns NA naturally, so those rows receive NA real-pay values.
+  needed_ym <- unique(na.omit(as.character(ym[has_monetary_value])))
   missing_ym <- setdiff(needed_ym, names(deflator_lookup))
 
   if (length(missing_ym) > 0) {

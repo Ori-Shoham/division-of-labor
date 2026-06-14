@@ -105,9 +105,15 @@ load_main_wave_indresp <- function(path_main, prefix, pidp_filter = NULL) {
     ) %>%
     dplyr::mutate(
       wave = prefix,
-      # Month-year as a proper Date (first of month). Easy to plot and aggregate.
-      ym = as.Date(sprintf("%d-%02d-01", intdaty_dv, intdatm_dv)),
-      year = as.integer(intdaty_dv)
+      # Month-year as a proper Date (first of month). Missing interview months
+      # are imputed as the median month of observations with the same interview
+      # year within this wave load.
+      ym   = impute_ym_median_month(intdaty_dv, intdatm_dv),
+      year = as.integer(dplyr::if_else(
+        suppressWarnings(as.integer(intdaty_dv)) > 0,
+        as.integer(intdaty_dv),
+        NA_integer_
+      ))
     ) %>%
     add_real_pay_vars(ym_col = "ym")
   

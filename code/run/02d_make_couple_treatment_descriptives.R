@@ -685,6 +685,43 @@ for (tr in TREATMENT_VARS) {
 }
 
 # =============================================================================
+# Main-survey work_last_week_status distribution figures (3-category stacked bar)
+# =============================================================================
+
+if (length(history_future_sample_specs) > 0) {
+  for (sample_spec in history_future_sample_specs) {
+    history_future_suffix <- sample_spec$suffix
+    df_hf_couple <- sample_spec$couple
+
+    for (tr in TREATMENT_VARS) {
+      for (sp in c("wife", "husband")) {
+        suffix <- if (sp == "wife") "_w" else "_h"
+        status_col <- paste0("work_last_week_status", suffix)
+        if (!.has_data(df_hf_couple, status_col)) next
+
+        plot_covid_work_status_childgrid(
+          df_couple     = df_hf_couple,
+          spouse        = sp,
+          treatment_var = tr,
+          out_file      = paste0(
+            "main_work_status_last_week_wave_",
+            tr,
+            "_childgrid_treatmentcols_", sp, history_future_suffix, ".png"
+          ),
+          fig_path         = fig_path_couple_treatment_history_future_childgrids,
+          treated_label    = TREATMENT_LABS[[tr]],
+          axis_text_size   = AXIS_TEXT_SIZE,
+          axis_title_size  = AXIS_TITLE_SIZE,
+          strip_text_size  = STRIP_TEXT_SIZE,
+          legend_text_size = LEGEND_TEXT_SIZE,
+          title_size       = TITLE_SIZE
+        )
+      }
+    }
+  }
+}
+
+# =============================================================================
 # Run main-survey history + future figures
 # =============================================================================
 
