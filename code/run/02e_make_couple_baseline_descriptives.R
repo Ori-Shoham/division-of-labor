@@ -44,7 +44,7 @@ dir.create(fig_path_baseline_dist, showWarnings = FALSE, recursive = TRUE)
 # Load 2019 baseline couple-level data
 # =============================================================================
 
-baseline_file <- file.path(der_path, "s2019_baseline_couplelevel.rds")
+baseline_file <- file.path(samples_path, "s2019_baseline_couplelevel.rds")
 if (!file.exists(baseline_file)) {
   stop(
     "Baseline couple-level file not found: ", baseline_file,
