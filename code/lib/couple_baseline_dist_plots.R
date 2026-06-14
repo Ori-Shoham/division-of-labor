@@ -24,11 +24,13 @@ suppressPackageStartupMessages({
   library(tidyverse)
 })
 
-# Clean negative UKHLS missing codes to NA (mirrors clean_covid_numeric in
-# descriptives_plots.R but kept local so this file has no extra dependency).
+# Clean negative UKHLS values to NA. All variables plotted here (hours, pay,
+# binary 0/1) have no legitimate negative values, so we zero out everything
+# below 0 rather than matching specific documented codes — this catches any
+# undocumented negative codes present in the data.
 .clean_ukhls_numeric <- function(x) {
   x <- suppressWarnings(as.numeric(x))
-  x[x %in% c(-9L, -8L, -7L, -2L, -1L)] <- NA_real_
+  x[!is.na(x) & x < 0] <- NA_real_
   x
 }
 
