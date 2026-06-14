@@ -28,6 +28,7 @@ RUN_DESCRIPTIVES        <- TRUE
 RUN_FUTURE_DESCRIPTIVES <- isTRUE(MAKE_EXPLORATORY_EXTRA)
 RUN_SAMPLE_TABLES       <- TRUE
 RUN_COUPLE_TREATMENT_DESCRIPTIVES <- TRUE
+RUN_COUPLE_BASELINE_DESCRIPTIVES  <- TRUE
 RUN_EVENT_STUDIES       <- TRUE
 RUN_MODELS              <- TRUE
 RUN_LASSO               <- TRUE
@@ -97,6 +98,12 @@ if (RUN_COUPLE_TREATMENT_DESCRIPTIVES) {
   message("\n==================== Stage 2d: Couple treatment descriptives ====")
   run_stage("code/run/02d_make_couple_treatment_descriptives.R")
   if (STOP_AFTER_EACH) stop("Stopped after Stage 2d (as requested).")
+}
+
+if (RUN_COUPLE_BASELINE_DESCRIPTIVES) {
+  message("\n==================== Stage 2e: Couple baseline distributions ====")
+  run_stage("code/run/02e_make_couple_baseline_descriptives.R")
+  if (STOP_AFTER_EACH) stop("Stopped after Stage 2e (as requested).")
 }
 
 # =============================================================================

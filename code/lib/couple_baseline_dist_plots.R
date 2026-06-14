@@ -54,7 +54,6 @@ suppressPackageStartupMessages({
 #   var            : outcome variable name (unquoted string)
 #   out_file       : filename (no path)
 #   fig_path       : output directory
-#   trim_quantile  : upper quantile for x-axis trimming (default 0.99)
 #   width, height  : plot dimensions in inches
 #   axis_text_size, axis_title_size, strip_text_size, title_size : ggplot sizes
 # -----------------------------------------------------------------------------
@@ -63,7 +62,6 @@ plot_baseline_dist_continuous <- function(
     var,
     out_file,
     fig_path,
-    trim_quantile  = 0.99,
     width  = 14,
     height = 8,
     axis_text_size  = 13,
@@ -75,11 +73,12 @@ plot_baseline_dist_continuous <- function(
   df_plot <- .baseline_dist_data(df_spouse_long, var)
   if (is.null(df_plot) || nrow(df_plot) == 0) return(invisible(NULL))
 
-  x_upper <- quantile(df_plot[[var]], trim_quantile, na.rm = TRUE)
-  x_lower <- max(0, quantile(df_plot[[var]], 1 - trim_quantile, na.rm = TRUE))
-
-  df_plot <- df_plot %>%
-    dplyr::filter(.data[[var]] >= x_lower, .data[[var]] <= x_upper)
+  # Pooled percentiles (both spouses, both child age groups).
+  pct_vals <- quantile(df_plot[[var]], probs = c(0.90, 0.95, 0.99), na.rm = TRUE)
+  pct_df <- data.frame(
+    pct        = factor(c("p90", "p95", "p99"), levels = c("p90", "p95", "p99")),
+    xintercept = as.numeric(pct_vals)
+  )
 
   var_label <- couple_plot_var_label(var)
   x_units   <- couple_plot_var_units(var, is_binary = FALSE)
@@ -93,6 +92,21 @@ plot_baseline_dist_continuous <- function(
       alpha  = 0.85
     ) +
     geom_density(colour = "#1f4e79", linewidth = 0.8) +
+    geom_vline(
+      data     = pct_df,
+      aes(xintercept = xintercept, linetype = pct, colour = pct),
+      linewidth = 0.75
+    ) +
+    scale_linetype_manual(
+      name   = "Percentile",
+      values = c(p90 = "dashed", p95 = "dotdash", p99 = "dotted"),
+      labels = c(p90 = "90th", p95 = "95th", p99 = "99th")
+    ) +
+    scale_colour_manual(
+      name   = "Percentile",
+      values = c(p90 = "#e07b39", p95 = "#c0392b", p99 = "#7b0000"),
+      labels = c(p90 = "90th", p95 = "95th", p99 = "99th")
+    ) +
     facet_grid(
       rows = vars(child_group_plot),
       cols = vars(spouse)
@@ -108,7 +122,10 @@ plot_baseline_dist_continuous <- function(
       axis.title   = element_text(size = axis_title_size),
       strip.text   = element_text(size = strip_text_size),
       plot.title   = element_text(size = title_size),
-      panel.grid.minor = element_blank()
+      panel.grid.minor = element_blank(),
+      legend.position  = "bottom",
+      legend.text      = element_text(size = axis_text_size),
+      legend.title     = element_text(size = axis_text_size)
     )
 
   out_path <- file.path(fig_path, out_file)
