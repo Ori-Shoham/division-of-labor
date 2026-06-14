@@ -125,6 +125,14 @@ COVID_OUTCOMES <- c(
   "husits_wife_main_both"
 )
 
+WINSORIZE_PCT <- 0.99
+
+# Continuous subsets (binary outcomes are excluded from winsorization)
+MAIN_CONTINUOUS_OUTCOMES  <- c(
+  "jbhrs", "paygu_dv_real", "fimnlabgrs_dv_real", "fimngrs_dv_real", "howlng"
+)
+COVID_CONTINUOUS_OUTCOMES <- c("hours", "howlng")
+
 # =============================================================================
 # Load data
 # =============================================================================
@@ -192,7 +200,8 @@ df_main_spouse <- make_spouse_event_panel(
   df = df_main_couple_prepped,
   outcomes = MAIN_OUTCOMES,
   study = "main"
-)
+) %>%
+  winsorize_vars(MAIN_CONTINUOUS_OUTCOMES, pct = WINSORIZE_PCT)
 
 saveRDS(
   df_main_spouse,
@@ -213,7 +222,8 @@ df_main_spouse_both_in_covid <- make_spouse_event_panel(
   df = df_main_couple_both_in_covid_prepped,
   outcomes = MAIN_OUTCOMES,
   study = "main"
-)
+) %>%
+  winsorize_vars(MAIN_CONTINUOUS_OUTCOMES, pct = WINSORIZE_PCT)
 
 saveRDS(
   df_main_spouse_both_in_covid,
@@ -239,7 +249,8 @@ df_main_monthly_spouse <- make_spouse_event_panel(
   df = df_main_monthly_couple_prepped,
   outcomes = MAIN_OUTCOMES,
   study = "main_monthly"
-)
+) %>%
+  winsorize_vars(MAIN_CONTINUOUS_OUTCOMES, pct = WINSORIZE_PCT)
 
 saveRDS(
   df_main_monthly_spouse,
@@ -261,7 +272,8 @@ df_main_monthly_spouse_both_in_covid <- make_spouse_event_panel(
   df = df_main_monthly_couple_both_in_covid_prepped,
   outcomes = MAIN_OUTCOMES,
   study = "main_monthly"
-)
+) %>%
+  winsorize_vars(MAIN_CONTINUOUS_OUTCOMES, pct = WINSORIZE_PCT)
 
 saveRDS(
   df_main_monthly_spouse_both_in_covid,
@@ -281,7 +293,8 @@ df_covid_spouse <- make_spouse_event_panel(
   df = df_covid_couple_prepped,
   outcomes = COVID_OUTCOMES,
   study = "covid"
-)
+) %>%
+  winsorize_vars(COVID_CONTINUOUS_OUTCOMES, pct = WINSORIZE_PCT)
 
 saveRDS(
   df_covid_spouse,

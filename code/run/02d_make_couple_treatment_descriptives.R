@@ -62,6 +62,7 @@ suppressPackageStartupMessages({
 rm(list = ls())
 
 source("code/lib/config.R")
+source("code/lib/utils.R")
 source("code/lib/wave_labels.R")
 source("code/lib/descriptives_plots.R")
 source("code/lib/future_descriptives_plots.R")
@@ -196,6 +197,40 @@ if (!is.null(df_history_future_couple_monthly_both_in_covid)) {
 } else {
   df_history_future_spouse_monthly_both_in_covid <- NULL
 }
+
+# =============================================================================
+# Winsorize continuous outcomes (upper tail only)
+# =============================================================================
+
+WINSORIZE_PCT <- 0.99
+
+.COVID_CONTINUOUS <- c("hours", "howlng", "timechcare")
+.FUTURE_CONTINUOUS <- c(
+  "jbhrs", "paygu_dv_real", "fimnlabgrs_dv_real", "fimngrs_dv_real", "howlng"
+)
+
+df_covid_spouse <- winsorize_vars(df_covid_spouse, .COVID_CONTINUOUS, pct = WINSORIZE_PCT)
+df_future_spouse <- winsorize_vars(df_future_spouse, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT)
+df_future_spouse_monthly <- winsorize_vars(
+  df_future_spouse_monthly, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT
+)
+
+if (!is.null(df_history_future_spouse))
+  df_history_future_spouse <- winsorize_vars(
+    df_history_future_spouse, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT
+  )
+if (!is.null(df_history_future_spouse_monthly))
+  df_history_future_spouse_monthly <- winsorize_vars(
+    df_history_future_spouse_monthly, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT
+  )
+if (!is.null(df_history_future_spouse_both_in_covid))
+  df_history_future_spouse_both_in_covid <- winsorize_vars(
+    df_history_future_spouse_both_in_covid, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT
+  )
+if (!is.null(df_history_future_spouse_monthly_both_in_covid))
+  df_history_future_spouse_monthly_both_in_covid <- winsorize_vars(
+    df_history_future_spouse_monthly_both_in_covid, .FUTURE_CONTINUOUS, pct = WINSORIZE_PCT
+  )
 
 history_future_sample_specs <- purrr::compact(list(
   if (!is.null(df_history_future_spouse)) {

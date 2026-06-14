@@ -138,3 +138,27 @@ read_dta_clean <- function(path) {
   haven::read_dta(path) %>%
     normalize_labelled_df()
 }
+
+# =============================================================================
+# winsorize_vars()
+#
+# Winsorize continuous variables at the upper pct percentile.
+# Values above the cutoff are replaced with the cutoff value (cap, not drop).
+# Only variables present in df are processed; others are silently skipped.
+# Binary / categorical variables should NOT be passed to this function.
+#
+# Args:
+#   df   : data frame
+#   vars : character vector of variable names to winsorize
+#   pct  : upper percentile cutoff (default 0.99 = 99th percentile)
+# =============================================================================
+winsorize_vars <- function(df, vars, pct = 0.99) {
+  stopifnot(is.numeric(pct), length(pct) == 1L, pct > 0, pct < 1)
+  vars_present <- intersect(vars, names(df))
+  for (v in vars_present) {
+    x <- df[[v]]
+    cutoff <- quantile(x, probs = pct, na.rm = TRUE)
+    df[[v]] <- dplyr::if_else(!is.na(x) & x > cutoff, cutoff, x)
+  }
+  df
+}
