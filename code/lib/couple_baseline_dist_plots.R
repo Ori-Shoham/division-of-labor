@@ -24,6 +24,24 @@ suppressPackageStartupMessages({
   library(tidyverse)
 })
 
+# Clean negative UKHLS missing codes to NA (mirrors clean_covid_numeric in
+# descriptives_plots.R but kept local so this file has no extra dependency).
+.clean_ukhls_numeric <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  x[x %in% c(-9L, -8L, -7L, -2L, -1L)] <- NA_real_
+  x
+}
+
+# Variables for which non-employed observations should be coded 0 rather than
+# dropped as NA — matches the zero_if_not_working list in couple_treatment_plots.R.
+.ZERO_IF_NOT_WORKING_VARS <- c(
+  "jbhrs", "jbot",
+  "basrate", "basrate_real",
+  "paygu_dv", "paygu_dv_real",
+  "fimnlabgrs_dv", "fimnlabgrs_dv_real",
+  "fimngrs_dv", "fimngrs_dv_real"
+)
+
 # -----------------------------------------------------------------------------
 # Internal: build the 2x2 facet data for a spouse-long baseline data frame
 #
@@ -32,16 +50,31 @@ suppressPackageStartupMessages({
 #   - spouse        "Wife" | "Husband"
 #   - child_group_plot  factor with levels "Young kids: 0-10" | "Older kids: 11-17"
 # -----------------------------------------------------------------------------
-.baseline_dist_data <- function(df_spouse_long, var) {
+.baseline_dist_data <- function(df_spouse_long, var, zero_if_not_working = FALSE) {
 
   if (!var %in% names(df_spouse_long)) {
     warning("Variable '", var, "' not found in data; skipping.")
     return(NULL)
   }
 
-  df_spouse_long %>%
+  df <- df_spouse_long %>%
     filter_couples_for_child_grid() %>%
-    dplyr::filter(!is.na(.data[[var]]))
+    dplyr::mutate(!!var := .clean_ukhls_numeric(.data[[var]]))
+
+  if (zero_if_not_working && "jbstat" %in% names(df)) {
+    df <- df %>%
+      dplyr::mutate(
+        .jbstat_clean = .clean_ukhls_numeric(jbstat),
+        !!var := dplyr::if_else(
+          !is.na(.jbstat_clean) & !(.jbstat_clean %in% c(1, 2)),
+          0,
+          .data[[var]]
+        )
+      ) %>%
+      dplyr::select(-.jbstat_clean)
+  }
+
+  df %>% dplyr::filter(!is.na(.data[[var]]))
 }
 
 # -----------------------------------------------------------------------------
@@ -62,6 +95,7 @@ plot_baseline_dist_continuous <- function(
     var,
     out_file,
     fig_path,
+    zero_if_not_working = FALSE,
     width  = 14,
     height = 8,
     axis_text_size  = 13,
@@ -70,7 +104,7 @@ plot_baseline_dist_continuous <- function(
     title_size      = 13
 ) {
 
-  df_plot <- .baseline_dist_data(df_spouse_long, var)
+  df_plot <- .baseline_dist_data(df_spouse_long, var, zero_if_not_working = zero_if_not_working)
   if (is.null(df_plot) || nrow(df_plot) == 0) return(invisible(NULL))
 
   # Pooled percentiles (both spouses, both child age groups).
@@ -224,10 +258,11 @@ plot_baseline_dist_for_var <- function(
     )
   } else {
     plot_baseline_dist_continuous(
-      df_spouse_long = df_spouse_long,
-      var            = var,
-      out_file       = out_file,
-      fig_path       = fig_path,
+      df_spouse_long      = df_spouse_long,
+      var                 = var,
+      out_file            = out_file,
+      fig_path            = fig_path,
+      zero_if_not_working = var %in% .ZERO_IF_NOT_WORKING_VARS,
       ...
     )
   }
