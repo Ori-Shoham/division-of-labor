@@ -110,9 +110,9 @@ plot_baseline_dist_continuous <- function(
   if (is.null(df_plot) || nrow(df_plot) == 0) return(invisible(NULL))
 
   # Pooled percentiles (both spouses, both child age groups).
-  pct_vals <- quantile(df_plot[[var]], probs = c(0.90, 0.95, 0.99), na.rm = TRUE)
+  pct_vals <- quantile(df_plot[[var]], probs = c(0.90, 0.95, 0.98, 0.99), na.rm = TRUE)
   pct_df <- data.frame(
-    pct        = factor(c("p90", "p95", "p99"), levels = c("p90", "p95", "p99")),
+    pct        = factor(c("p90", "p95", "p98", "p99"), levels = c("p90", "p95", "p98", "p99")),
     xintercept = as.numeric(pct_vals)
   )
 
@@ -135,13 +135,13 @@ plot_baseline_dist_continuous <- function(
     ) +
     scale_linetype_manual(
       name   = "Percentile",
-      values = c(p90 = "dashed", p95 = "dotdash", p99 = "dotted"),
-      labels = c(p90 = "90th", p95 = "95th", p99 = "99th")
+      values = c(p90 = "dashed", p95 = "dotdash", p98 = "longdash", p99 = "dotted"),
+      labels = c(p90 = "90th", p95 = "95th", p98 = "98th", p99 = "99th")
     ) +
     scale_colour_manual(
       name   = "Percentile",
-      values = c(p90 = "#e07b39", p95 = "#c0392b", p99 = "#7b0000"),
-      labels = c(p90 = "90th", p95 = "95th", p99 = "99th")
+      values = c(p90 = "#e07b39", p95 = "#c0392b", p98 = "#8e1a0e", p99 = "#7b0000"),
+      labels = c(p90 = "90th", p95 = "95th", p98 = "98th", p99 = "99th")
     ) +
     facet_grid(
       rows = vars(child_group_plot),
