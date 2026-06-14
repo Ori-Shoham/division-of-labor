@@ -56,6 +56,10 @@ if (!exists("KEYWORKER_XLSX")) {
   KEYWORKER_XLSX <- file.path(pol_path, "keyworkersreferencetableupdated2.xlsx")
 }
 
+if (!exists("UK_PRICE_INDEX_MONTHLY_CSV")) {
+  UK_PRICE_INDEX_MONTHLY_CSV <- file.path(pol_path, "uk_price_index_monthly.csv")
+}
+
 # ---- Helper: check path exists ------------------------------------------------
 check_exists <- function(path, label, expected = c("file", "dir", "either")) {
   expected <- match.arg(expected)
@@ -82,6 +86,7 @@ check_project_files <- function() {
     "code/lib/harmonize_outcomes.R",
     "code/lib/work_groups.R",
     "code/lib/policies_keyworkers.R",
+    "code/lib/real_pay.R",
     "code/lib/family_baseline.R",
     "code/lib/covid_loader.R",
     "code/lib/covid_panel.R",
@@ -202,7 +207,8 @@ cat("\n--- Checking policy files ---\n")
 policy_checks <- bind_rows(
   check_exists(soc_path, "SOC.csv", expected = "file"),
   check_exists(sic_path, "SIC.csv", expected = "file"),
-  check_exists(KEYWORKER_XLSX, "keyworker reference Excel", expected = "file")
+  check_exists(KEYWORKER_XLSX, "keyworker reference Excel", expected = "file"),
+  check_exists(UK_PRICE_INDEX_MONTHLY_CSV, "UK monthly price index", expected = "file")
 )
 
 policy_missing <- print_missing_or_success(policy_checks, "policy files")

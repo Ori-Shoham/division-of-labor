@@ -209,6 +209,8 @@ load_history_wave <- function(path_main,
 add_history_derived_variables <- function(df) {
   needed <- c(
     "jbstat",
+    "jbhas",
+    "jboff",
     "jbhrs",
     "jbpl",
     "jbwah",
@@ -227,8 +229,11 @@ add_history_derived_variables <- function(df) {
   df %>%
     dplyr::mutate(
       any_work = make_any_work_future(
-        jbstat = jbstat,
-        jbhrs  = jbhrs
+        jbhas = jbhas
+      ),
+      work_last_week_status = make_work_last_week_status_main(
+        jbhas = jbhas,
+        jboff = jboff
       ),
       wfh_code = tmp_wfh$wfh_code,
       wfh_cat  = tmp_wfh$wfh_cat,
@@ -397,6 +402,7 @@ history_numeric_summary_vars <- function(df) {
     "isced11_dv",
     "jbstat",
     "jbhas",
+    "jboff",
     "jbsic07_cc",
     "jbsoc10_cc",
     "jbft_dv",
@@ -405,10 +411,15 @@ history_numeric_summary_vars <- function(df) {
     "jbsect",
     "jbterm1",
     "basrate",
+    "basrate_real",
     "fimngrs_dv",
+    "fimngrs_dv_real",
     "fihhmngrs_dv",
+    "fihhmngrs_dv_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
+    "fimnlabgrs_dv_real",
     "jbpl",
     "jbwah",
     "mastat_dv",
@@ -425,6 +436,7 @@ history_numeric_summary_vars <- function(df) {
     "sf1",
     "scsf1",
     "any_work",
+    "work_last_week_status",
     "wfh_some",
     "workoutside",
     "observed_base_partner_link",
@@ -724,6 +736,8 @@ build_baseline_person_plot_rows <- function(df_baseline) {
       "intdaty_dv",
       "intdatm_dv",
       "jbstat",
+      "jbhas",
+      "jboff",
       "jbhrs",
       "jbpl",
       "jbwah",
@@ -924,12 +938,16 @@ build_baseline_couple_plot_rows <- function(df_baseline_couple) {
     "intdaty_dv_w",
     "intdatm_dv_w",
     "jbstat_h",
+    "jbhas_h",
+    "jboff_h",
     "jbhrs_h",
     "jbpl_h",
     "jbwah_h",
     "sf1_h",
     "scsf1_h",
     "jbstat_w",
+    "jbhas_w",
+    "jboff_w",
     "jbhrs_w",
     "jbpl_w",
     "jbwah_w",
@@ -967,8 +985,16 @@ build_baseline_couple_plot_rows <- function(df_baseline_couple) {
         TRUE ~ as.Date(NA)
       ),
       year = suppressWarnings(as.integer(format(ym, "%Y"))),
-      any_work_h = make_any_work_future(jbstat = jbstat_h, jbhrs = jbhrs_h),
-      any_work_w = make_any_work_future(jbstat = jbstat_w, jbhrs = jbhrs_w),
+      any_work_h = make_any_work_future(jbhas = jbhas_h),
+      any_work_w = make_any_work_future(jbhas = jbhas_w),
+      work_last_week_status_h = make_work_last_week_status_main(
+        jbhas = jbhas_h,
+        jboff = jboff_h
+      ),
+      work_last_week_status_w = make_work_last_week_status_main(
+        jbhas = jbhas_w,
+        jboff = jboff_w
+      ),
       wfh_code_h = tmp_wfh_h$wfh_code,
       wfh_cat_h = tmp_wfh_h$wfh_cat,
       wfh_code_w = tmp_wfh_w$wfh_code,

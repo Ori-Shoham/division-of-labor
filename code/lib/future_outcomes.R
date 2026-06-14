@@ -43,6 +43,7 @@ load_main_wave_indresp <- function(path_main, prefix, pidp_filter = NULL) {
     # Employment + outcomes
     paste0(prefix, "_jbstat"),
     paste0(prefix, "_jbhas"),
+    paste0(prefix, "_jboff"),
     paste0(prefix, "_jbsic07_cc"),
     paste0(prefix, "_jbsoc10_cc"),
     paste0(prefix, "_jbft_dv"),
@@ -107,7 +108,8 @@ load_main_wave_indresp <- function(path_main, prefix, pidp_filter = NULL) {
       # Month-year as a proper Date (first of month). Easy to plot and aggregate.
       ym = as.Date(sprintf("%d-%02d-01", intdaty_dv, intdatm_dv)),
       year = as.integer(intdaty_dv)
-    )
+    ) %>%
+    add_real_pay_vars(ym_col = "ym")
   
   if (exists("add_husits_main_vars", mode = "function")) {
     out <- out %>%

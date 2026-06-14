@@ -75,6 +75,8 @@ fig_path_couple_treatment_counts <- file.path(
 soc_path <- file.path(pol_path, "SOC.csv")
 sic_path <- file.path(pol_path, "SIC.csv")
 KEYWORKER_XLSX <- file.path(pol_path, "keyworkersreferencetableupdated2.xlsx")
+UK_PRICE_INDEX_MONTHLY_CSV <- file.path(pol_path, "uk_price_index_monthly.csv")
+REAL_PAY_BASE_YM <- as.Date("2019-12-01")
 
 # ---- Data OUTPUT root (outside repo; can be protected/encrypted) --------------
 # Choose a location that is NOT inside your git repo.

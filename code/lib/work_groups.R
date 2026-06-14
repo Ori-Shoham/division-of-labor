@@ -179,30 +179,64 @@ make_any_work_covid <- function(sempderived, hours) {
 # -----------------------------------------------------------------------------
 # Future/main-wave any-work analogue
 #
-# The COVID waves ask about hours worked last week. The regular UKHLS waves do
-# not ask the same last-week question in this pipeline. The analogous measure
-# here is positive usual weekly hours among respondents whose main activity is
-# paid employment or self-employment.
+# The regular UKHLS waves ask whether the respondent did any paid work last
+# week in JBHAS. Use that direct last-week employment question rather than
+# usual weekly hours.
 #
 # Logic:
-#   - missing/invalid employment -> NA
-#   - not employed/self-employed -> 0
-#   - missing/invalid usual hours -> NA
-#   - zero usual hours -> 0
-#   - positive usual hours -> 1
+#   - JBHAS == 1 -> 1
+#   - JBHAS == 2 -> 0
+#   - missing/invalid/inapplicable survey codes -> NA
 # -----------------------------------------------------------------------------
-make_any_work_future <- function(jbstat, jbhrs) {
-  jbstat <- suppressWarnings(as.numeric(jbstat))
-  jbhrs <- suppressWarnings(as.numeric(jbhrs))
+make_any_work_future <- function(jbhas) {
+  jbhas <- suppressWarnings(as.numeric(jbhas))
   
   dplyr::case_when(
-    is.na(jbstat) ~ NA_real_,
-    jbstat < 0 ~ NA_real_,
-    !(jbstat %in% c(1, 2)) ~ 0,
-    is.na(jbhrs) ~ NA_real_,
-    jbhrs < 0 ~ NA_real_,
-    jbhrs > 0 ~ 1,
-    jbhrs == 0 ~ 0,
+    is.na(jbhas) ~ NA_real_,
+    jbhas < 0 ~ NA_real_,
+    jbhas == 1 ~ 1,
+    jbhas == 2 ~ 0,
+    TRUE ~ NA_real_
+  )
+}
+
+
+# -----------------------------------------------------------------------------
+# Three-category last-week work/job status
+#
+# Codes:
+#   1 = worked last week
+#   2 = did not work last week but has a job
+#   3 = did not work last week and does not have a job
+# -----------------------------------------------------------------------------
+make_work_last_week_status_main <- function(jbhas, jboff) {
+  jbhas <- suppressWarnings(as.numeric(jbhas))
+  jboff <- suppressWarnings(as.numeric(jboff))
+  
+  dplyr::case_when(
+    is.na(jbhas) ~ NA_real_,
+    jbhas < 0 ~ NA_real_,
+    jbhas == 1 ~ 1,
+    jbhas == 2 & !is.na(jboff) & jboff == 1 ~ 2,
+    jbhas == 2 & !is.na(jboff) & jboff == 2 ~ 3,
+    jbhas == 2 & (is.na(jboff) | jboff < 0) ~ NA_real_,
+    TRUE ~ NA_real_
+  )
+}
+
+make_work_last_week_status_covid <- function(sempderived, hours) {
+  sempderived <- suppressWarnings(as.numeric(sempderived))
+  hours <- suppressWarnings(as.numeric(hours))
+  
+  dplyr::case_when(
+    is.na(sempderived) ~ NA_real_,
+    sempderived < 0 ~ NA_real_,
+    sempderived == 4 ~ 3,
+    !(sempderived %in% c(1, 2, 3)) ~ NA_real_,
+    is.na(hours) ~ NA_real_,
+    hours < 0 ~ NA_real_,
+    hours > 0 ~ 1,
+    hours == 0 ~ 2,
     TRUE ~ NA_real_
   )
 }

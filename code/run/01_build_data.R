@@ -40,6 +40,7 @@ source("code/lib/harmonize_outcomes.R")
 source("code/lib/husits_harmonization.R")
 source("code/lib/work_groups.R")
 source("code/lib/policies_keyworkers.R")
+source("code/lib/real_pay.R")
 
 source("code/lib/family_baseline.R")
 source("code/lib/covid_loader.R")
@@ -513,12 +514,18 @@ df_future_long <- df_future_long %>%
   add_baseline_work_groups() %>%
   dplyr::mutate(
     base_any_work = make_any_work_future(
-      jbstat = base_jbstat,
-      jbhrs  = base_jbhrs
+      jbhas = base_jbhas
     ),
     any_work = make_any_work_future(
-      jbstat = jbstat,
-      jbhrs  = jbhrs
+      jbhas = jbhas
+    ),
+    base_work_last_week_status = make_work_last_week_status_main(
+      jbhas = base_jbhas,
+      jboff = base_jboff
+    ),
+    work_last_week_status = make_work_last_week_status_main(
+      jbhas = jbhas,
+      jboff = jboff
     ),
     wfh_code = tmp_wfh$wfh_code,
     wfh_cat  = tmp_wfh$wfh_cat,

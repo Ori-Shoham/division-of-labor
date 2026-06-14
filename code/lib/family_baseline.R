@@ -19,6 +19,7 @@
 # Employment:
 #   jbstat         : labour market status (1 employed, 2 self-employed, etc.)
 #   jbhas          : did paid work last week
+#   jboff          : away from a job last week
 #   jbsic07_cc     : industry (SIC 2007 condensed)
 #   jbsoc10_cc     : occupation (SOC 2010 condensed)
 #   jbft_dv        : full-time/part-time derived
@@ -151,6 +152,7 @@ clean_baseline_wave <- function(path_main, prefix, pidp_filter = NULL) {
     # Employment + outcomes
     paste0(prefix, "_jbstat"),
     paste0(prefix, "_jbhas"),
+    paste0(prefix, "_jboff"),
     paste0(prefix, "_jbsic07_cc"),
     paste0(prefix, "_jbsoc10_cc"),
     paste0(prefix, "_jbft_dv"),
@@ -248,6 +250,12 @@ build_baseline <- function(path_main) {
   dplyr::bind_rows(df_k_2019, df_j_fill, df_i_fill) %>%
     dplyr::rename_with(~ paste0("base_", .), -pidp) %>%
     dplyr::mutate(
+      base_ym = dplyr::case_when(
+        !is.na(base_intdaty_dv) & !is.na(base_intdatm_dv) ~
+          as.Date(sprintf("%d-%02d-01", base_intdaty_dv, base_intdatm_dv)),
+        TRUE ~ as.Date(NA)
+      ),
+
       # Your education recode: merge PhD with MA; drop negative codes
       base_isced11_dv = dplyr::if_else(base_isced11_dv == 8, 7, base_isced11_dv),
       base_isced11_dv = dplyr::if_else(base_isced11_dv < 0, NA_real_, base_isced11_dv),
@@ -267,5 +275,10 @@ build_baseline <- function(path_main) {
         levels = c("Excellent", "Very good", "Good", "Fair", "Poor"),
         ordered = TRUE
       )
-    )
+    ) %>%
+    add_real_pay_vars(
+      ym_col = "base_ym",
+      vars = paste0("base_", REAL_PAY_VARIABLES)
+    ) %>%
+    dplyr::select(-base_ym)
 }

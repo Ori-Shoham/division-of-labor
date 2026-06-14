@@ -65,10 +65,10 @@ RUN_AUTO_ALL <- FALSE
 NUMERIC_ZERO_IF_NOT_WORKING <- c(
   "jbhrs",
   "jbot",
-  "basrate",
-  "paygu_dv",
-  "fimnlabgrs_dv",
-  "fimngrs_dv"
+  "basrate_real",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
+  "fimngrs_dv_real"
 )
 
 HEADLINE_NUMERIC_OUTCOMES <- c(
@@ -76,9 +76,9 @@ HEADLINE_NUMERIC_OUTCOMES <- c(
   "wfh_some",
   "jbhrs",
   "jbot",
-  "paygu_dv",
-  "fimnlabgrs_dv",
-  "fimngrs_dv",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
+  "fimngrs_dv_real",
   "scghq1_dv",
   "scghq2_dv",
   "sclfsato",
@@ -112,8 +112,8 @@ YM_NUMERIC_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
   "jbhrs",
-  "paygu_dv",
-  "fimnlabgrs_dv",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
   "health_sf",
   "scghq1_dv",
   "sclfsato"

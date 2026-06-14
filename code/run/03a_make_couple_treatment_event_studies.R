@@ -110,9 +110,9 @@ MAIN_MONTHLY_END_YM <- as.Date("2021-12-01")
 MAIN_OUTCOMES <- c(
   "any_work",
   "jbhrs",
-  "paygu_dv",
-  "fimnlabgrs_dv",
-  "fimngrs_dv",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
+  "fimngrs_dv_real",
   "howlng"
 )
 

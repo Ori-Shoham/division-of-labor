@@ -17,6 +17,7 @@
 #   COVID outcomes:
 #     - any_work
 #     - hours      (hours worked last week)
+#     - work_last_week_status  (3-category: worked / has job but didn't work / not employed)
 #     - workoutside
 #     - wfh_some   (your "wfh_any")
 #     - howlng
@@ -28,17 +29,17 @@
 #     - workoutside
 #     - wfh_some   (your "wfh_any")
 #     - jbhrs
-#     - paygu_dv
-#     - fimnlabgrs_dv
-#     - fimngrs_dv
+#     - paygu_dv_real
+#     - fimnlabgrs_dv_real
+#     - fimngrs_dv_real
 #     - howlng
 #
 #   Main-survey history + future outcomes:
 #     - any_work
 #     - jbhrs
-#     - paygu_dv
-#     - fimnlabgrs_dv
-#     - fimngrs_dv
+#     - paygu_dv_real
+#     - fimnlabgrs_dv_real
+#     - fimngrs_dv_real
 #     - howlng
 #
 # Notes:
@@ -67,6 +68,7 @@ source("code/lib/future_descriptives_plots.R")
 source("code/lib/couple_plot_helpers.R")
 source("code/lib/husits_covid_plots.R")
 source("code/lib/couple_treatment_plots.R")
+source("code/lib/couple_baseline_dist_plots.R")
 
 for (d in c(
   fig_path_couple_treatment_covid_childgrids,
@@ -271,9 +273,9 @@ FUTURE_OUTCOMES <- c(
   "workoutside",
   "wfh_some",
   "jbhrs",
-  "paygu_dv",
-  "fimnlabgrs_dv",
-  "fimngrs_dv",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
+  "fimngrs_dv_real",
   "howlng"
 )
 
@@ -294,9 +296,9 @@ FUTURE_ONLY_OUTCOMES_TO_PLOT <- if (isTRUE(MAKE_FUTURE_ONLY_TREATMENT)) {
 HISTORY_FUTURE_OUTCOMES <- c(
   "any_work",
   "jbhrs",
-  "paygu_dv",
-  "fimnlabgrs_dv",
-  "fimngrs_dv",
+  "paygu_dv_real",
+  "fimnlabgrs_dv_real",
+  "fimngrs_dv_real",
   "howlng"
 )
 
@@ -652,6 +654,36 @@ if (.has_husits_distribution(df_covid_couple)) {
     }
   }
 }
+# =============================================================================
+# COVID work_last_week_status distribution figures (3-category stacked bar)
+# =============================================================================
+
+for (tr in TREATMENT_VARS) {
+  for (sp in c("wife", "husband")) {
+    suffix <- if (sp == "wife") "_w" else "_h"
+    status_col <- paste0("work_last_week_status", suffix)
+    if (!.has_data(df_covid_couple, status_col)) next
+
+    plot_covid_work_status_childgrid(
+      df_couple     = df_covid_couple,
+      spouse        = sp,
+      treatment_var = tr,
+      out_file      = paste0(
+        "covid_work_status_last_week_wave_",
+        tr,
+        "_childgrid_treatmentcols_", sp, ".png"
+      ),
+      fig_path        = fig_path_couple_treatment_covid_childgrids,
+      treated_label   = TREATMENT_LABS[[tr]],
+      axis_text_size  = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      legend_text_size = LEGEND_TEXT_SIZE,
+      title_size      = TITLE_SIZE
+    )
+  }
+}
+
 # =============================================================================
 # Run main-survey history + future figures
 # =============================================================================

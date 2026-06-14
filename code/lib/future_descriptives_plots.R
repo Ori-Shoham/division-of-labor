@@ -24,8 +24,13 @@ suppressPackageStartupMessages({
     var == "jbhrs" ~ "Weekly hours worked",
     var == "jbot" ~ "Overtime hours worked",
     var == "paygu_dv" ~ "Gross monthly pay",
+    var == "paygu_dv_real" ~ "Gross monthly pay",
     var == "fimnlabgrs_dv" ~ "Gross monthly labour income",
+    var == "fimnlabgrs_dv_real" ~ "Gross monthly labour income",
     var == "fimngrs_dv" ~ "Gross monthly personal income",
+    var == "fimngrs_dv_real" ~ "Gross monthly personal income",
+    var == "basrate_real" ~ "Basic hourly pay rate",
+    var == "fihhmngrs_dv_real" ~ "Gross household income",
     var == "health_sf" ~ "Self-reported general health",
     var == "scghq1_dv" ~ "GHQ mental distress score",
     var == "scghq2_dv" ~ "GHQ caseness",
@@ -51,6 +56,9 @@ suppressPackageStartupMessages({
   dplyr::case_when(
     var %in% c("jbhrs", "jbot") ~ "Hours per week",
     var %in% c("paygu_dv", "fimnlabgrs_dv", "fimngrs_dv") ~ "Pounds per month",
+    var %in% c("paygu_dv_real", "fimnlabgrs_dv_real", "fimngrs_dv_real", "fihhmngrs_dv_real") ~
+      "December 2019 pounds per month",
+    var == "basrate_real" ~ "December 2019 pounds per hour",
     var %in% c("nchild_dv", "ndepchl_dv") ~ "Count",
     var == "scghq1_dv" ~ "GHQ mental distress score\n(0-36 scale from least to greatest stress)",
     var == "scghq2_dv" ~ "GHQ mental distress caseness score\n(0-12 scale from least to greatest stress)",

@@ -1,0 +1,477 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% Current section shown in header
+\setbeamertemplate{headline}{
+  \leavevmode
+  \hbox{
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.2ex,leftskip=0.3cm]{section in head/foot}
+      \usebeamerfont{section in head/foot}\insertsection
+    \end{beamercolorbox}
+  }
+}
+
+\usepackage{graphicx}
+\usepackage{adjustbox}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+\newcommand{\figdir}{figures}
+\newcommand{\ctcountdir}{\figdir/couple_treatment/counts}
+\newcommand{\ctcoviddir}{\figdir/couple_treatment/covid_childgrids}
+\newcommand{\ctfutdir}{\figdir/couple_treatment/future_childgrids}
+\newcommand{\cthistfutdir}{\figdir/couple_treatment/history_future_childgrids}
+\newcommand{\ctdistdir}{\figdir/couple_treatment/baseline_distributions}
+
+\newcommand{\missingfigurebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.9);
+    \node[align=center, text width=9.6cm] at (5.4,2.95)
+    {\small Figure not found:\\[0.3em]\ttfamily\detokenize{#1}};
+  \end{tikzpicture}%
+}
+
+\newcommand{\resultfigure}[1]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
+}
+
+\newcommand{\countfigure}[1]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.74\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
+}
+
+\newcommand{\eventfigure}[1]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
+}
+
+\newcommand{\distfigure}[1]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
+}
+
+\newcommand{\eventstudybuttonrow}[1]{%
+  \vspace{0.2em}
+  \hfill #1
+}
+
+\newcommand{\eventstudyframes}[5]{%
+\begin{frame}{Event study: #1 --- wife, no controls}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_noc_#5_nfe_childgroups.png}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- husband, no controls}
+\centering
+\eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_noc_#5_nfe_childgroups.png}
+\end{frame}
+}
+
+\newcommand{\covidresultframe}[3]{%
+\begin{frame}{#1 (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_#2_wave_#3_childgrid_spousecols.png}
+\end{frame}
+}
+
+\newcommand{\covidhusitsframes}[2]{%
+\begin{frame}{Childcare responsibility (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_childcare_responsibility_wave_#1_childgrid_spousecols.png}
+\end{frame}
+
+\begin{frame}{Childcare responsibility, wife report (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_husits_distribution_wave_#1_childgrid_treatmentcols_wife_report.png}
+\end{frame}
+
+\begin{frame}{Childcare responsibility, husband report (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_husits_distribution_wave_#1_childgrid_treatmentcols_husband_report.png}
+\end{frame}
+\eventstudyframes{Childcare responsibility (COVID)}{#2}{covid_husits_wife_main_both}{#2}{all}
+}
+
+\newcommand{\futureframes}[3]{%
+\begin{frame}{#1 (main study, year)}
+\centering
+\resultfigure{\ctfutdir/future_#2_year_#3_childgrid_spousecols.png}
+\end{frame}
+
+\begin{frame}{#1 (main study, month)}
+\centering
+\resultfigure{\ctfutdir/future_#2_ym_#3_childgrid_spousecols.png}
+\end{frame}
+}
+
+\newcommand{\histfutureframes}[4]{%
+\begin{frame}{#1 (main study, year)}
+\centering
+\resultfigure{\cthistfutdir/main_history_future_#2_year_#3#4_childgrid_spousecols.png}
+\end{frame}
+
+\begin{frame}{#1 (main study, month)}
+\centering
+\resultfigure{\cthistfutdir/main_history_future_#2_ym_#3#4_childgrid_spousecols.png}
+\end{frame}
+}
+
+\newcommand{\mainyearmontheventframes}[5]{%
+\eventstudyframes{#1 (main study, year)}{#2}{main_#3}{#4}{#5}
+\eventstudyframes{#1 (main study, month)}{#2}{main_monthly_#3}{#4}{#5}
+}
+
+\title{COVID-19, Work Arrangements, and Household Division of Labor}
+\subtitle{Couple treatment descriptives --- wife key worker (non-education)}
+\author{Ori Nahshon Shoham}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section{Guide}
+
+\begin{frame}{Reading guide}
+\small
+\begin{itemize}
+  \item \textbf{Colors}: treatment group versus all other couples.
+  \item \textbf{Columns}: wife / husband outcomes.
+  \item \textbf{Rows}: couples with youngest child age 0--10 vs.\ 11--17 at baseline.
+  \item \textbf{COVID figures}: COVID-study waves.
+  \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample.
+  \item \textbf{Pay outcomes}: shown in constant December 2019 pounds.
+  \item \textbf{Distribution slides}: 2019 baseline (childcare hours use COVID wave 1), couples with children, full sample (no treatment split).
+  \item \textbf{Appendix}: full-sample main-study versions and event studies.
+\end{itemize}
+
+\vspace{0.4em}
+\textbf{Treatment shown in this deck}
+\begin{itemize}
+  \item Wife key worker (non-education), husband not key worker or education only.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Event-study methodology}
+\small
+Event studies are estimated separately by study sample, treatment definition, spouse, outcome, and baseline child-age group.
+
+\vspace{0.4em}
+\[
+Y_{ict}
+=
+\alpha_t
++
+\delta T_c
++
+\sum_{\tau \neq \tau_0}
+\beta_{\tau}
+\left[
+\mathbf{1}\{t=\tau\}\times T_c
+\right]
++
+X_c'\gamma
++
+\varepsilon_{ict}.
+\]
+
+\vspace{0.2em}
+\scriptsize
+\begin{itemize}
+  \item \(T_c\): couple-level treatment indicator.
+  \item \(\alpha_t\): period fixed effects.
+  \item \(\tau_0\): omitted reference period.
+  \item Main-study event studies use 2019 as the reference year.
+  \item COVID-study event studies use 2019 where available; WFH/work-outside use Jan--Feb 2020.
+  \item Figures use no couple fixed effects.
+  \item Standard errors are clustered at the person level.
+  \item Baseline covariates: wife and husband age, wife and husband education category, number of children under 18, number of children under 10, and region.
+\end{itemize}
+
+\end{frame}
+
+\section{Sample balance}
+
+\begin{frame}{Baseline balance: main treatment by child age}
+\centering
+\scriptsize
+\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight,center}
+\input{tables/sample_table_treatment_child_balance_treat_wife_key_notedu_husb_not_or_edu.tex}
+\end{adjustbox}
+
+\vspace{0.3em}
+\tiny Means shown with standard deviations in parentheses. Main treatment: wife key worker non-education, husband not key worker or education only.
+\end{frame}
+
+% =============================================================================
+% Counts
+% =============================================================================
+
+\section{Counts}
+
+\begin{frame}{Counts: wife key / husband not or edu (COVID)}
+\centering
+\countfigure{\ctcountdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
+\end{frame}
+
+\begin{frame}{Counts: wife key / husband not or edu (main study, year), COVID sample}
+\centering
+\countfigure{\ctcountdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets_both_in_covid.png}
+\end{frame}
+
+\begin{frame}{Counts: wife key / husband not or edu (main study, month), COVID sample}
+\centering
+\countfigure{\ctcountdir/main_history_future_counts_ym_treat_wife_key_notedu_husb_not_or_edu_samplefacets_both_in_covid.png}
+\end{frame}
+
+% =============================================================================
+% Treatment: wife key worker (non-education), husband not / education only
+% =============================================================================
+
+\section{Treatment: wife key worker (non-education), husband not / education only}
+
+% =============================================================================
+% Worked positive hours
+% =============================================================================
+
+\begin{frame}{Worked positive hours --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_worked_positive_hours_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{Worked positive hours}{worked_positive_hours}{treat_wife_key_notedu_husb_not_or_edu}
+\eventstudyframes{Worked positive hours (COVID)}{wife_key_husb_notedu}{covid_any_work}{wife_key_husb_notedu}{all}
+\histfutureframes{Worked positive hours}{worked_positive_hours}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Worked positive hours}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{bic}
+
+% =============================================================================
+% Work status last week
+% =============================================================================
+
+\begin{frame}{Work status last week --- baseline distribution (COVID wave 1)}
+\centering
+\distfigure{\ctdistdir/baseline_dist_work_status_last_week_childgrid_spousecols.png}
+\end{frame}
+
+\begin{frame}{Work status last week --- wife (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_work_status_last_week_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_treatmentcols_wife.png}
+\end{frame}
+
+\begin{frame}{Work status last week --- husband (COVID)}
+\centering
+\resultfigure{\ctcoviddir/covid_work_status_last_week_wave_treat_wife_key_notedu_husb_not_or_edu_childgrid_treatmentcols_husband.png}
+\end{frame}
+
+% =============================================================================
+% Weekly hours
+% =============================================================================
+
+\begin{frame}{Weekly hours --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_weekly_hours_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{Weekly hours}{hours_worked_last_week}{treat_wife_key_notedu_husb_not_or_edu}
+\eventstudyframes{Weekly hours (COVID)}{wife_key_husb_notedu}{covid_hours}{wife_key_husb_notedu}{all}
+\histfutureframes{Weekly hours}{weekly_hours}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Weekly hours}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{bic}
+
+% =============================================================================
+% Work outside
+% =============================================================================
+
+\begin{frame}{Work outside --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_workoutside_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{Work outside}{workoutside}{treat_wife_key_notedu_husb_not_or_edu}
+\eventstudyframes{Work outside (COVID)}{wife_key_husb_notedu}{covid_workoutside}{wife_key_husb_notedu}{all}
+\futureframes{Work outside}{workoutside}{treat_wife_key_notedu_husb_not_or_edu}
+
+% =============================================================================
+% WFH any
+% =============================================================================
+
+\begin{frame}{WFH any --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_wfh_any_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{WFH any}{wfh_any}{treat_wife_key_notedu_husb_not_or_edu}
+\eventstudyframes{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
+\futureframes{WFH any}{wfh_any}{treat_wife_key_notedu_husb_not_or_edu}
+
+% =============================================================================
+% Gross monthly pay
+% =============================================================================
+
+\begin{frame}{Gross monthly pay --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_gross_monthly_pay_real_childgrid_spousecols.png}
+\end{frame}
+
+\histfutureframes{Gross monthly pay (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly pay (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{bic}
+
+% =============================================================================
+% Gross monthly labour income
+% =============================================================================
+
+\begin{frame}{Gross monthly labour income --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_gross_monthly_labour_income_real_childgrid_spousecols.png}
+\end{frame}
+
+\histfutureframes{Gross monthly labour income (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly labour income (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{bic}
+
+% =============================================================================
+% Housework hours
+% =============================================================================
+
+\begin{frame}{Housework hours --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_housework_hours_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{Housework hours}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}
+\eventstudyframes{Housework hours (COVID)}{wife_key_husb_notedu}{covid_howlng}{wife_key_husb_notedu}{all}
+\histfutureframes{Housework hours}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Housework hours}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{bic}
+
+% =============================================================================
+% Childcare hours
+% =============================================================================
+
+\begin{frame}{Childcare hours --- baseline distribution (COVID wave 1)}
+\centering
+\distfigure{\ctdistdir/baseline_dist_childcare_hours_childgrid_spousecols.png}
+\end{frame}
+
+\covidresultframe{Childcare hours}{childcare_hours}{treat_wife_key_notedu_husb_not_or_edu}
+
+% =============================================================================
+% Childcare responsibility
+% =============================================================================
+
+\begin{frame}{Childcare responsibility --- baseline distribution}
+\centering
+\distfigure{\ctdistdir/baseline_dist_childcare_responsibility_childgrid_spousecols.png}
+\end{frame}
+
+\covidhusitsframes{treat_wife_key_notedu_husb_not_or_edu}{wife_key_husb_notedu}
+
+% =============================================================================
+% Appendix
+% =============================================================================
+
+\appendix
+
+\section{Appendix: real-pay adjustment}
+
+\begin{frame}{Appendix: real-pay adjustment}
+\small
+All pay and income outcomes in this deck are shown in constant December 2019 pounds.
+
+\vspace{0.6em}
+\[
+Y^{real}_{it}
+=
+Y^{nominal}_{it}
+\times
+\frac{\text{CPIH}_{2019m12}}{\text{CPIH}_{t}}.
+\]
+
+\vspace{0.4em}
+\begin{itemize}
+  \item Price index: ONS CPIH all-items index, monthly series \texttt{L522}, \emph{CPIH INDEX 00: ALL ITEMS 2015=100}.
+  \item Base month: December 2019; \(\text{CPIH}_{2019m12}=108.5\).
+  \item UKHLS negative monetary codes are treated as missing before deflation.
+  \item Nominal variables are retained in the data; analysis-facing pay figures and event studies use the \texttt{\_real} versions.
+\end{itemize}
+
+\vspace{0.4em}
+\scriptsize
+Source: Office for National Statistics, CPIH all-items monthly time series \texttt{L522}: \url{https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23}
+\end{frame}
+
+\section{Appendix: outcome variable definitions}
+
+\begin{frame}{Outcome variable definitions}
+\centering
+\tiny
+\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight,center}
+\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}X@{}}
+\toprule
+\textbf{Variable} & \textbf{Definition used in the couple-treatment outputs} \\
+\midrule
+\texttt{any\_work} & Indicator for worked positive hours. In COVID waves this uses hours worked last week; in main-study waves this uses positive usual weekly hours among employed or self-employed respondents. \\
+\texttt{hours} & COVID-study hours worked last week. Synthetic pre-COVID rows use Jan--Feb 2020 baseline hours where available. \\
+\texttt{jbhrs} & Main-study usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
+\texttt{workoutside} & Indicator for working outside the home. Equals one for workers who do not always work from home; equals zero for non-workers, zero hours, or always working from home. \\
+\texttt{wfh\_some} & Indicator for working from home always, often, or sometimes. The figure stem uses \texttt{wfh\_any}. Defined only in waves where a WFH question is available. \\
+\texttt{paygu\_dv\_real} & Usual gross pay per month from current job, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
+\texttt{fimnlabgrs\_dv\_real} & Gross monthly labour income, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
+\texttt{howlng} & Weekly housework hours. COVID raw \texttt{howlng\_cv} is harmonized to \texttt{howlng}; the Jan--Feb 2020 synthetic baseline row has no comparable housework measure. \\
+\texttt{timechcare} & COVID-study childcare / home-schooling hours. It has no reference period for event studies, so it appears as a COVID descriptive outcome only. \\
+\texttt{husits\_wife\_main\_both} & Indicator equal to one when both spouses' harmonized childcare-responsibility reports imply the wife is mainly responsible. \\
+\bottomrule
+\end{tabularx}
+\end{adjustbox}
+
+\vspace{0.2em}
+\tiny \emph{Interpretation note:} COVID-study work outcomes are short-run, last-week measures; regular/main-study outcomes are usual-week measures. Thus \texttt{hours} and \texttt{jbhrs} are comparable as weekly-hours outcomes but not identical questionnaire concepts.
+
+\vspace{0.2em}
+\tiny Sources: code documentation in \texttt{work\_groups.R}, \texttt{covid\_loader.R}, \texttt{covid\_panel.R}, \texttt{future\_outcomes.R}, \texttt{couple\_plot\_helpers.R}, and \texttt{event\_study\_regressions.R}.
+\end{frame}
+
+\section{Appendix: full-sample main-study descriptives}
+
+\begin{frame}{Counts: wife key / husband not or edu (main study, year), full sample}
+\centering
+\countfigure{\ctcountdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
+\end{frame}
+
+\begin{frame}{Counts: wife key / husband not or edu (main study, month), full sample}
+\centering
+\countfigure{\ctcountdir/main_history_future_counts_ym_treat_wife_key_notedu_husb_not_or_edu_samplefacets.png}
+\end{frame}
+
+\histfutureframes{Worked positive hours, full sample}{worked_positive_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Weekly hours, full sample}{weekly_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Gross monthly pay, full sample (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Housework hours, full sample}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
+
+\section{Appendix: full-sample main-study event studies}
+
+\mainyearmontheventframes{Worked positive hours, full sample}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Weekly hours, full sample}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Gross monthly pay, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Housework hours, full sample}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{all}
+
+\end{document}

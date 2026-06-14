@@ -27,7 +27,7 @@
 #     - baseline work hours
 #     - baseline pay
 #   Main-study / history-future:
-#     - jbhrs, paygu_dv, fimnlabgrs_dv, fimngrs_dv are zeroed for non-workers.
+#     - jbhrs and pay outcomes are zeroed for non-workers.
 #     - working people with missing outcome remain NA.
 #     - missing employment status remains NA.
 #
@@ -143,9 +143,13 @@ event_study_zero_if_not_working_outcomes <- function() {
     "jbhrs",
     "jbot",
     "basrate",
+    "basrate_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv",
+    "fimngrs_dv_real"
   )
 }
 
@@ -865,8 +869,11 @@ event_study_outcome_label <- function(outcome) {
     timechcare = "Childcare hours",
     husits_wife_main_both = "Both spouses report wife mainly responsible for childcare",
     paygu_dv = "Usual gross pay",
+    paygu_dv_real = "Usual gross pay (Dec 2019 pounds)",
     fimnlabgrs_dv = "Gross monthly labour pay",
-    fimngrs_dv = "Gross monthly income"
+    fimnlabgrs_dv_real = "Gross monthly labour pay (Dec 2019 pounds)",
+    fimngrs_dv = "Gross monthly income",
+    fimngrs_dv_real = "Gross monthly income (Dec 2019 pounds)"
   )
 
   if (outcome %in% names(labels)) labels[[outcome]] else outcome

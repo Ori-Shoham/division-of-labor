@@ -646,11 +646,11 @@ make_treatment_child_balance_table <- function(df, treatment_var) {
                      "husband_keyworker_nonedu_share",
                      type = "binary", digits = 1),
     
-    make_balance_row(dd, "Wife gross monthly labour pay at baseline",
-                     "base_fimnlabgrs_dv_w",
+    make_balance_row(dd, "Wife gross monthly labour pay at baseline (Dec 2019 pounds)",
+                     "base_fimnlabgrs_dv_real_w",
                      type = "continuous", digits = 0),
-    make_balance_row(dd, "Husband gross monthly labour pay at baseline",
-                     "base_fimnlabgrs_dv_h",
+    make_balance_row(dd, "Husband gross monthly labour pay at baseline (Dec 2019 pounds)",
+                     "base_fimnlabgrs_dv_real_h",
                      type = "continuous", digits = 0)
   )
   

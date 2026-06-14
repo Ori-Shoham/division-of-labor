@@ -330,8 +330,18 @@ add_husits_wife_main_both <- function(df,
   df
 }
 
+work_last_week_status_labels <- function(x) {
+  dplyr::case_when(
+    x == 1 ~ "Worked last week",
+    x == 2 ~ "Has job, did not work",
+    x == 3 ~ "Not employed",
+    TRUE   ~ NA_character_
+  )
+}
+
 couple_plot_var_label <- function(var) {
   dplyr::case_when(
+    var == "work_last_week_status" ~ "Work status last week",
     var == "any_work"      ~ "Worked positive hours",
     var == "hours"         ~ "Hours worked last week",
     var == "workoutside"   ~ "Working outside the home",
@@ -341,8 +351,13 @@ couple_plot_var_label <- function(var) {
     var == "timechcare"    ~ "Childcare / home-schooling hours",
     var == "jbhrs"         ~ "Weekly hours worked",
     var == "paygu_dv"      ~ "Gross monthly pay",
+    var == "paygu_dv_real" ~ "Gross monthly pay",
     var == "fimnlabgrs_dv" ~ "Gross monthly labour income",
+    var == "fimnlabgrs_dv_real" ~ "Gross monthly labour income",
     var == "fimngrs_dv"    ~ "Gross monthly personal income",
+    var == "fimngrs_dv_real"    ~ "Gross monthly personal income",
+    var == "basrate_real"  ~ "Basic hourly pay rate",
+    var == "fihhmngrs_dv_real" ~ "Gross household income",
     var == "husits_wife_main_both" ~ "Both spouses report wife mainly responsible for childcare",
     TRUE                   ~ var
   )
@@ -350,6 +365,7 @@ couple_plot_var_label <- function(var) {
 
 couple_plot_var_stem <- function(var) {
   dplyr::case_when(
+    var == "work_last_week_status" ~ "work_status_last_week",
     var == "any_work"      ~ "worked_positive_hours",
     var == "hours"         ~ "hours_worked_last_week",
     var == "workoutside"   ~ "workoutside",
@@ -359,8 +375,13 @@ couple_plot_var_stem <- function(var) {
     var == "timechcare"    ~ "childcare_hours",
     var == "jbhrs"         ~ "weekly_hours",
     var == "paygu_dv"      ~ "gross_monthly_pay",
+    var == "paygu_dv_real" ~ "gross_monthly_pay_real",
     var == "fimnlabgrs_dv" ~ "gross_monthly_labour_income",
+    var == "fimnlabgrs_dv_real" ~ "gross_monthly_labour_income_real",
     var == "fimngrs_dv"    ~ "gross_monthly_personal_income",
+    var == "fimngrs_dv_real"    ~ "gross_monthly_personal_income_real",
+    var == "basrate_real"  ~ "basic_hourly_pay_real",
+    var == "fihhmngrs_dv_real" ~ "gross_household_income_real",
     var == "husits_wife_main_both" ~ "childcare_responsibility",
     TRUE                   ~ var
   )
@@ -378,8 +399,13 @@ couple_plot_var_units <- function(var, is_binary = FALSE) {
     var == "timechcare"    ~ "Weekly Hours",
     var == "jbhrs"         ~ "Weekly Hours",
     var == "paygu_dv"      ~ "Amount",
+    var == "paygu_dv_real" ~ "December 2019 pounds",
     var == "fimnlabgrs_dv" ~ "Amount",
+    var == "fimnlabgrs_dv_real" ~ "December 2019 pounds",
     var == "fimngrs_dv"    ~ "Amount",
+    var == "fimngrs_dv_real"    ~ "December 2019 pounds",
+    var == "basrate_real"  ~ "December 2019 pounds",
+    var == "fihhmngrs_dv_real" ~ "December 2019 pounds",
     TRUE                   ~ "Mean"
   )
 }
@@ -542,9 +568,9 @@ future_count_outcome_vars <- function() {
     "workoutside",
     "wfh_some",
     "jbhrs",
-    "paygu_dv",
-    "fimnlabgrs_dv",
-    "fimngrs_dv",
+    "paygu_dv_real",
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv_real",
     "howlng"
   )
 }

@@ -738,9 +738,13 @@ plot_future_spouse_treatment_numeric <- function(
     "jbhrs",
     "jbot",
     "basrate",
+    "basrate_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv",
+    "fimngrs_dv_real"
   )
   
   include_baseline_2019 <- !(var %in% c("workoutside", "wfh_some", "wfh_cat"))
@@ -896,9 +900,13 @@ plot_future_spouse_treatment_childgrid <- function(
     "jbhrs",
     "jbot",
     "basrate",
+    "basrate_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv",
+    "fimngrs_dv_real"
   )
   
   include_baseline_2019 <- !(var %in% c("workoutside", "wfh_some", "wfh_cat"))
@@ -1073,9 +1081,13 @@ plot_main_history_future_spouse_treatment_numeric <- function(
     "jbhrs",
     "jbot",
     "basrate",
+    "basrate_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv",
+    "fimngrs_dv_real"
   )
   
   df <- df %>%
@@ -1230,9 +1242,13 @@ plot_main_history_future_spouse_treatment_childgrid <- function(
     "jbhrs",
     "jbot",
     "basrate",
+    "basrate_real",
     "paygu_dv",
+    "paygu_dv_real",
     "fimnlabgrs_dv",
-    "fimngrs_dv"
+    "fimnlabgrs_dv_real",
+    "fimngrs_dv",
+    "fimngrs_dv_real"
   )
   
   df <- df %>%

@@ -27,16 +27,36 @@
 \newcommand{\ctfutdir}{\figdir/couple_treatment/future_childgrids}
 \newcommand{\cthistfutdir}{\figdir/couple_treatment/history_future_childgrids}
 
+\newcommand{\missingfigurebox}[1]{%
+  \begin{tikzpicture}
+    \draw[rounded corners=3pt, thick, gray!70] (0,0) rectangle (10.8,5.9);
+    \node[align=center, text width=9.6cm] at (5.4,2.95)
+    {\small Figure not found:\\[0.3em]\ttfamily\detokenize{#1}};
+  \end{tikzpicture}%
+}
+
 \newcommand{\resultfigure}[1]{%
-  \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
 }
 
 \newcommand{\countfigure}[1]{%
-  \includegraphics[width=\linewidth,height=0.74\textheight,keepaspectratio]{#1}%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.74\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
 }
 
 \newcommand{\eventfigure}[1]{%
-  \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{#1}%
+  }{%
+    \missingfigurebox{#1}%
+  }%
 }
 
 \newcommand{\eventstudybuttonrow}[1]{%
@@ -163,6 +183,7 @@
   \item \textbf{Rows}: couples with youngest child age 0--10 vs.\ 11--17 at baseline.
   \item \textbf{COVID figures}: COVID-study waves.
   \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample.
+  \item \textbf{Pay outcomes}: shown in constant December 2019 pounds.
   \item \textbf{Appendix}: full-sample main-study versions and covariate event-study figures.
 \end{itemize}
 
@@ -278,11 +299,11 @@ X_c'\gamma
 \eventstudyframes{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
 \futureframes{WFH any}{wfh_any}{treat_wife_key_notedu_husb_not_or_edu}
 
-\histfutureframes{Gross monthly pay}{gross_monthly_pay}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
-\mainyearmontheventframes{Gross monthly pay}{wife_key_husb_notedu}{paygu_dv}{wife_key_husb_notedu}{bic}
+\histfutureframes{Gross monthly pay (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly pay (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{bic}
 
-\histfutureframes{Gross monthly labour income}{gross_monthly_labour_income}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
-\mainyearmontheventframes{Gross monthly labour income}{wife_key_husb_notedu}{fimnlabgrs_dv}{wife_key_husb_notedu}{bic}
+\histfutureframes{Gross monthly labour income (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_wife_key_notedu_husb_not_or_edu}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly labour income (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{bic}
 
 \sharedoutcomeblock{Housework hours}{housework_hours}{howlng}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}{wife_key_husb_notedu}{howlng}{_both_in_covid}{bic}
 
@@ -306,11 +327,11 @@ X_c'\gamma
 \eventstudyframes{WFH any (COVID)}{husb_shutdown}{covid_wfh_some}{husb_shutdown}{all}
 \futureframes{WFH any}{wfh_any}{treat_husb_shutdown_wife_not}
 
-\histfutureframes{Gross monthly pay}{gross_monthly_pay}{treat_husb_shutdown_wife_not}{_both_in_covid}
-\mainyearmontheventframes{Gross monthly pay}{husb_shutdown}{paygu_dv}{husb_shutdown}{bic}
+\histfutureframes{Gross monthly pay (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_husb_shutdown_wife_not}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly pay (Dec 2019 pounds)}{husb_shutdown}{paygu_dv_real}{husb_shutdown}{bic}
 
-\histfutureframes{Gross monthly labour income}{gross_monthly_labour_income}{treat_husb_shutdown_wife_not}{_both_in_covid}
-\mainyearmontheventframes{Gross monthly labour income}{husb_shutdown}{fimnlabgrs_dv}{husb_shutdown}{bic}
+\histfutureframes{Gross monthly labour income (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_husb_shutdown_wife_not}{_both_in_covid}
+\mainyearmontheventframes{Gross monthly labour income (Dec 2019 pounds)}{husb_shutdown}{fimnlabgrs_dv_real}{husb_shutdown}{bic}
 
 \sharedoutcomeblock{Housework hours}{housework_hours}{howlng}{housework_hours}{treat_husb_shutdown_wife_not}{husb_shutdown}{howlng}{_both_in_covid}{bic}
 
@@ -322,6 +343,34 @@ X_c'\gamma
 % =============================================================================
 
 \appendix
+
+\section{Appendix: real-pay adjustment}
+
+\begin{frame}{Appendix: real-pay adjustment}
+\small
+All pay and income outcomes in this deck are shown in constant December 2019 pounds.
+
+\vspace{0.6em}
+\[
+Y^{real}_{it}
+=
+Y^{nominal}_{it}
+\times
+\frac{\text{CPIH}_{2019m12}}{\text{CPIH}_{t}}.
+\]
+
+\vspace{0.4em}
+\begin{itemize}
+  \item Price index: ONS CPIH all-items index, monthly series \texttt{L522}, \emph{CPIH INDEX 00: ALL ITEMS 2015=100}.
+  \item Base month: December 2019; \(\text{CPIH}_{2019m12}=108.5\).
+  \item UKHLS negative monetary codes are treated as missing before deflation.
+  \item Nominal variables are retained in the data; analysis-facing pay figures and event studies use the \texttt{\_real} versions.
+\end{itemize}
+
+\vspace{0.4em}
+\scriptsize
+Source: Office for National Statistics, CPIH all-items monthly time series \texttt{L522}: \url{https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23}
+\end{frame}
 
 \section{Appendix: outcome variable definitions}
 
@@ -338,8 +387,8 @@ X_c'\gamma
 \texttt{jbhrs} & Main-study usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
 \texttt{workoutside} & Indicator for working outside the home. Equals one for workers who do not always work from home; equals zero for non-workers, zero hours, or always working from home. \\
 \texttt{wfh\_some} & Indicator for working from home always, often, or sometimes. The figure stem uses \texttt{wfh\_any}. Defined only in waves where a WFH question is available. \\
-\texttt{paygu\_dv} & Usual gross pay per month from current job; main event studies set this to zero for non-workers. \\
-\texttt{fimnlabgrs\_dv} & Gross monthly labour income; main event studies set this to zero for non-workers. \\
+\texttt{paygu\_dv\_real} & Usual gross pay per month from current job, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
+\texttt{fimnlabgrs\_dv\_real} & Gross monthly labour income, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
 \texttt{howlng} & Weekly housework hours. COVID raw \texttt{howlng\_cv} is harmonized to \texttt{howlng}; the Jan--Feb 2020 synthetic baseline row has no comparable housework measure. \\
 \texttt{timechcare} & COVID-study childcare / home-schooling hours. It has no reference period for event studies, so it appears as a COVID descriptive outcome only. \\
 \texttt{husits\_wife\_main\_both} & Indicator equal to one when both spouses' harmonized childcare-responsibility reports imply the wife is mainly responsible. \\
@@ -368,8 +417,8 @@ X_c'\gamma
 
 \histfutureframes{Worked positive hours, full sample}{worked_positive_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
 \histfutureframes{Weekly hours, full sample}{weekly_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
-\histfutureframes{Gross monthly pay, full sample}{gross_monthly_pay}{treat_wife_key_notedu_husb_not_or_edu}{}
-\histfutureframes{Gross monthly labour income, full sample}{gross_monthly_labour_income}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Gross monthly pay, full sample (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_wife_key_notedu_husb_not_or_edu}{}
+\histfutureframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_wife_key_notedu_husb_not_or_edu}{}
 \histfutureframes{Housework hours, full sample}{housework_hours}{treat_wife_key_notedu_husb_not_or_edu}{}
 
 \begin{frame}{Counts: husband shutdown / wife not (main study, year), full sample}
@@ -384,22 +433,22 @@ X_c'\gamma
 
 \histfutureframes{Worked positive hours, full sample}{worked_positive_hours}{treat_husb_shutdown_wife_not}{}
 \histfutureframes{Weekly hours, full sample}{weekly_hours}{treat_husb_shutdown_wife_not}{}
-\histfutureframes{Gross monthly pay, full sample}{gross_monthly_pay}{treat_husb_shutdown_wife_not}{}
-\histfutureframes{Gross monthly labour income, full sample}{gross_monthly_labour_income}{treat_husb_shutdown_wife_not}{}
+\histfutureframes{Gross monthly pay, full sample (Dec 2019 pounds)}{gross_monthly_pay_real}{treat_husb_shutdown_wife_not}{}
+\histfutureframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{gross_monthly_labour_income_real}{treat_husb_shutdown_wife_not}{}
 \histfutureframes{Housework hours, full sample}{housework_hours}{treat_husb_shutdown_wife_not}{}
 
-\section{Appendix: full-sample main event studies}
+\section{Appendix: full-sample main-study event studies}
 
 \mainyearmontheventframes{Worked positive hours, full sample}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{all}
 \mainyearmontheventframes{Weekly hours, full sample}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{all}
-\mainyearmontheventframes{Gross monthly pay, full sample}{wife_key_husb_notedu}{paygu_dv}{wife_key_husb_notedu}{all}
-\mainyearmontheventframes{Gross monthly labour income, full sample}{wife_key_husb_notedu}{fimnlabgrs_dv}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Gross monthly pay, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{all}
+\mainyearmontheventframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{all}
 \mainyearmontheventframes{Housework hours, full sample}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{all}
 
 \mainyearmontheventframes{Worked positive hours, full sample}{husb_shutdown}{any_work}{husb_shutdown}{all}
 \mainyearmontheventframes{Weekly hours, full sample}{husb_shutdown}{jbhrs}{husb_shutdown}{all}
-\mainyearmontheventframes{Gross monthly pay, full sample}{husb_shutdown}{paygu_dv}{husb_shutdown}{all}
-\mainyearmontheventframes{Gross monthly labour income, full sample}{husb_shutdown}{fimnlabgrs_dv}{husb_shutdown}{all}
+\mainyearmontheventframes{Gross monthly pay, full sample (Dec 2019 pounds)}{husb_shutdown}{paygu_dv_real}{husb_shutdown}{all}
+\mainyearmontheventframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{husb_shutdown}{fimnlabgrs_dv_real}{husb_shutdown}{all}
 \mainyearmontheventframes{Housework hours, full sample}{husb_shutdown}{howlng}{husb_shutdown}{all}
 
 \section{Appendix: event studies with covariates}
@@ -413,14 +462,14 @@ X_c'\gamma
 
 \mainyearmontheventcovariateframes{Worked positive hours}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{bic}
 \mainyearmontheventcovariateframes{Weekly hours}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{bic}
-\mainyearmontheventcovariateframes{Gross monthly pay}{wife_key_husb_notedu}{paygu_dv}{wife_key_husb_notedu}{bic}
-\mainyearmontheventcovariateframes{Gross monthly labour income}{wife_key_husb_notedu}{fimnlabgrs_dv}{wife_key_husb_notedu}{bic}
+\mainyearmontheventcovariateframes{Gross monthly pay (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{bic}
+\mainyearmontheventcovariateframes{Gross monthly labour income (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{bic}
 \mainyearmontheventcovariateframes{Housework hours}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{bic}
 
 \mainyearmontheventcovariateframes{Worked positive hours, full sample}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{all}
 \mainyearmontheventcovariateframes{Weekly hours, full sample}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{all}
-\mainyearmontheventcovariateframes{Gross monthly pay, full sample}{wife_key_husb_notedu}{paygu_dv}{wife_key_husb_notedu}{all}
-\mainyearmontheventcovariateframes{Gross monthly labour income, full sample}{wife_key_husb_notedu}{fimnlabgrs_dv}{wife_key_husb_notedu}{all}
+\mainyearmontheventcovariateframes{Gross monthly pay, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{all}
+\mainyearmontheventcovariateframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{all}
 \mainyearmontheventcovariateframes{Housework hours, full sample}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{all}
 
 \eventstudycovariateframes{Worked positive hours (COVID)}{husb_shutdown}{covid_any_work}{husb_shutdown}{all}
@@ -432,14 +481,14 @@ X_c'\gamma
 
 \mainyearmontheventcovariateframes{Worked positive hours}{husb_shutdown}{any_work}{husb_shutdown}{bic}
 \mainyearmontheventcovariateframes{Weekly hours}{husb_shutdown}{jbhrs}{husb_shutdown}{bic}
-\mainyearmontheventcovariateframes{Gross monthly pay}{husb_shutdown}{paygu_dv}{husb_shutdown}{bic}
-\mainyearmontheventcovariateframes{Gross monthly labour income}{husb_shutdown}{fimnlabgrs_dv}{husb_shutdown}{bic}
+\mainyearmontheventcovariateframes{Gross monthly pay (Dec 2019 pounds)}{husb_shutdown}{paygu_dv_real}{husb_shutdown}{bic}
+\mainyearmontheventcovariateframes{Gross monthly labour income (Dec 2019 pounds)}{husb_shutdown}{fimnlabgrs_dv_real}{husb_shutdown}{bic}
 \mainyearmontheventcovariateframes{Housework hours}{husb_shutdown}{howlng}{husb_shutdown}{bic}
 
 \mainyearmontheventcovariateframes{Worked positive hours, full sample}{husb_shutdown}{any_work}{husb_shutdown}{all}
 \mainyearmontheventcovariateframes{Weekly hours, full sample}{husb_shutdown}{jbhrs}{husb_shutdown}{all}
-\mainyearmontheventcovariateframes{Gross monthly pay, full sample}{husb_shutdown}{paygu_dv}{husb_shutdown}{all}
-\mainyearmontheventcovariateframes{Gross monthly labour income, full sample}{husb_shutdown}{fimnlabgrs_dv}{husb_shutdown}{all}
+\mainyearmontheventcovariateframes{Gross monthly pay, full sample (Dec 2019 pounds)}{husb_shutdown}{paygu_dv_real}{husb_shutdown}{all}
+\mainyearmontheventcovariateframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{husb_shutdown}{fimnlabgrs_dv_real}{husb_shutdown}{all}
 \mainyearmontheventcovariateframes{Housework hours, full sample}{husb_shutdown}{howlng}{husb_shutdown}{all}
 
 \end{document}
