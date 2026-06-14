@@ -710,6 +710,7 @@ if (length(history_future_sample_specs) > 0) {
           ),
           fig_path         = fig_path_couple_treatment_history_future_childgrids,
           treated_label    = TREATMENT_LABS[[tr]],
+          wave_scale       = "main_history_future",
           axis_text_size   = AXIS_TEXT_SIZE,
           axis_title_size  = AXIS_TITLE_SIZE,
           strip_text_size  = STRIP_TEXT_SIZE,

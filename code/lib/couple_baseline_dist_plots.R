@@ -112,7 +112,7 @@ plot_baseline_dist_continuous <- function(
       cols = vars(spouse)
     ) +
     labs(
-      title = paste0(var_label, " — baseline distribution (2019, couples with children)"),
+      title = NULL,
       x     = x_units,
       y     = "Density"
     ) +
@@ -182,7 +182,7 @@ plot_baseline_share_binary <- function(
       expand = expansion(mult = c(0, 0.08))
     ) +
     labs(
-      title = paste0(var_label, " — baseline share (2019, couples with children)"),
+      title = NULL,
       x     = NULL,
       y     = "Share"
     ) +
@@ -296,7 +296,7 @@ plot_baseline_work_status <- function(
       expand = expansion(mult = c(0, 0.1))
     ) +
     labs(
-      title = "Work status last week — baseline distribution (couples with children)",
+      title = NULL,
       x     = NULL,
       y     = "Share"
     ) +
@@ -344,6 +344,7 @@ plot_covid_work_status_childgrid <- function(
     out_file,
     fig_path,
     treated_label  = NULL,
+    wave_scale     = "covid",
     width  = 14,
     height = 8,
     axis_text_size  = 13,
@@ -374,7 +375,7 @@ plot_covid_work_status_childgrid <- function(
     "Not employed"          = "#bdd7e7"
   )
 
-  wl <- wave_labels()
+  wl <- time_label_lookup(wave_scale)
 
   df_plot <- df_couple %>%
     filter_couples_for_child_grid() %>%

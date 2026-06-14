@@ -2,25 +2,26 @@
 # Script: code/run/02e_make_couple_baseline_descriptives.R
 #
 # Purpose:
-#   Baseline distribution figures for couples_graphs_short.tex.
-#   2x2 panels (rows = child age group, cols = spouse) showing:
-#     - continuous outcomes: histogram + density at 2019 baseline
-#     - binary outcomes: bar chart of share at 2019 baseline
-#     - timechcare / husits: COVID wave 1 (no 2019 equivalent)
-#     - work_last_week_status: categorical bar chart at COVID wave 1
+#   Distribution figures for couples_graphs_short.tex.
+#   2x2 panels (rows = child age group, cols = spouse).
 #
-#   Over-time work_last_week_status figures (stacked bar by COVID wave) are
-#   generated in code/run/02d_make_couple_treatment_descriptives.R.
+#   Distributions pool ALL available waves from each data source:
+#     - COVID source (waves ca-ci): for COVID-measured outcomes
+#     - Main-survey source (all main-survey history + future waves): for
+#       main-survey outcomes, including real-pay variables
+#
+#   File stems:
+#     dist_covid_[var_stem]_childgrid_spousecols.png  <- COVID-source outcomes
+#     dist_main_[var_stem]_childgrid_spousecols.png   <- main-survey outcomes
 #
 # Outputs:
 #   figures/couple_treatment/baseline_distributions/
-#     baseline_dist_[var_stem]_childgrid_spousecols.png
 #
 # Prerequisites:
 #   Run code/run/01_build_data.R first.
-#   The following derived files must exist under der_path:
-#     s2019_baseline_couplelevel.rds      (main 2019 baseline outcomes)
-#     df_sample_long_covid_couplelevel.rds (COVID couple panel, for wave-1 figures)
+#   Required derived files under der_path:
+#     df_sample_long_covid_couplelevel.rds
+#     couple_history_future_mainonly_long.rds
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -30,6 +31,7 @@ suppressPackageStartupMessages({
 rm(list = ls())
 
 source("code/lib/config.R")
+source("code/lib/wave_labels.R")
 source("code/lib/couple_plot_helpers.R")
 source("code/lib/couple_baseline_dist_plots.R")
 
@@ -41,39 +43,34 @@ fig_path_baseline_dist <- file.path(fig_path_couple_treatment, "baseline_distrib
 dir.create(fig_path_baseline_dist, showWarnings = FALSE, recursive = TRUE)
 
 # =============================================================================
-# Load 2019 baseline couple-level data
+# Load data
 # =============================================================================
 
-baseline_file <- file.path(samples_path, "s2019_baseline_couplelevel.rds")
-if (!file.exists(baseline_file)) {
-  stop(
-    "Baseline couple-level file not found: ", baseline_file,
-    "\nRun code/run/01_build_data.R first."
-  )
-}
-df_baseline_couple <- readRDS(baseline_file)
-
-# Load COVID couple panel for COVID-only variables (timechcare, husits)
 covid_file <- file.path(der_path, "df_sample_long_covid_couplelevel.rds")
 if (!file.exists(covid_file)) {
-  stop(
-    "COVID couple-level file not found: ", covid_file,
-    "\nRun code/run/01_build_data.R first."
-  )
+  stop("COVID couple file not found: ", covid_file,
+       "\nRun code/run/01_build_data.R first.")
 }
 df_covid_couple <- readRDS(covid_file)
 df_covid_couple <- add_husits_wife_main_both(df_covid_couple)
 
-# =============================================================================
-# Reshape to spouse-long
-# =============================================================================
-
-df_baseline_spouse <- reshape_couple_long_to_spouse_long(df_baseline_couple)
-
-# COVID-only variables: use first wave (ca) to show a baseline-like distribution
-df_covid_wave1_spouse <- df_covid_couple %>%
-  dplyr::filter(wave == "ca") %>%
+# Exclude synthetic pre-period rows; keep only actual COVID study waves
+df_covid_spouse <- df_covid_couple %>%
+  dplyr::filter(!wave %in% c("2019", "baseline")) %>%
   reshape_couple_long_to_spouse_long()
+
+main_file <- file.path(der_path, "couple_history_future_mainonly_long.rds")
+if (file.exists(main_file)) {
+  df_main_couple <- readRDS(main_file)
+  # Exclude synthetic baseline rows (baseline_i / baseline_j / baseline_k)
+  df_main_spouse <- df_main_couple %>%
+    dplyr::filter(!grepl("^baseline_", wave)) %>%
+    reshape_couple_long_to_spouse_long()
+} else {
+  warning("Main-survey couple file not found: ", main_file,
+          ". Main-survey distributions will be skipped.")
+  df_main_spouse <- NULL
+}
 
 # =============================================================================
 # Plot settings
@@ -85,33 +82,30 @@ STRIP_TEXT_SIZE <- 13
 TITLE_SIZE      <- 13
 
 # =============================================================================
-# Baseline (2019) outcomes
+# COVID-source outcomes  (all COVID waves ca-ci pooled)
 # =============================================================================
 
-BASELINE_OUTCOMES <- c(
-  "any_work",           # binary
-  "jbhrs",              # continuous: usual weekly hours (main study)
-  "workoutside",        # binary (may be missing in 2019 main survey)
-  "wfh_some",           # binary (may be missing in 2019 main survey)
-  "paygu_dv_real",      # continuous
-  "fimnlabgrs_dv_real", # continuous
-  "howlng"              # continuous: housework hours
-  # husits_wife_main_both handled separately via COVID wave 1
+COVID_OUTCOMES <- c(
+  "any_work",             # binary
+  "hours",                # continuous: hours worked last week (COVID measure)
+  "workoutside",          # binary
+  "wfh_some",             # binary
+  "howlng",               # continuous: housework hours
+  "timechcare",           # continuous: childcare hours
+  "husits_wife_main_both" # binary: childcare responsibility
 )
 
-for (v in BASELINE_OUTCOMES) {
-  if (!v %in% names(df_baseline_spouse)) {
-    message("Skipping '", v, "': not found in baseline data.")
+for (v in COVID_OUTCOMES) {
+  if (!v %in% names(df_covid_spouse)) {
+    message("Skipping '", v, "': not found in COVID data.")
     next
   }
-
   stem <- couple_plot_var_stem(v)
-
   plot_baseline_dist_for_var(
-    df_spouse_long = df_baseline_spouse,
-    var            = v,
-    out_file       = paste0("baseline_dist_", stem, "_childgrid_spousecols.png"),
-    fig_path       = fig_path_baseline_dist,
+    df_spouse_long  = df_covid_spouse,
+    var             = v,
+    out_file        = paste0("dist_covid_", stem, "_childgrid_spousecols.png"),
+    fig_path        = fig_path_baseline_dist,
     axis_text_size  = AXIS_TEXT_SIZE,
     axis_title_size = AXIS_TITLE_SIZE,
     strip_text_size = STRIP_TEXT_SIZE,
@@ -119,51 +113,68 @@ for (v in BASELINE_OUTCOMES) {
   )
 }
 
-# =============================================================================
-# COVID-only variables: first COVID wave (no 2019 equivalent)
-# =============================================================================
-
-COVID_ONLY_OUTCOMES <- list(
-  list(var = "timechcare",           out_stem = "childcare_hours"),
-  list(var = "husits_wife_main_both", out_stem = "childcare_responsibility")
-)
-
-for (spec in COVID_ONLY_OUTCOMES) {
-  v    <- spec$var
-  stem <- spec$out_stem
-  if (v %in% names(df_covid_wave1_spouse)) {
-    plot_baseline_dist_for_var(
-      df_spouse_long = df_covid_wave1_spouse,
-      var            = v,
-      out_file       = paste0("baseline_dist_", stem, "_childgrid_spousecols.png"),
-      fig_path       = fig_path_baseline_dist,
-      axis_text_size  = AXIS_TEXT_SIZE,
-      axis_title_size = AXIS_TITLE_SIZE,
-      strip_text_size = STRIP_TEXT_SIZE,
-      title_size      = TITLE_SIZE
-    )
-  } else {
-    message("Skipping '", v, "': not found in wave-1 COVID data.")
-  }
-}
-
-# =============================================================================
-# work_last_week_status: baseline distribution (COVID wave 1)
-# =============================================================================
-
-if ("work_last_week_status" %in% names(df_covid_wave1_spouse)) {
+if ("work_last_week_status" %in% names(df_covid_spouse)) {
   plot_baseline_work_status(
-    df_spouse_long = df_covid_wave1_spouse,
-    out_file       = "baseline_dist_work_status_last_week_childgrid_spousecols.png",
-    fig_path       = fig_path_baseline_dist,
+    df_spouse_long  = df_covid_spouse,
+    out_file        = "dist_covid_work_status_last_week_childgrid_spousecols.png",
+    fig_path        = fig_path_baseline_dist,
     axis_text_size  = AXIS_TEXT_SIZE,
     axis_title_size = AXIS_TITLE_SIZE,
     strip_text_size = STRIP_TEXT_SIZE,
     title_size      = TITLE_SIZE
   )
 } else {
-  message("Skipping work_last_week_status baseline: not found in wave-1 COVID data.")
+  message("Skipping COVID work_last_week_status: not found in COVID data.")
 }
 
-cat("\nBaseline distribution figures complete.\n")
+# =============================================================================
+# Main-survey outcomes  (all main-survey history + future waves pooled)
+# =============================================================================
+
+if (!is.null(df_main_spouse)) {
+
+  MAIN_OUTCOMES <- c(
+    "any_work",              # binary
+    "jbhrs",                 # continuous: usual weekly hours
+    "workoutside",           # binary
+    "wfh_some",              # binary
+    "paygu_dv_real",         # continuous: gross monthly pay (real)
+    "fimnlabgrs_dv_real",    # continuous: gross monthly labour income (real)
+    "howlng"                 # continuous: housework hours
+  )
+
+  for (v in MAIN_OUTCOMES) {
+    if (!v %in% names(df_main_spouse)) {
+      message("Skipping '", v, "': not found in main-survey data.")
+      next
+    }
+    stem <- couple_plot_var_stem(v)
+    plot_baseline_dist_for_var(
+      df_spouse_long  = df_main_spouse,
+      var             = v,
+      out_file        = paste0("dist_main_", stem, "_childgrid_spousecols.png"),
+      fig_path        = fig_path_baseline_dist,
+      axis_text_size  = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      title_size      = TITLE_SIZE
+    )
+  }
+
+  if ("work_last_week_status" %in% names(df_main_spouse)) {
+    plot_baseline_work_status(
+      df_spouse_long  = df_main_spouse,
+      out_file        = "dist_main_work_status_last_week_childgrid_spousecols.png",
+      fig_path        = fig_path_baseline_dist,
+      axis_text_size  = AXIS_TEXT_SIZE,
+      axis_title_size = AXIS_TITLE_SIZE,
+      strip_text_size = STRIP_TEXT_SIZE,
+      title_size      = TITLE_SIZE
+    )
+  } else {
+    message("Skipping main work_last_week_status: not found in main-survey data.")
+  }
+}
+
+cat("\nDistribution figures complete.\n")
 cat("Figures saved under: ", fig_path_baseline_dist, "\n", sep = "")
