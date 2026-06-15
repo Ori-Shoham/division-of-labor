@@ -286,7 +286,7 @@ plot_covid_treatment_group_counts <- function(
   p <- ggplot(
     dd,
     aes(
-      x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+      x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
       y = n_couples,
       color = treatment_group,
       shape = treatment_group,
@@ -465,7 +465,7 @@ plot_future_treatment_group_counts <- function(
     p <- p +
       scale_x_discrete(
         limits = wl_future$wave,
-        labels = wl_future$wave_lab_short
+        labels = wl_future$wave_label_short
       )
   } else {
     p <- .apply_regular_wave_time_labels(
@@ -548,7 +548,7 @@ plot_covid_spouse_treatment_overtime <- function(
   p <- ggplot(
     dd,
     aes(
-      x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+      x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
       y = mean_y,
       color = treatment_group,
       shape = treatment_group,
@@ -657,7 +657,7 @@ plot_covid_spouse_treatment_childgrid <- function(
   p <- ggplot(
     dd,
     aes(
-      x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+      x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
       y = mean_y,
       color = treatment_group,
       shape = treatment_group,

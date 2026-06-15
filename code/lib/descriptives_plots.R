@@ -31,12 +31,7 @@ suppressPackageStartupMessages({
 # Wave label mapping (short for axis, full for titles)
 # -----------------------------------------------------------------------------
 wave_labels <- function() {
-  wave_label_lookup() %>%
-    dplyr::transmute(
-      wave,
-      wave_lab_short = wave_label_short,
-      wave_lab_full  = wave_label_full
-    )
+  wave_label_lookup()
 }
 
 wave_full_label <- function(wave_code) {
@@ -430,7 +425,7 @@ plot_overtime_worked <- function(df, by, out_file, fig_path) {
     summarise(work = mean(hours > 0), .groups = "drop") %>%
     left_join(wl, by = "wave")
 
-  p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+  p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                       y = work, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
     theme_minimal() +
@@ -457,7 +452,7 @@ plot_overtime_hours <- function(df, by, out_file, fig_path) {
     summarise(work_hours = mean(hours), .groups = "drop") %>%
     left_join(wl, by = "wave")
 
-  p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+  p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                       y = work_hours, color = .data[[by]], shape = .data[[by]])) +
     geom_point() +
     theme_minimal() +
@@ -495,7 +490,7 @@ plot_covid_numeric_overtime <- function(df, var, y_lab, title, by = NULL, out_fi
       summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = mean_value)) +
       geom_line(group = 1) +
       geom_point() +
@@ -509,7 +504,7 @@ plot_covid_numeric_overtime <- function(df, var, y_lab, title, by = NULL, out_fi
       summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = mean_value,
                         color = .data[[by]],
                         shape = .data[[by]])) +
@@ -568,7 +563,7 @@ plot_covid_categorical_overtime <- function(df,
       ungroup() %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = share,
                         fill = cat)) +
       geom_col(position = "fill") +
@@ -588,7 +583,7 @@ plot_covid_categorical_overtime <- function(df,
       ungroup() %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = share,
                         fill = cat)) +
       geom_col(position = "fill") +
@@ -621,7 +616,7 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
       summarise(workoutside = mean(workoutside, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = workoutside)) +
       geom_point() +
       theme_minimal() +
@@ -640,7 +635,7 @@ plot_workoutside_overtime <- function(df, by = NULL, out_file, fig_path) {
       summarise(workoutside = mean(workoutside, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = workoutside, color = .data[[by]], shape = .data[[by]])) +
       geom_point() +
       theme_minimal() +
@@ -670,7 +665,7 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
       summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = wfh_some)) +
       geom_point() +
       theme_minimal() +
@@ -689,7 +684,7 @@ plot_wfh_some_overtime <- function(df, by = NULL, out_file, fig_path) {
       summarise(wfh_some = mean(wfh_some, na.rm = TRUE), .groups = "drop") %>%
       left_join(wl, by = "wave")
 
-    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+    p <- ggplot(dd, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                         y = wfh_some, color = .data[[by]], shape = .data[[by]])) +
       geom_point() +
       theme_minimal() +
@@ -732,12 +727,12 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
     left_join(wl, by = "wave") %>%
     mutate(
       # short labels for axis
-      wave_lab_short = factor(wave_lab_short, levels = wl$wave_lab_short),
+      wave_label_short = factor(wave_label_short, levels = wl$wave_label_short),
       # keep consistent ordering in stacks
       wfh_cat = factor(wfh_cat, levels = c("Always", "Often", "Sometimes", "Never", "Not employed"))
     )
 
-  p <- ggplot(dd, aes(x = wave_lab_short, fill = wfh_cat)) +
+  p <- ggplot(dd, aes(x = wave_label_short, fill = wfh_cat)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
     facet_grid(cols = vars(.data[[by]])) +
     scale_y_continuous(labels = scales::percent_format()) +

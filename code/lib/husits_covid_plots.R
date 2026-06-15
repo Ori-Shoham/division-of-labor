@@ -267,7 +267,7 @@ suppressPackageStartupMessages({
   if (exists("wave_labels", mode = "function")) {
     wl <- wave_labels()
     
-    if (all(c("wave", "wave_lab_short") %in% names(wl))) {
+    if (all(c("wave", "wave_label_short") %in% names(wl))) {
       return(wl)
     }
   }
@@ -276,7 +276,7 @@ suppressPackageStartupMessages({
   
   tibble::tibble(
     wave = waves,
-    wave_lab_short = waves
+    wave_label_short = waves
   )
 }
 
@@ -338,7 +338,7 @@ suppressPackageStartupMessages({
       wave_plot = factor(
         wave,
         levels = wl$wave,
-        labels = wl$wave_lab_short
+        labels = wl$wave_label_short
       ),
       treatment_group = factor(
         treatment_group,
@@ -434,7 +434,7 @@ suppressPackageStartupMessages({
       wave_plot = factor(
         wave,
         levels = wl$wave,
-        labels = wl$wave_lab_short
+        labels = wl$wave_label_short
       ),
       treatment_group = factor(
         treatment_group,

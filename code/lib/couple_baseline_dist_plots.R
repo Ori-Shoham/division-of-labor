@@ -430,7 +430,7 @@ plot_covid_work_status_childgrid <- function(
 
   if (nrow(df_plot) == 0) return(invisible(NULL))
 
-  p <- ggplot(df_plot, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_lab_short),
+  p <- ggplot(df_plot, aes(x = factor(wave, levels = wl$wave, labels = wl$wave_label_short),
                            y = share, fill = status_label)) +
     geom_col(position = "stack", width = 0.85) +
     facet_grid(
