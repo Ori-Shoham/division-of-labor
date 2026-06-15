@@ -68,6 +68,25 @@
   }%
 }
 
+% Standardized variable-definition slide placed before each outcome's
+% distribution slide.
+% Args: #1 title, #2 measures, #3 UKHLS source variable(s), #4 definition
+%       (covering COVID and main where both apply), #5 reference period,
+%       #6 processing (all transformations applied), #7 source citation.
+\newcommand{\vardefframe}[7]{%
+\begin{frame}{#1 --- variable definition}
+\small
+\begin{description}
+  \item[\textbf{Measures}] #2
+  \item[\textbf{UKHLS source}] #3
+  \item[\textbf{Definition}] #4
+  \item[\textbf{Reference period}] #5
+  \item[\textbf{Processing}] #6
+  \item[\textbf{Source}] #7
+\end{description}
+\end{frame}
+}
+
 \newcommand{\eventstudybuttonrow}[1]{%
   \vspace{0.2em}
   \hfill #1
@@ -161,6 +180,7 @@
   \item \textbf{COVID figures}: COVID-study waves.
   \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample.
   \item \textbf{Pay outcomes}: shown in constant December 2019 pounds.
+  \item \textbf{Definition slides}: each outcome opens with a slide defining the variable, its UKHLS source, reference period, and processing.
   \item \textbf{Distribution slides}: 2019 baseline (childcare hours use COVID wave 1), couples with children, full sample (no treatment split).
   \item \textbf{Appendix}: full-sample main-study versions and event studies.
 \end{itemize}
@@ -254,6 +274,15 @@ X_c'\gamma
 % Worked positive hours
 % =============================================================================
 
+\vardefframe
+{Worked positive hours}
+{Binary indicator: did any paid work in the reference week (1) vs employed-but-zero-hours or not employed (0).}
+{COVID: \texttt{sempderived} (employment status) and \texttt{hours} (hours worked last week). Main study / synthetic 2019 row: \texttt{jbhas} (did paid work last week).}
+{\textbf{COVID waves:} equals 1 if hours worked last week $>0$, 0 if zero hours or not employed (\texttt{sempderived}$=4$). \textbf{Main study / 2019 row:} equals 1 if \texttt{jbhas}$=1$ (yes), 0 if \texttt{jbhas}$=2$ (no).}
+{COVID: last 7 days. Main: the week before the (mostly 2019) interview.}
+{UKHLS negative codes ($-9,-8,-7,-2,-1$) set to missing. Binary outcome --- not winsorized.}
+{UKHLS COVID-19 variable docs (\texttt{sempderived}, \texttt{hours}); main-stage docs (\texttt{jbhas}).}
+
 \begin{frame}{Worked positive hours --- distribution (COVID waves)}
 \centering
 \distfigure{\ctdistdir/dist_covid_worked_positive_hours_childgrid_spousecols.png}
@@ -267,6 +296,15 @@ X_c'\gamma
 % =============================================================================
 % Work status last week
 % =============================================================================
+
+\vardefframe
+{Work status last week}
+{Three-category labour-force position in the reference week.}
+{COVID: \texttt{sempderived} and \texttt{hours}. Main study / 2019 row: \texttt{jbhas} (paid work last week) and \texttt{jboff} (has job, did not work).}
+{\textbf{(1) Worked last week}: COVID \texttt{sempderived}$\in\{1,2,3\}$ and hours $>0$; main \texttt{jbhas}$=1$. \textbf{(2) Has job, did not work}: COVID employed with zero hours; main \texttt{jbhas}$=2$, \texttt{jboff}$=1$. \textbf{(3) Not employed}: COVID \texttt{sempderived}$=4$; main \texttt{jbhas}$=2$, \texttt{jboff}$=2$.}
+{COVID: last 7 days (waves ca--ci). Main / 2019 row: week before the pre-COVID interview.}
+{Negative codes set to missing (row excluded). Categorical --- not winsorized.}
+{UKHLS COVID-19 docs (\texttt{sempderived}, \texttt{hours}); main-stage docs (\texttt{jbhas}, \texttt{jboff}).}
 
 \begin{frame}{Work status last week --- distribution (COVID waves)}
 \centering
@@ -287,6 +325,15 @@ X_c'\gamma
 % Weekly hours
 % =============================================================================
 
+\vardefframe
+{Weekly hours}
+{Weekly working hours: hours actually worked last week (COVID) or usual weekly hours in the main job (main).}
+{COVID: \texttt{hours} (hours worked last week, all jobs). Main: \texttt{jbhrs} (usual weekly hours in main job, excl.\ overtime and meal breaks).}
+{\textbf{COVID:} actual hours in the 7 days before interview, across all jobs (non-workers enter 0). \textbf{Main:} usual contractual weekly hours in the main job. Related but distinct concepts (actual vs usual; all jobs vs main job).}
+{COVID: last 7 days. Main: a usual week.}
+{Negative codes set to missing. In main event studies \texttt{jbhrs} is set to 0 for non-workers (\texttt{jbstat}$\notin\{1,2\}$). Continuous --- winsorized at the 99th percentile (upper-tail cap) in over-time and event-study figures.}
+{UKHLS COVID-19 docs (\texttt{hours}); main-stage docs (\texttt{jbhrs}).}
+
 \begin{frame}{Weekly hours --- distribution (main survey)}
 \centering
 \distfigure{\ctdistdir/dist_main_weekly_hours_childgrid_spousecols.png}
@@ -301,6 +348,15 @@ X_c'\gamma
 % Work outside
 % =============================================================================
 
+\vardefframe
+{Work outside}
+{Binary indicator for working at least partly outside the home.}
+{COVID: \texttt{wah} (working-at-home frequency) with \texttt{sempderived}. Main: \texttt{jbpl} (work location) and \texttt{jbwah} (WFH frequency), with \texttt{jbstat}, \texttt{jbhrs}.}
+{Equals 1 for workers who do not always work from home; 0 for non-workers, zero hours, or always WFH; missing where the WFH item was not asked. \textbf{COVID} uses \texttt{wah}; \textbf{main} harmonizes \texttt{jbpl}$+$\texttt{jbwah} into one WFH code (\texttt{jbpl}$=1$ at home $\rightarrow$ always WFH). Synthetic 2019 row is missing (pre-2020 waves lack the item).}
+{COVID: last four weeks (waves ca--ci). Main: current work arrangement.}
+{Negative codes set to missing; work-location and WFH-frequency items harmonized into the indicator. Binary --- not winsorized.}
+{UKHLS COVID-19 docs (\texttt{wah}); main-stage docs (\texttt{jbpl}, \texttt{jbwah}).}
+
 \begin{frame}{Work outside --- distribution (main survey)}
 \centering
 \distfigure{\ctdistdir/dist_main_workoutside_childgrid_spousecols.png}
@@ -313,6 +369,15 @@ X_c'\gamma
 % =============================================================================
 % WFH any
 % =============================================================================
+
+\vardefframe
+{WFH any}
+{Indicator for working from home always, often, or sometimes (vs never).}
+{COVID: \texttt{wah} (WFH frequency, 1 Always--4 Never). Main: \texttt{jbpl} (work location) and \texttt{jbwah} (WFH frequency, asked if \texttt{jbpl}$\neq1$).}
+{Equals 1 if WFH always/often/sometimes, 0 if never (or not working), missing if the WFH item was not asked. \textbf{COVID} uses \texttt{wah}$\in\{1,2,3\}$. \textbf{Main} harmonizes \texttt{jbpl}$+$\texttt{jbwah}: \texttt{jbpl}$=1$ (at home) $\rightarrow$ always, else WFH code $=$ \texttt{jbwah}. Synthetic 2019 row always missing.}
+{COVID: last four weeks. Main: usual frequency.}
+{Negative codes set to missing; \texttt{jbpl}$+$\texttt{jbwah} harmonized into one WFH code. Binary --- not winsorized.}
+{UKHLS COVID-19 docs (\texttt{wah}); main-stage docs (\texttt{jbpl}, \texttt{jbwah}).}
 
 \begin{frame}{WFH any --- distribution (main survey)}
 \centering
@@ -327,6 +392,15 @@ X_c'\gamma
 % Gross monthly pay
 % =============================================================================
 
+\vardefframe
+{Gross monthly pay}
+{Usual gross pay per month from the current/main job, in constant December 2019 pounds. Main study only.}
+{\texttt{paygu\_dv} (derived: usual gross monthly pay, current job), built from last-payment pay (\texttt{paygl}) or usual pay (\texttt{payu}), grossed up and imputed.}
+{\texttt{paygu\_dv} is usual gross monthly pay from the current job. The real version multiplies the nominal value by CPIH$_{2019m12}/$CPIH$_{t}$ (interview month $t$), giving constant December 2019 pounds.}
+{Usual monthly pay from the current job at the main-study interview.}
+{Negative monetary codes set to missing; deflated to December 2019 pounds (CPIH). In event studies set to 0 for non-workers (\texttt{jbstat}$\notin\{1,2\}$). Continuous --- winsorized at the 99th percentile.}
+{Understanding Society Working Paper 2019-08; main-stage docs (\texttt{paygu\_dv}).}
+
 \begin{frame}{Gross monthly pay --- distribution (main survey)}
 \centering
 \distfigure{\ctdistdir/dist_main_gross_monthly_pay_real_childgrid_spousecols.png}
@@ -339,6 +413,15 @@ X_c'\gamma
 % Gross monthly labour income
 % =============================================================================
 
+\vardefframe
+{Gross monthly labour income}
+{Total personal gross labour income per month, in constant December 2019 pounds. Main study only.}
+{\texttt{fimnlabgrs\_dv} (derived: total gross monthly labour income), summing current-job pay (\texttt{paygu\_dv}), self-employment earnings, and second-job pay --- broader than \texttt{paygu\_dv}.}
+{\texttt{fimnlabgrs\_dv} is gross (pre-tax) total monthly labour income across all jobs. The real version multiplies the nominal value by CPIH$_{2019m12}/$CPIH$_{t}$, giving constant December 2019 pounds.}
+{Gross monthly labour income at the main-study interview.}
+{Negative monetary codes set to missing; deflated to December 2019 pounds (CPIH). In event studies set to 0 for non-workers (\texttt{jbstat}$\notin\{1,2\}$). Continuous --- winsorized at the 99th percentile.}
+{Understanding Society Working Paper 2019-08; main-stage docs (\texttt{fimnlabgrs\_dv}).}
+
 \begin{frame}{Gross monthly labour income --- distribution (main survey)}
 \centering
 \distfigure{\ctdistdir/dist_main_gross_monthly_labour_income_real_childgrid_spousecols.png}
@@ -350,6 +433,15 @@ X_c'\gamma
 % =============================================================================
 % Housework hours
 % =============================================================================
+
+\vardefframe
+{Housework hours}
+{Self-reported weekly hours on housework (cooking, cleaning, laundry).}
+{COVID: \texttt{howlng\_cv}. Main: \texttt{howlng}. Harmonized to a single \texttt{howlng}.}
+{Hours spent on housework such as cooking, cleaning and laundry. \textbf{COVID} asks about last week; the \textbf{main} study asks about an average week. Same activities, slightly different recall.}
+{Weekly. The synthetic Jan--Feb 2020 baseline row has no housework measure.}
+{Negative codes set to missing; COVID \texttt{howlng\_cv} renamed/harmonized to \texttt{howlng}. Continuous --- winsorized at the 99th percentile. Not zeroed for non-workers.}
+{UKHLS COVID-19 docs (\texttt{howlng\_cv}); main-stage docs (\texttt{howlng}).}
 
 \begin{frame}{Housework hours --- distribution (COVID waves)}
 \centering
@@ -365,6 +457,15 @@ X_c'\gamma
 % Childcare hours
 % =============================================================================
 
+\vardefframe
+{Childcare hours}
+{Self-reported weekly hours on childcare or home schooling. COVID study only.}
+{\texttt{timechcare} (COVID: time spent on childcare or home schooling), asked of respondents with children in the household.}
+{Hours spent on childcare or home schooling last week, counting direct childcare and home-schooling together in one weekly total. No comparable main-study question.}
+{Last week, COVID waves (ca--ci). Single-study outcome; no event-study reference period, so shown as a COVID descriptive only.}
+{Negative codes set to missing; set to missing for synthetic pre-period rows. Continuous --- winsorized at the 99th percentile.}
+{UKHLS COVID-19 variable docs (\texttt{timechcare}).}
+
 \begin{frame}{Childcare hours --- distribution (COVID waves)}
 \centering
 \distfigure{\ctdistdir/dist_covid_childcare_hours_childgrid_spousecols.png}
@@ -375,6 +476,15 @@ X_c'\gamma
 % =============================================================================
 % Childcare responsibility
 % =============================================================================
+
+\vardefframe
+{Childcare responsibility}
+{Indicator equal to 1 when both spouses report the wife is mainly responsible for childcare.}
+{\texttt{husits} (COVID and main): ``Who is mainly responsible for looking after the children?''}
+{Harmonized \texttt{husits} categories: 1 mainly self, 2 mainly partner, 3 shared, 4 someone else. Reports are ego-centric, so the wife saying ``mainly self'' (1) and the husband saying ``mainly partner'' (2) both mean the wife is mainly responsible. \texttt{husits\_wife\_main\_both}$=1$ when both hold, 0 when both report validly but the condition fails, missing if either report is missing.}
+{Current responsibility; COVID waves (and 2019 main baseline).}
+{Negative codes set to missing; finer COVID scale harmonized to the four main-study categories; combined across both spouses' reports. Binary --- not winsorized.}
+{UKHLS COVID-19 docs (\texttt{husits}); main-stage docs (\texttt{husits}).}
 
 \begin{frame}{Childcare responsibility --- distribution (COVID waves)}
 \centering
@@ -415,37 +525,6 @@ Y^{nominal}_{it}
 \vspace{0.4em}
 \scriptsize
 Source: Office for National Statistics, CPIH all-items monthly time series \texttt{L522}: \url{https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23}
-\end{frame}
-
-\section{Appendix: outcome variable definitions}
-
-\begin{frame}{Outcome variable definitions}
-\centering
-\tiny
-\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight,center}
-\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}X@{}}
-\toprule
-\textbf{Variable} & \textbf{Definition used in the couple-treatment outputs} \\
-\midrule
-\texttt{any\_work} & Indicator for worked positive hours. In COVID waves this uses hours worked last week; in main-study waves this uses positive usual weekly hours among employed or self-employed respondents. \\
-\texttt{hours} & COVID-study hours worked last week. Synthetic pre-COVID rows use Jan--Feb 2020 baseline hours where available. \\
-\texttt{jbhrs} & Main-study usual weekly hours worked; event-study cleaning sets this to zero for non-workers while leaving missing values among workers missing. \\
-\texttt{workoutside} & Indicator for working outside the home. Equals one for workers who do not always work from home; equals zero for non-workers, zero hours, or always working from home. \\
-\texttt{wfh\_some} & Indicator for working from home always, often, or sometimes. The figure stem uses \texttt{wfh\_any}. Defined only in waves where a WFH question is available. \\
-\texttt{paygu\_dv\_real} & Usual gross pay per month from current job, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
-\texttt{fimnlabgrs\_dv\_real} & Gross monthly labour income, converted to December 2019 pounds; main event studies set this to zero for non-workers. \\
-\texttt{howlng} & Weekly housework hours. COVID raw \texttt{howlng\_cv} is harmonized to \texttt{howlng}; the Jan--Feb 2020 synthetic baseline row has no comparable housework measure. \\
-\texttt{timechcare} & COVID-study childcare / home-schooling hours. It has no reference period for event studies, so it appears as a COVID descriptive outcome only. \\
-\texttt{husits\_wife\_main\_both} & Indicator equal to one when both spouses' harmonized childcare-responsibility reports imply the wife is mainly responsible. \\
-\bottomrule
-\end{tabularx}
-\end{adjustbox}
-
-\vspace{0.2em}
-\tiny \emph{Interpretation note:} COVID-study work outcomes are short-run, last-week measures; regular/main-study outcomes are usual-week measures. Thus \texttt{hours} and \texttt{jbhrs} are comparable as weekly-hours outcomes but not identical questionnaire concepts.
-
-\vspace{0.2em}
-\tiny Sources: code documentation in \texttt{work\_groups.R}, \texttt{covid\_loader.R}, \texttt{covid\_panel.R}, \texttt{future\_outcomes.R}, \texttt{couple\_plot\_helpers.R}, and \texttt{event\_study\_regressions.R}.
 \end{frame}
 
 \section{Appendix: full-sample main-study descriptives}

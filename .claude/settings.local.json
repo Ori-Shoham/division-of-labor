@@ -16,7 +16,9 @@
       "PowerShell($w = New-Object -ComObject Word.Application -ErrorAction SilentlyContinue; if\\($w\\){ \"Word available: \" + $w.Version; $w.Quit\\(\\) } else { \"no Word COM\" })",
       "PowerShell(& powershell.exe -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Ori\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\21eb83fd-db34-4a7e-85cb-15206ddb9cdd\\\\be6a70b4-9cbf-47a6-a767-4ae56f2af3af\\\\skills\\\\docx\\\\topdf.ps1\")",
       "Bash(C:/Users/Ori/anaconda3/python.exe -c \"print\\('use ps'\\)\")",
-      "Bash(pandoc \"SpecialLicenceProjectApplication_revised.docx\" --to markdown --track-changes=all)"
+      "Bash(pandoc \"SpecialLicenceProjectApplication_revised.docx\" --to markdown --track-changes=all)",
+      "Bash(xargs grep -l \"build_baseline_couple\")",
+      "Bash(dir)"
     ]
   }
 }
