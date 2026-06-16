@@ -178,10 +178,13 @@ df_base_person_by_year <- list(
 year_couples <- lapply(df_base_person_by_year, function(dbp) {
   roster <- build_baseline_couple_roster(dbp)
   cds <- build_baseline_couple_dataset(dbp, roster)
+  # baseline_group_info_ok = (valid SIC AND valid SOC), i.e. industry AND
+  # occupation identifiable for that spouse. add_baseline_work_groups() drops
+  # the raw has_valid_sic/has_valid_soc flags but keeps this combined flag.
   qualified_ids <- cds %>%
     dplyr::filter(
-      has_valid_sic_h, has_valid_soc_h,
-      has_valid_sic_w, has_valid_soc_w
+      baseline_group_info_ok_h,
+      baseline_group_info_ok_w
     ) %>%
     dplyr::pull(couple_id)
   list(roster = roster, qualified_ids = qualified_ids)
