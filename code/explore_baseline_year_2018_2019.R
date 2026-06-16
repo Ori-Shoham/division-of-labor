@@ -333,16 +333,10 @@ assemble_scenario <- function(tag, df_baseline_person, roster) {
     df_history_long = df_hist_long,
     roster          = roster
   )
-  df_couple_hist_summary <- summarise_prebaseline_couple_history(
-    df_couple_history_long = df_couple_hist_long,
-    df_history_summary     = NULL,
-    roster                 = roster
-  )
-  s_couple <- s_couple %>%
-    dplyr::left_join(
-      df_couple_hist_summary,
-      by = c("couple_id", "husband_pidp", "wife_pidp")
-    )
+  # NB: the pre-baseline history *summary* (hist_* columns) is not needed for
+  # observation counts. The stacked panel is built from df_couple_hist_long, and
+  # the count plots only use treatment group + outcomes + time. So we skip
+  # summarise_prebaseline_couple_history() and its three-key join here.
 
   attach_tbl <- s_couple %>%
     dplyr::select(
