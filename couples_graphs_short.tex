@@ -27,6 +27,7 @@
 \newcommand{\ctfutdir}{\figdir/couple_treatment/future_childgrids}
 \newcommand{\cthistfutdir}{\figdir/couple_treatment/history_future_childgrids}
 \newcommand{\ctdistdir}{\figdir/couple_treatment/baseline_distributions}
+\newcommand{\blcdir}{\figdir/explore/baseline_year_check}
 
 \newcommand{\missingfigurebox}[1]{%
   \begin{tikzpicture}
@@ -583,5 +584,62 @@ Source: Office for National Statistics, CPIH all-items monthly time series \text
 \mainyearmontheventframescfe{Housework hours}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{bic}
 
 \eventstudyframescfe{Childcare responsibility (COVID)}{wife_key_husb_notedu}{covid_husits_wife_main_both}{wife_key_husb_notedu}{all}
+
+% =============================================================================
+% Appendix: 2018 baseline fallback
+% =============================================================================
+
+\section{Appendix: 2018 baseline fallback}
+
+\begin{frame}{2018 baseline fallback --- design}
+\small
+Current baseline uses 2019 only. This section asks how many additional couple observations become available if 2018 is used as a fallback.
+
+\vspace{0.4em}
+\textbf{Selection rule (per couple):}
+\begin{itemize}
+  \item Use 2019 if both spouses are observed, employed, and have valid SIC \emph{and} SOC in 2019.
+  \item Otherwise use 2018 if both qualify there.
+  \item Within a year, the latest available wave is preferred ($k > j > i > h$).
+\end{itemize}
+
+\vspace{0.4em}
+\textbf{Candidate waves:} h, i, j cover 2018; i, j, k cover 2019.
+
+\vspace{0.4em}
+\textbf{Scenarios compared:}
+\begin{description}
+  \item[2019-only] Current production baseline.
+  \item[Combined] 2019 couples retained; 2018 fallback couples added.
+\end{description}
+
+\vspace{0.4em}
+\scriptsize Source: \texttt{code/explore\_baseline\_year\_2018\_2019.R}
+\end{frame}
+
+\begin{frame}{Observation gain from 2018 fallback (wife key treatment)}
+\centering
+\countfigure{\blcdir/gain_treat_wife_key_notedu_husb_not_or_edu.png}
+\end{frame}
+
+\begin{frame}{Counts: 2019-only baseline (COVID waves)}
+\centering
+\countfigure{\blcdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_2019_only.png}
+\end{frame}
+
+\begin{frame}{Counts: 2018--2019 combined baseline (COVID waves)}
+\centering
+\countfigure{\blcdir/covid_counts_wave_treat_wife_key_notedu_husb_not_or_edu_combined.png}
+\end{frame}
+
+\begin{frame}{Counts: 2019-only baseline (main study, year)}
+\centering
+\countfigure{\blcdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_2019_only.png}
+\end{frame}
+
+\begin{frame}{Counts: 2018--2019 combined baseline (main study, year)}
+\centering
+\countfigure{\blcdir/main_history_future_counts_year_treat_wife_key_notedu_husb_not_or_edu_combined.png}
+\end{frame}
 
 \end{document}
