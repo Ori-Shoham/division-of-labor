@@ -1,0 +1,649 @@
+scenario,treatment_var,panel,sample_group,period,treatment_group,n_couples
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,2019,"Wife key (non-edu), husband not / edu",158
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,2019,All other couples,786
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,baseline,"Wife key (non-edu), husband not / edu",157
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,baseline,All other couples,786
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ca,"Wife key (non-edu), husband not / edu",154
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ca,All other couples,777
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cb,"Wife key (non-edu), husband not / edu",142
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cb,All other couples,737
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cc,"Wife key (non-edu), husband not / edu",142
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cc,All other couples,721
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cd,"Wife key (non-edu), husband not / edu",137
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cd,All other couples,699
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ce,"Wife key (non-edu), husband not / edu",136
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ce,All other couples,679
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cf,"Wife key (non-edu), husband not / edu",126
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cf,All other couples,653
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cg,"Wife key (non-edu), husband not / edu",121
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cg,All other couples,634
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ch,"Wife key (non-edu), husband not / edu",118
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ch,All other couples,656
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ci,"Wife key (non-edu), husband not / edu",131
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ci,All other couples,670
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,2019,"Wife key (non-edu), husband not / edu",50
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,2019,All other couples,291
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,baseline,"Wife key (non-edu), husband not / edu",50
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,baseline,All other couples,291
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ca,"Wife key (non-edu), husband not / edu",49
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ca,All other couples,289
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cb,"Wife key (non-edu), husband not / edu",44
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cb,All other couples,267
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cc,"Wife key (non-edu), husband not / edu",44
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cc,All other couples,257
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cd,"Wife key (non-edu), husband not / edu",42
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cd,All other couples,245
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ce,"Wife key (non-edu), husband not / edu",43
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ce,All other couples,247
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cf,"Wife key (non-edu), husband not / edu",40
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cf,All other couples,231
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cg,"Wife key (non-edu), husband not / edu",36
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cg,All other couples,219
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ch,"Wife key (non-edu), husband not / edu",35
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ch,All other couples,232
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ci,"Wife key (non-edu), husband not / edu",37
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ci,All other couples,239
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,2019,"Wife key (non-edu), husband not / edu",23
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,2019,All other couples,148
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,baseline,"Wife key (non-edu), husband not / edu",23
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,baseline,All other couples,148
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ca,"Wife key (non-edu), husband not / edu",22
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ca,All other couples,146
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cb,"Wife key (non-edu), husband not / edu",20
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cb,All other couples,137
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cc,"Wife key (non-edu), husband not / edu",22
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cc,All other couples,137
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cd,"Wife key (non-edu), husband not / edu",19
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cd,All other couples,134
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ce,"Wife key (non-edu), husband not / edu",19
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ce,All other couples,125
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cf,"Wife key (non-edu), husband not / edu",14
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cf,All other couples,119
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cg,"Wife key (non-edu), husband not / edu",16
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cg,All other couples,123
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ch,"Wife key (non-edu), husband not / edu",14
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ch,All other couples,125
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ci,"Wife key (non-edu), husband not / edu",20
+2019_only,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ci,All other couples,125
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2009,"Wife key (non-edu), husband not / edu",93
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2009,All other couples,479
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2010,"Wife key (non-edu), husband not / edu",261
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2010,All other couples,1247
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2011,"Wife key (non-edu), husband not / edu",276
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2011,All other couples,1314
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2012,"Wife key (non-edu), husband not / edu",281
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2012,All other couples,1315
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2013,"Wife key (non-edu), husband not / edu",279
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2013,All other couples,1285
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2014,"Wife key (non-edu), husband not / edu",270
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2014,All other couples,1292
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2015,"Wife key (non-edu), husband not / edu",305
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2015,All other couples,1402
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2016,"Wife key (non-edu), husband not / edu",321
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2016,All other couples,1433
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2017,"Wife key (non-edu), husband not / edu",313
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2017,All other couples,1426
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2018,"Wife key (non-edu), husband not / edu",322
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2018,All other couples,1460
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2019,"Wife key (non-edu), husband not / edu",348
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2019,All other couples,1569
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2020,"Wife key (non-edu), husband not / edu",161
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2020,All other couples,713
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2021,"Wife key (non-edu), husband not / edu",167
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2021,All other couples,851
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2022,"Wife key (non-edu), husband not / edu",153
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2022,All other couples,786
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2023,"Wife key (non-edu), husband not / edu",163
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2023,All other couples,763
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2024,"Wife key (non-edu), husband not / edu",60
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2024,All other couples,288
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2009,"Wife key (non-edu), husband not / edu",38
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2009,All other couples,187
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2010,"Wife key (non-edu), husband not / edu",91
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2010,All other couples,472
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2011,"Wife key (non-edu), husband not / edu",96
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2011,All other couples,501
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2012,"Wife key (non-edu), husband not / edu",99
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2012,All other couples,502
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2013,"Wife key (non-edu), husband not / edu",95
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2013,All other couples,490
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2014,"Wife key (non-edu), husband not / edu",91
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2014,All other couples,478
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2015,"Wife key (non-edu), husband not / edu",114
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2015,All other couples,554
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2016,"Wife key (non-edu), husband not / edu",115
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2016,All other couples,550
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2017,"Wife key (non-edu), husband not / edu",116
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2017,All other couples,560
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2018,"Wife key (non-edu), husband not / edu",120
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2018,All other couples,571
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2019,"Wife key (non-edu), husband not / edu",126
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2019,All other couples,611
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2020,"Wife key (non-edu), husband not / edu",51
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2020,All other couples,250
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2021,"Wife key (non-edu), husband not / edu",49
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2021,All other couples,312
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2022,"Wife key (non-edu), husband not / edu",52
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2022,All other couples,292
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2023,"Wife key (non-edu), husband not / edu",52
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2023,All other couples,281
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2024,"Wife key (non-edu), husband not / edu",18
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2024,All other couples,108
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2009,"Wife key (non-edu), husband not / edu",18
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2009,All other couples,88
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2010,"Wife key (non-edu), husband not / edu",39
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2010,All other couples,224
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2011,"Wife key (non-edu), husband not / edu",42
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2011,All other couples,239
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2012,"Wife key (non-edu), husband not / edu",44
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2012,All other couples,236
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2013,"Wife key (non-edu), husband not / edu",42
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2013,All other couples,225
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2014,"Wife key (non-edu), husband not / edu",41
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2014,All other couples,230
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2015,"Wife key (non-edu), husband not / edu",43
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2015,All other couples,241
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2016,"Wife key (non-edu), husband not / edu",44
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2016,All other couples,248
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2017,"Wife key (non-edu), husband not / edu",50
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2017,All other couples,240
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2018,"Wife key (non-edu), husband not / edu",45
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2018,All other couples,247
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2019,"Wife key (non-edu), husband not / edu",50
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2019,All other couples,268
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2020,"Wife key (non-edu), husband not / edu",21
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2020,All other couples,134
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2021,"Wife key (non-edu), husband not / edu",31
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2021,All other couples,148
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2022,"Wife key (non-edu), husband not / edu",17
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2022,All other couples,124
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2023,"Wife key (non-edu), husband not / edu",22
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2023,All other couples,124
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2024,"Wife key (non-edu), husband not / edu",5
+2019_only,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2024,All other couples,65
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,2019,"Husband shutdown, wife not",39
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,2019,All other couples,905
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,baseline,"Husband shutdown, wife not",39
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,baseline,All other couples,904
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ca,"Husband shutdown, wife not",39
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ca,All other couples,892
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cb,"Husband shutdown, wife not",35
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cb,All other couples,844
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cc,"Husband shutdown, wife not",30
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cc,All other couples,833
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cd,"Husband shutdown, wife not",34
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cd,All other couples,802
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ce,"Husband shutdown, wife not",32
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ce,All other couples,783
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cf,"Husband shutdown, wife not",32
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cf,All other couples,747
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cg,"Husband shutdown, wife not",30
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,cg,All other couples,725
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ch,"Husband shutdown, wife not",31
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ch,All other couples,743
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ci,"Husband shutdown, wife not",31
+2019_only,treat_husb_shutdown_wife_not,covid_wave,All couples,ci,All other couples,770
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,2019,"Husband shutdown, wife not",18
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,2019,All other couples,323
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,baseline,"Husband shutdown, wife not",18
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,baseline,All other couples,323
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ca,"Husband shutdown, wife not",18
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ca,All other couples,320
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cb,"Husband shutdown, wife not",16
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cb,All other couples,295
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cc,"Husband shutdown, wife not",12
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cc,All other couples,289
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cd,"Husband shutdown, wife not",14
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cd,All other couples,273
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ce,"Husband shutdown, wife not",14
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ce,All other couples,276
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cf,"Husband shutdown, wife not",14
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cf,All other couples,257
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cg,"Husband shutdown, wife not",12
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cg,All other couples,243
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ch,"Husband shutdown, wife not",13
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ch,All other couples,254
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ci,"Husband shutdown, wife not",13
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ci,All other couples,263
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,2019,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,2019,All other couples,163
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,baseline,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,baseline,All other couples,163
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ca,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ca,All other couples,160
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cb,"Husband shutdown, wife not",6
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cb,All other couples,151
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cc,"Husband shutdown, wife not",6
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cc,All other couples,153
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cd,"Husband shutdown, wife not",7
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cd,All other couples,146
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ce,"Husband shutdown, wife not",6
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ce,All other couples,138
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cf,"Husband shutdown, wife not",7
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cf,All other couples,126
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cg,"Husband shutdown, wife not",7
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cg,All other couples,132
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ch,"Husband shutdown, wife not",7
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ch,All other couples,132
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ci,"Husband shutdown, wife not",7
+2019_only,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ci,All other couples,138
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2009,"Husband shutdown, wife not",19
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2009,All other couples,553
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2010,"Husband shutdown, wife not",64
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2010,All other couples,1444
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2011,"Husband shutdown, wife not",71
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2011,All other couples,1519
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2012,"Husband shutdown, wife not",70
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2012,All other couples,1526
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2013,"Husband shutdown, wife not",65
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2013,All other couples,1499
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2014,"Husband shutdown, wife not",63
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2014,All other couples,1499
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2015,"Husband shutdown, wife not",72
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2015,All other couples,1635
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2016,"Husband shutdown, wife not",78
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2016,All other couples,1676
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2017,"Husband shutdown, wife not",70
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2017,All other couples,1669
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2018,"Husband shutdown, wife not",78
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2018,All other couples,1704
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2019,"Husband shutdown, wife not",85
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2019,All other couples,1832
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2020,"Husband shutdown, wife not",35
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2020,All other couples,839
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2021,"Husband shutdown, wife not",43
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2021,All other couples,975
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2022,"Husband shutdown, wife not",42
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2022,All other couples,897
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2023,"Husband shutdown, wife not",39
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2023,All other couples,887
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2024,"Husband shutdown, wife not",19
+2019_only,treat_husb_shutdown_wife_not,history_future_year,All couples,2024,All other couples,329
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2009,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2009,All other couples,217
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2010,"Husband shutdown, wife not",22
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2010,All other couples,541
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2011,"Husband shutdown, wife not",26
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2011,All other couples,571
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2012,"Husband shutdown, wife not",26
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2012,All other couples,575
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2013,"Husband shutdown, wife not",25
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2013,All other couples,560
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2014,"Husband shutdown, wife not",23
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2014,All other couples,546
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2015,"Husband shutdown, wife not",31
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2015,All other couples,637
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2016,"Husband shutdown, wife not",33
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2016,All other couples,632
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2017,"Husband shutdown, wife not",31
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2017,All other couples,645
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2018,"Husband shutdown, wife not",32
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2018,All other couples,659
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2019,"Husband shutdown, wife not",35
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2019,All other couples,702
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2020,"Husband shutdown, wife not",11
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2020,All other couples,290
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2021,"Husband shutdown, wife not",21
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2021,All other couples,340
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2022,"Husband shutdown, wife not",18
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2022,All other couples,326
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2023,"Husband shutdown, wife not",14
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2023,All other couples,319
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2024,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2024,All other couples,118
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2009,"Husband shutdown, wife not",4
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2009,All other couples,102
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2010,"Husband shutdown, wife not",9
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2010,All other couples,254
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2011,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2011,All other couples,271
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2012,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2012,All other couples,270
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2013,"Husband shutdown, wife not",9
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2013,All other couples,258
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2014,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2014,All other couples,261
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2015,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2015,All other couples,274
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2016,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2016,All other couples,282
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2017,"Husband shutdown, wife not",8
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2017,All other couples,282
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2018,"Husband shutdown, wife not",9
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2018,All other couples,283
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2019,"Husband shutdown, wife not",10
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2019,All other couples,308
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2020,"Husband shutdown, wife not",6
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2020,All other couples,149
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2021,"Husband shutdown, wife not",4
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2021,All other couples,175
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2022,"Husband shutdown, wife not",4
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2022,All other couples,137
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2023,"Husband shutdown, wife not",3
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2023,All other couples,143
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2024,"Husband shutdown, wife not",2
+2019_only,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2024,All other couples,68
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,2019,"Wife key (non-edu), husband not / edu",192
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,2019,All other couples,953
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,baseline,"Wife key (non-edu), husband not / edu",191
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,baseline,All other couples,953
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ca,"Wife key (non-edu), husband not / edu",187
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ca,All other couples,942
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cb,"Wife key (non-edu), husband not / edu",172
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cb,All other couples,890
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cc,"Wife key (non-edu), husband not / edu",172
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cc,All other couples,863
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cd,"Wife key (non-edu), husband not / edu",166
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cd,All other couples,843
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ce,"Wife key (non-edu), husband not / edu",164
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ce,All other couples,812
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cf,"Wife key (non-edu), husband not / edu",153
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cf,All other couples,774
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cg,"Wife key (non-edu), husband not / edu",148
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,cg,All other couples,756
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ch,"Wife key (non-edu), husband not / edu",148
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ch,All other couples,782
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ci,"Wife key (non-edu), husband not / edu",160
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,All couples,ci,All other couples,807
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,2019,"Wife key (non-edu), husband not / edu",61
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,2019,All other couples,356
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,baseline,"Wife key (non-edu), husband not / edu",61
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,baseline,All other couples,356
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ca,"Wife key (non-edu), husband not / edu",59
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ca,All other couples,353
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cb,"Wife key (non-edu), husband not / edu",53
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cb,All other couples,326
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cc,"Wife key (non-edu), husband not / edu",53
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cc,All other couples,308
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cd,"Wife key (non-edu), husband not / edu",51
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cd,All other couples,297
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ce,"Wife key (non-edu), husband not / edu",51
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ce,All other couples,293
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cf,"Wife key (non-edu), husband not / edu",48
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cf,All other couples,271
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cg,"Wife key (non-edu), husband not / edu",43
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,cg,All other couples,262
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ch,"Wife key (non-edu), husband not / edu",45
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ch,All other couples,273
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ci,"Wife key (non-edu), husband not / edu",47
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Young kids: 0-10,ci,All other couples,285
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,2019,"Wife key (non-edu), husband not / edu",24
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,2019,All other couples,174
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,baseline,"Wife key (non-edu), husband not / edu",24
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,baseline,All other couples,174
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ca,"Wife key (non-edu), husband not / edu",23
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ca,All other couples,172
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cb,"Wife key (non-edu), husband not / edu",21
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cb,All other couples,162
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cc,"Wife key (non-edu), husband not / edu",22
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cc,All other couples,160
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cd,"Wife key (non-edu), husband not / edu",20
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cd,All other couples,157
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ce,"Wife key (non-edu), husband not / edu",20
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ce,All other couples,147
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cf,"Wife key (non-edu), husband not / edu",15
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cf,All other couples,140
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cg,"Wife key (non-edu), husband not / edu",17
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,cg,All other couples,143
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ch,"Wife key (non-edu), husband not / edu",15
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ch,All other couples,146
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ci,"Wife key (non-edu), husband not / edu",21
+combined,treat_wife_key_notedu_husb_not_or_edu,covid_wave,Older kids: 11-17,ci,All other couples,150
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2009,"Wife key (non-edu), husband not / edu",135
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2009,All other couples,648
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2010,"Wife key (non-edu), husband not / edu",361
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2010,All other couples,1628
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2011,"Wife key (non-edu), husband not / edu",378
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2011,All other couples,1719
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2012,"Wife key (non-edu), husband not / edu",383
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2012,All other couples,1720
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2013,"Wife key (non-edu), husband not / edu",381
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2013,All other couples,1694
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2014,"Wife key (non-edu), husband not / edu",375
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2014,All other couples,1696
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2015,"Wife key (non-edu), husband not / edu",419
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2015,All other couples,1864
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2016,"Wife key (non-edu), husband not / edu",439
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2016,All other couples,1906
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2017,"Wife key (non-edu), husband not / edu",424
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2017,All other couples,1873
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2018,"Wife key (non-edu), husband not / edu",451
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2018,All other couples,1995
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2019,"Wife key (non-edu), husband not / edu",348
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2019,All other couples,1569
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2020,"Wife key (non-edu), husband not / edu",205
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2020,All other couples,886
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2021,"Wife key (non-edu), husband not / edu",208
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2021,All other couples,1015
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2022,"Wife key (non-edu), husband not / edu",195
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2022,All other couples,959
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2023,"Wife key (non-edu), husband not / edu",202
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2023,All other couples,937
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2024,"Wife key (non-edu), husband not / edu",68
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,All couples,2024,All other couples,341
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2009,"Wife key (non-edu), husband not / edu",55
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2009,All other couples,248
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2010,"Wife key (non-edu), husband not / edu",132
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2010,All other couples,613
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2011,"Wife key (non-edu), husband not / edu",135
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2011,All other couples,654
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2012,"Wife key (non-edu), husband not / edu",138
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2012,All other couples,653
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2013,"Wife key (non-edu), husband not / edu",137
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2013,All other couples,643
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2014,"Wife key (non-edu), husband not / edu",132
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2014,All other couples,630
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2015,"Wife key (non-edu), husband not / edu",164
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2015,All other couples,740
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2016,"Wife key (non-edu), husband not / edu",163
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2016,All other couples,739
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2017,"Wife key (non-edu), husband not / edu",160
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2017,All other couples,735
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2018,"Wife key (non-edu), husband not / edu",173
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2018,All other couples,783
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2019,"Wife key (non-edu), husband not / edu",126
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2019,All other couples,611
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2020,"Wife key (non-edu), husband not / edu",69
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2020,All other couples,314
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2021,"Wife key (non-edu), husband not / edu",59
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2021,All other couples,375
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2022,"Wife key (non-edu), husband not / edu",70
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2022,All other couples,357
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2023,"Wife key (non-edu), husband not / edu",67
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2023,All other couples,349
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2024,"Wife key (non-edu), husband not / edu",21
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Young kids: 0-10,2024,All other couples,135
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2009,"Wife key (non-edu), husband not / edu",24
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2009,All other couples,123
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2010,"Wife key (non-edu), husband not / edu",52
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2010,All other couples,295
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2011,"Wife key (non-edu), husband not / edu",57
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2011,All other couples,313
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2012,"Wife key (non-edu), husband not / edu",60
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2012,All other couples,314
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2013,"Wife key (non-edu), husband not / edu",56
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2013,All other couples,299
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2014,"Wife key (non-edu), husband not / edu",57
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2014,All other couples,302
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2015,"Wife key (non-edu), husband not / edu",59
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2015,All other couples,316
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2016,"Wife key (non-edu), husband not / edu",58
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2016,All other couples,332
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2017,"Wife key (non-edu), husband not / edu",65
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2017,All other couples,317
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2018,"Wife key (non-edu), husband not / edu",61
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2018,All other couples,336
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2019,"Wife key (non-edu), husband not / edu",50
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2019,All other couples,268
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2020,"Wife key (non-edu), husband not / edu",25
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2020,All other couples,164
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2021,"Wife key (non-edu), husband not / edu",37
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2021,All other couples,174
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2022,"Wife key (non-edu), husband not / edu",18
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2022,All other couples,151
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2023,"Wife key (non-edu), husband not / edu",24
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2023,All other couples,148
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2024,"Wife key (non-edu), husband not / edu",5
+combined,treat_wife_key_notedu_husb_not_or_edu,history_future_year,Older kids: 11-17,2024,All other couples,70
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,2019,"Husband shutdown, wife not",43
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,2019,All other couples,1102
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,baseline,"Husband shutdown, wife not",43
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,baseline,All other couples,1101
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ca,"Husband shutdown, wife not",43
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ca,All other couples,1086
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cb,"Husband shutdown, wife not",39
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cb,All other couples,1023
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cc,"Husband shutdown, wife not",34
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cc,All other couples,1001
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cd,"Husband shutdown, wife not",36
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cd,All other couples,973
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ce,"Husband shutdown, wife not",36
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ce,All other couples,940
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cf,"Husband shutdown, wife not",35
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cf,All other couples,892
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cg,"Husband shutdown, wife not",33
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,cg,All other couples,871
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ch,"Husband shutdown, wife not",34
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ch,All other couples,896
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ci,"Husband shutdown, wife not",34
+combined,treat_husb_shutdown_wife_not,covid_wave,All couples,ci,All other couples,933
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,2019,"Husband shutdown, wife not",20
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,2019,All other couples,397
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,baseline,"Husband shutdown, wife not",20
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,baseline,All other couples,397
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ca,"Husband shutdown, wife not",20
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ca,All other couples,392
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cb,"Husband shutdown, wife not",18
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cb,All other couples,361
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cc,"Husband shutdown, wife not",14
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cc,All other couples,347
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cd,"Husband shutdown, wife not",15
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cd,All other couples,333
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ce,"Husband shutdown, wife not",16
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ce,All other couples,328
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cf,"Husband shutdown, wife not",15
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cf,All other couples,304
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cg,"Husband shutdown, wife not",14
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,cg,All other couples,291
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ch,"Husband shutdown, wife not",15
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ch,All other couples,303
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ci,"Husband shutdown, wife not",15
+combined,treat_husb_shutdown_wife_not,covid_wave,Young kids: 0-10,ci,All other couples,317
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,2019,"Husband shutdown, wife not",8
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,2019,All other couples,190
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,baseline,"Husband shutdown, wife not",8
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,baseline,All other couples,190
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ca,"Husband shutdown, wife not",8
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ca,All other couples,187
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cb,"Husband shutdown, wife not",6
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cb,All other couples,177
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cc,"Husband shutdown, wife not",6
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cc,All other couples,176
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cd,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cd,All other couples,170
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ce,"Husband shutdown, wife not",6
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ce,All other couples,161
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cf,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cf,All other couples,148
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cg,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,cg,All other couples,153
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ch,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ch,All other couples,154
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ci,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,covid_wave,Older kids: 11-17,ci,All other couples,164
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2009,"Husband shutdown, wife not",26
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2009,All other couples,757
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2010,"Husband shutdown, wife not",80
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2010,All other couples,1909
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2011,"Husband shutdown, wife not",89
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2011,All other couples,2008
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2012,"Husband shutdown, wife not",87
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2012,All other couples,2016
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2013,"Husband shutdown, wife not",82
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2013,All other couples,1993
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2014,"Husband shutdown, wife not",80
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2014,All other couples,1991
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2015,"Husband shutdown, wife not",98
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2015,All other couples,2185
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2016,"Husband shutdown, wife not",104
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2016,All other couples,2241
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2017,"Husband shutdown, wife not",94
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2017,All other couples,2203
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2018,"Husband shutdown, wife not",108
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2018,All other couples,2338
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2019,"Husband shutdown, wife not",85
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2019,All other couples,1832
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2020,"Husband shutdown, wife not",45
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2020,All other couples,1046
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2021,"Husband shutdown, wife not",51
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2021,All other couples,1172
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2022,"Husband shutdown, wife not",49
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2022,All other couples,1105
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2023,"Husband shutdown, wife not",45
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2023,All other couples,1094
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2024,"Husband shutdown, wife not",21
+combined,treat_husb_shutdown_wife_not,history_future_year,All couples,2024,All other couples,388
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2009,"Husband shutdown, wife not",12
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2009,All other couples,291
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2010,"Husband shutdown, wife not",33
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2010,All other couples,712
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2011,"Husband shutdown, wife not",39
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2011,All other couples,750
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2012,"Husband shutdown, wife not",38
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2012,All other couples,753
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2013,"Husband shutdown, wife not",37
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2013,All other couples,743
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2014,"Husband shutdown, wife not",35
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2014,All other couples,727
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2015,"Husband shutdown, wife not",46
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2015,All other couples,858
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2016,"Husband shutdown, wife not",48
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2016,All other couples,854
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2017,"Husband shutdown, wife not",44
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2017,All other couples,851
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2018,"Husband shutdown, wife not",48
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2018,All other couples,908
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2019,"Husband shutdown, wife not",35
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2019,All other couples,702
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2020,"Husband shutdown, wife not",16
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2020,All other couples,367
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2021,"Husband shutdown, wife not",25
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2021,All other couples,409
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2022,"Husband shutdown, wife not",22
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2022,All other couples,405
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2023,"Husband shutdown, wife not",18
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2023,All other couples,398
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2024,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Young kids: 0-10,2024,All other couples,146
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2009,"Husband shutdown, wife not",4
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2009,All other couples,143
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2010,"Husband shutdown, wife not",9
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2010,All other couples,338
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2011,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2011,All other couples,360
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2012,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2012,All other couples,364
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2013,"Husband shutdown, wife not",9
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2013,All other couples,346
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2014,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2014,All other couples,349
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2015,"Husband shutdown, wife not",12
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2015,All other couples,363
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2016,"Husband shutdown, wife not",12
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2016,All other couples,378
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2017,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2017,All other couples,372
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2018,"Husband shutdown, wife not",11
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2018,All other couples,386
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2019,"Husband shutdown, wife not",10
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2019,All other couples,308
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2020,"Husband shutdown, wife not",7
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2020,All other couples,182
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2021,"Husband shutdown, wife not",4
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2021,All other couples,207
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2022,"Husband shutdown, wife not",5
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2022,All other couples,164
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2023,"Husband shutdown, wife not",3
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2023,All other couples,169
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2024,"Husband shutdown, wife not",2
+combined,treat_husb_shutdown_wife_not,history_future_year,Older kids: 11-17,2024,All other couples,73
