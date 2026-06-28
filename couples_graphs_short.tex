@@ -94,13 +94,17 @@
 
 \newcommand{\eventstudyframes}[5]{%
 \begin{frame}{Event study: #1 --- wife, no controls}
+\hypertarget{es-nfe-#2-#3-#4-w-#5}{}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_w_noc_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-cfe-#2-#3-#4-w-#5}{\beamergotobutton{Couple FE}}}
 \end{frame}
 
 \begin{frame}{Event study: #1 --- husband, no controls}
+\hypertarget{es-nfe-#2-#3-#4-h-#5}{}
 \centering
 \eventfigure{\figdir/event_studies/#2/nfe/es_#3_#4_h_noc_#5_nfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-cfe-#2-#3-#4-h-#5}{\beamergotobutton{Couple FE}}}
 \end{frame}
 }
 
@@ -158,6 +162,27 @@
 \eventstudyframes{#1 (main study, month)}{#2}{main_monthly_#3}{#4}{#5}
 }
 
+\newcommand{\eventstudyframescfe}[5]{%
+\begin{frame}{Event study: #1 --- wife, couple FE}
+\hypertarget{es-cfe-#2-#3-#4-w-#5}{}
+\centering
+\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_w_noc_#5_cfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-nfe-#2-#3-#4-w-#5}{\beamerreturnbutton{Back to no FE}}}
+\end{frame}
+
+\begin{frame}{Event study: #1 --- husband, couple FE}
+\hypertarget{es-cfe-#2-#3-#4-h-#5}{}
+\centering
+\eventfigure{\figdir/event_studies/#2/cfe/es_#3_#4_h_noc_#5_cfe_childgroups.png}
+\eventstudybuttonrow{\hyperlink{es-nfe-#2-#3-#4-h-#5}{\beamerreturnbutton{Back to no FE}}}
+\end{frame}
+}
+
+\newcommand{\mainyearmontheventframescfe}[5]{%
+\eventstudyframescfe{#1 (main study, year)}{#2}{main_#3}{#4}{#5}
+\eventstudyframescfe{#1 (main study, month)}{#2}{main_monthly_#3}{#4}{#5}
+}
+
 \title{COVID-19, Work Arrangements, and Household Division of Labor}
 \subtitle{Couple treatment descriptives --- wife key worker (non-education)}
 \author{Ori Nahshon Shoham}
@@ -182,7 +207,7 @@
   \item \textbf{Pay outcomes}: shown in constant December 2019 pounds.
   \item \textbf{Definition slides}: each outcome opens with a slide defining the variable, its UKHLS source, reference period, and processing.
   \item \textbf{Distribution slides}: 2019 baseline (childcare hours use COVID wave 1), couples with children, full sample (no treatment split).
-  \item \textbf{Appendix}: full-sample main-study versions and event studies.
+  \item \textbf{Appendix}: full-sample main-study versions, event studies, and event studies with couple fixed effects.
 \end{itemize}
 
 \vspace{0.4em}
@@ -552,5 +577,26 @@ Source: Office for National Statistics, CPIH all-items monthly time series \text
 \mainyearmontheventframes{Gross monthly pay, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{all}
 \mainyearmontheventframes{Gross monthly labour income, full sample (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{all}
 \mainyearmontheventframes{Housework hours, full sample}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{all}
+
+\section{Appendix: event studies with couple fixed effects}
+
+\eventstudyframescfe{Worked positive hours (COVID)}{wife_key_husb_notedu}{covid_any_work}{wife_key_husb_notedu}{all}
+\mainyearmontheventframescfe{Worked positive hours}{wife_key_husb_notedu}{any_work}{wife_key_husb_notedu}{bic}
+
+\eventstudyframescfe{Weekly hours (COVID)}{wife_key_husb_notedu}{covid_hours}{wife_key_husb_notedu}{all}
+\mainyearmontheventframescfe{Weekly hours}{wife_key_husb_notedu}{jbhrs}{wife_key_husb_notedu}{bic}
+
+\eventstudyframescfe{Work outside (COVID)}{wife_key_husb_notedu}{covid_workoutside}{wife_key_husb_notedu}{all}
+
+\eventstudyframescfe{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
+
+\mainyearmontheventframescfe{Gross monthly pay (Dec 2019 pounds)}{wife_key_husb_notedu}{paygu_dv_real}{wife_key_husb_notedu}{bic}
+
+\mainyearmontheventframescfe{Gross monthly labour income (Dec 2019 pounds)}{wife_key_husb_notedu}{fimnlabgrs_dv_real}{wife_key_husb_notedu}{bic}
+
+\eventstudyframescfe{Housework hours (COVID)}{wife_key_husb_notedu}{covid_howlng}{wife_key_husb_notedu}{all}
+\mainyearmontheventframescfe{Housework hours}{wife_key_husb_notedu}{howlng}{wife_key_husb_notedu}{bic}
+
+\eventstudyframescfe{Childcare responsibility (COVID)}{wife_key_husb_notedu}{covid_husits_wife_main_both}{wife_key_husb_notedu}{all}
 
 \end{document}
