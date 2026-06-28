@@ -203,18 +203,13 @@
   \item \textbf{Columns}: wife / husband outcomes.
   \item \textbf{Rows}: couples with youngest child age 0--10 vs.\ 11--17 at baseline.
   \item \textbf{COVID figures}: COVID-study waves.
-  \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample.
+  \item \textbf{Main-study figures}: regular UKHLS main-study waves before and after 2020, limited to couples observed in the COVID sample (January and Febuary of 2020 dropped).
   \item \textbf{Pay outcomes}: shown in constant December 2019 pounds.
   \item \textbf{Definition slides}: each outcome opens with a slide defining the variable, its UKHLS source, reference period, and processing.
   \item \textbf{Distribution slides}: 2019 baseline (childcare hours use COVID wave 1), couples with children, full sample (no treatment split).
   \item \textbf{Appendix}: full-sample main-study versions, event studies, and event studies with couple fixed effects.
 \end{itemize}
 
-\vspace{0.4em}
-\textbf{Treatment shown in this deck}
-\begin{itemize}
-  \item Wife key worker (non-education), husband not key worker or education only.
-\end{itemize}
 \end{frame}
 
 \begin{frame}{Event-study methodology}
@@ -382,11 +377,6 @@ X_c'\gamma
 {Negative codes set to missing; work-location and WFH-frequency items harmonized into the indicator. Binary --- not winsorized.}
 {UKHLS COVID-19 docs (\texttt{wah}); main-stage docs (\texttt{jbpl}, \texttt{jbwah}).}
 
-\begin{frame}{Work outside --- distribution (main survey)}
-\centering
-\distfigure{\ctdistdir/dist_main_workoutside_childgrid_spousecols.png}
-\end{frame}
-
 \covidresultframe{Work outside}{workoutside}{treat_wife_key_notedu_husb_not_or_edu}
 \eventstudyframes{Work outside (COVID)}{wife_key_husb_notedu}{covid_workoutside}{wife_key_husb_notedu}{all}
 \futureframes{Work outside}{workoutside}{treat_wife_key_notedu_husb_not_or_edu}
@@ -403,11 +393,6 @@ X_c'\gamma
 {COVID: last four weeks. Main: usual frequency.}
 {Negative codes set to missing; \texttt{jbpl}$+$\texttt{jbwah} harmonized into one WFH code. Binary --- not winsorized.}
 {UKHLS COVID-19 docs (\texttt{wah}); main-stage docs (\texttt{jbpl}, \texttt{jbwah}).}
-
-\begin{frame}{WFH any --- distribution (main survey)}
-\centering
-\distfigure{\ctdistdir/dist_main_wfh_any_childgrid_spousecols.png}
-\end{frame}
 
 \covidresultframe{WFH any}{wfh_any}{treat_wife_key_notedu_husb_not_or_edu}
 \eventstudyframes{WFH any (COVID)}{wife_key_husb_notedu}{covid_wfh_some}{wife_key_husb_notedu}{all}
