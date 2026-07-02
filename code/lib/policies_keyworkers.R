@@ -73,9 +73,91 @@ build_keyworker_crosswalk <- function(xlsx_path, sheet = 4, SOC, SIC) {
     summarise(
       any_key = if (all(is.na(key))) NA_real_ else max(key, na.rm = TRUE),
       .groups = "drop"
-    ) %>% 
+    ) %>%
     left_join(SOC, by = "SOC") %>%
     left_join(SIC, by = "SIC")
-  
+
   key_inds
+}
+
+
+# -----------------------------------------------------------------------------
+# Priority ordering of the ONS key-worker groups.
+#
+# Used only to break the (rare) tie when a single detailed (SOC x SIC) cell is
+# flagged "key" under more than one group: the highest-priority group wins.
+# Order chosen so the most policy-salient frontline groups take precedence.
+# -----------------------------------------------------------------------------
+KEYWORKER_GROUP_PRIORITY <- c(
+  "Health and social care",
+  "Education and childcare",
+  "Key public services",
+  "Public safety and national security",
+  "National and Local Government",
+  "Food and necessary goods",
+  "Transport",
+  "Utilities and communication"
+)
+
+
+# build_keyworker_crosswalk_detailed()
+#
+# Special-Licence (SN 6931) crosswalk at the FULL detailed resolution: one row
+# per (SOC2010 4-digit x SIC2007 4-digit) cell, carrying whether that exact
+# occupation-by-industry combination is a key worker and, if so, which ONS group
+# it belongs to. Unlike build_keyworker_crosswalk() this does NOT collapse the
+# codes, because the SL data provide detailed jbsoc10 / jbsic07.
+#
+# Returns a tibble keyed by (SOC_4, SIC_4) with:
+#   any_key   : 1 if the cell is key under any group, 0 if observed-and-not-key,
+#               NA if the cell value is missing
+#   occ_group : the ONS group (chosen by KEYWORKER_GROUP_PRIORITY when a cell is
+#               key under several groups); NA when not a key worker
+build_keyworker_crosswalk_detailed <- function(xlsx_path, sheet = 4) {
+
+  if (!file.exists(xlsx_path)) {
+    stop(
+      "Keyworker excel not found: ", xlsx_path,
+      "\nPlace it in policies/ or update KEYWORKER_XLSX in config.R"
+    )
+  }
+
+  key_workers_raw <- readxl::read_excel(xlsx_path, sheet = sheet)
+
+  # Reshape the (Group, SOC, SOC_label) x SIC-columns matrix to long form.
+  # The first data row holds SIC labels and has Group == NA, so it is dropped;
+  # the "Total" summary group is excluded.
+  key_long <- key_workers_raw %>%
+    filter(!is.na(Group), Group != "Total") %>%
+    pivot_longer(
+      !c(Group, `SOC10M / INDC07M`, `SOC_label / SIC_label`),
+      names_to  = "SIC_4",
+      values_to = "key"
+    ) %>%
+    rename(
+      occ_group  = Group,
+      SOC_4      = `SOC10M / INDC07M`,
+      occupation = `SOC_label / SIC_label`
+    ) %>%
+    mutate(
+      SOC_4 = suppressWarnings(as.numeric(SOC_4)),
+      SIC_4 = suppressWarnings(as.numeric(SIC_4)),
+      key   = suppressWarnings(as.numeric(key))
+    ) %>%
+    filter(!is.na(SOC_4), !is.na(SIC_4))
+
+  # One row per (SOC_4, SIC_4): is it key at all, and which group wins.
+  key_cells <- key_long %>%
+    mutate(occ_group = factor(occ_group, levels = KEYWORKER_GROUP_PRIORITY)) %>%
+    group_by(SOC_4, SIC_4) %>%
+    summarise(
+      any_key = if (all(is.na(key))) NA_real_ else max(key, na.rm = TRUE),
+      occ_group = {
+        g <- occ_group[!is.na(key) & key == 1]
+        if (length(g) == 0) NA_character_ else as.character(sort(g)[1])
+      },
+      .groups = "drop"
+    )
+
+  key_cells
 }

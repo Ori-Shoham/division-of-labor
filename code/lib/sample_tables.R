@@ -83,27 +83,16 @@ prep_sample_table_vars <- function(df) {
           "missing industry / occupation"
         )
       ),
+      # Ordered detailed groups: levels come from group_detailed_levels() so the
+      # table adapts to the EUL 3-type set or the larger SL 6-type set without
+      # silently dropping SL labels to NA.
       wife_group_5 = factor(
         group_industry_based_detailed_w,
-        levels = c(
-          "shutdown sector",
-          "key worker - health\n and social services",
-          "key worker - education",
-          "key worker - public safety\n and essential gvt. services",
-          "other",
-          "missing industry / occupation"
-        )
+        levels = group_detailed_levels()
       ),
       husband_group_5 = factor(
         group_industry_based_detailed_h,
-        levels = c(
-          "shutdown sector",
-          "key worker - health\n and social services",
-          "key worker - education",
-          "key worker - public safety\n and essential gvt. services",
-          "other",
-          "missing industry / occupation"
-        )
+        levels = group_detailed_levels()
       ),
       youngest_child_2019 = base_age_youngest_child_w,
       wife_higher_ed = make_any_higher_ed(base_isced11_dv_w),
@@ -573,31 +562,20 @@ make_treatment_child_balance_table <- function(df, treatment_var) {
         to_numeric_clean(hist_couple_n_waves_cohabit_base_partner),
         to_numeric_clean(hist_couple_n_joint_waves)
       ),
+      # Non-education key worker = any key-worker type that is not education.
+      # Detected from the label ("key worker - " prefix, no "education" token) so
+      # it spans both the EUL 3-type and SL 6-type label sets.
       wife_keyworker_nonedu_share = dplyr::case_when(
-        group_industry_based_detailed_w %in% c(
-          "key worker - health\n and social services",
-          "key worker - public safety\n and essential gvt. services"
-        ) ~ 1,
-        group_industry_based_detailed_w %in% c(
-          "shutdown sector",
-          "key worker - education",
-          "other",
-          "missing industry / occupation"
-        ) ~ 0,
-        TRUE ~ NA_real_
+        is.na(group_industry_based_detailed_w) ~ NA_real_,
+        stringr::str_detect(group_industry_based_detailed_w, "^key worker") &
+          !stringr::str_detect(group_industry_based_detailed_w, "education") ~ 1,
+        TRUE ~ 0
       ),
       husband_keyworker_nonedu_share = dplyr::case_when(
-        group_industry_based_detailed_h %in% c(
-          "key worker - health\n and social services",
-          "key worker - public safety\n and essential gvt. services"
-        ) ~ 1,
-        group_industry_based_detailed_h %in% c(
-          "shutdown sector",
-          "key worker - education",
-          "other",
-          "missing industry / occupation"
-        ) ~ 0,
-        TRUE ~ NA_real_
+        is.na(group_industry_based_detailed_h) ~ NA_real_,
+        stringr::str_detect(group_industry_based_detailed_h, "^key worker") &
+          !stringr::str_detect(group_industry_based_detailed_h, "education") ~ 1,
+        TRUE ~ 0
       )
     )
   

@@ -18,10 +18,101 @@
 
 
 # -----------------------------------------------------------------------------
+# Detailed key-worker group labels and helpers (shared by EUL and SL)
+# -----------------------------------------------------------------------------
+# EUL keeps the original three detailed labels verbatim (byte-identical output).
+# SL collapses the eight ONS key-worker groups to six types, merging "Key public
+# services", "Public safety and national security" and "National and Local
+# Government" into one. Every label keeps the "key worker - " prefix and the
+# education label keeps the "education" token, so the downstream education tests
+# in samples.R / sample_tables.R work unchanged across both editions.
+
+# The three EUL detailed labels, in display order (must match historical strings).
+KW_LABELS_EUL <- c(
+  "key worker - health\n and social services",
+  "key worker - education",
+  "key worker - public safety\n and essential gvt. services"
+)
+
+# Map each ONS group (as returned by build_keyworker_crosswalk_detailed()) to its
+# collapsed SL key-worker label.
+KW_ONS_TO_LABEL_SL <- c(
+  "Health and social care"              = "key worker - health and social care",
+  "Education and childcare"             = "key worker - education and childcare",
+  "Food and necessary goods"            = "key worker - food and necessary goods",
+  "Transport"                           = "key worker - transport",
+  "Utilities and communication"         = "key worker - utilities and communication",
+  "Key public services"                 = "key worker - public services and government",
+  "Public safety and national security" = "key worker - public services and government",
+  "National and Local Government"       = "key worker - public services and government"
+)
+
+# Ordered factor levels for group_industry_based_detailed, per licence. This is
+# the single source of truth for category ordering; sample tables and figures use
+# it instead of hardcoding the label set.
+group_detailed_levels <- function(license = if (exists("DATA_LICENSE")) DATA_LICENSE else "EUL") {
+  if (license == "SL") {
+    c(
+      "shutdown sector",
+      "key worker - health and social care",
+      "key worker - education and childcare",
+      "key worker - food and necessary goods",
+      "key worker - transport",
+      "key worker - utilities and communication",
+      "key worker - public services and government",
+      "other",
+      "missing industry / occupation"
+    )
+  } else {
+    c(
+      "shutdown sector",
+      KW_LABELS_EUL,
+      "other",
+      "missing industry / occupation"
+    )
+  }
+}
+
+# Shutdown sectors from the IFS BN278 endnote (four-digit SIC 2007 CLASS codes).
+# Input is the normalized 4-digit class code; returns a logical vector (no NA for
+# valid numeric input).
+is_ifs_shutdown_sic <- function(sic4) {
+  s <- suppressWarnings(as.numeric(sic4))
+  in_range <- function(x, lo, hi) !is.na(x) & x >= lo & x <= hi
+
+  (!is.na(s) & s == 4719) |
+    in_range(s, 4730, 4772) |
+    in_range(s, 4776, 4799) |
+    (!is.na(s) & s == 4910) |
+    in_range(s, 4931, 4939) |
+    (!is.na(s) & s == 5010) |
+    (!is.na(s) & s == 5030) |
+    (!is.na(s) & s == 5110) |
+    in_range(s, 5510, 5630) |   # accommodation + food service
+    in_range(s, 7911, 7990) |   # travel
+    (!is.na(s) & s == 8510) |   # pre-primary education / childcare
+    (!is.na(s) & s == 8891) |   # child day-care
+    (in_range(s, 9001, 9329) & s != 9003) |  # arts & leisure, except artistic creation
+    (in_range(s, 9601, 9609) & s != 9603) |  # personal care, except funeral activities
+    (!is.na(s) & s == 9700)     # domestic services
+}
+
+
+# -----------------------------------------------------------------------------
 # Baseline-based group definitions
 # -----------------------------------------------------------------------------
-add_baseline_work_groups <- function(df) {
-  
+# Licence-aware entry point. EUL uses the historical condensed-code logic exactly
+# as before. SL redefines key-worker (with type) and shutdown groups from the
+# detailed jbsic07 / jbsoc10 codes via the ONS crosswalk and the IFS shutdown
+# list; pass key_crosswalk = build_keyworker_crosswalk_detailed(...).
+add_baseline_work_groups <- function(df,
+                                     license = if (exists("DATA_LICENSE")) DATA_LICENSE else "EUL",
+                                     key_crosswalk = NULL) {
+
+  if (license == "SL") {
+    return(add_baseline_work_groups_sl(df, key_crosswalk = key_crosswalk))
+  }
+
   df %>%
     dplyr::mutate(
       
@@ -146,6 +237,104 @@ add_baseline_work_groups <- function(df) {
       )
     ) %>%
     dplyr::select(-base_sic_clean, -base_soc_clean, -has_valid_sic, -has_valid_soc)
+}
+
+
+# -----------------------------------------------------------------------------
+# Special-Licence baseline group definitions
+# -----------------------------------------------------------------------------
+# Uses the detailed jbsic07 / jbsoc10 codes carried as base_jbsic07 / base_jbsoc10:
+#   - key worker (and its type) from the ONS (SOC x SIC) crosswalk: a job is key
+#     only if the exact occupation-by-industry combination is flagged key, and its
+#     type is the collapsed ONS group.
+#   - shutdown sector from the IFS BN278 four-digit SIC list.
+# Emits the same output columns as the EUL branch so downstream is unchanged.
+add_baseline_work_groups_sl <- function(df, key_crosswalk = NULL) {
+
+  if (is.null(key_crosswalk)) {
+    stop("add_baseline_work_groups(license = 'SL') requires key_crosswalk = ",
+         "build_keyworker_crosswalk_detailed(KEYWORKER_XLSX).")
+  }
+  if (!all(c("base_jbsic07", "base_jbsoc10") %in% names(df))) {
+    stop("SL work groups need base_jbsic07 and base_jbsoc10. Did the loader read ",
+         "the detailed SIC/SOC variables (is DATA_LICENSE = 'SL' and the SN 6931 ",
+         "data in path_main)?")
+  }
+
+  key_cells <- key_crosswalk %>%
+    dplyr::select(SOC_4, SIC_4, any_key, occ_group)
+
+  df %>%
+    dplyr::mutate(
+      base_soc4 = dplyr::if_else(
+        !is.na(base_jbsoc10) & base_jbsoc10 >= 0, as.numeric(base_jbsoc10), NA_real_
+      ),
+      base_sic_raw = dplyr::if_else(
+        !is.na(base_jbsic07) & base_jbsic07 >= 0, as.numeric(base_jbsic07), NA_real_
+      ),
+      # Normalize SIC to a 4-digit class. jbsic07 may be stored at 5-digit subclass
+      # level (e.g. 86900 -> class 8690); genuine 4-digit classes pass through.
+      base_sic4 = dplyr::case_when(
+        is.na(base_sic_raw)   ~ NA_real_,
+        base_sic_raw >= 10000 ~ floor(base_sic_raw / 10),
+        TRUE                  ~ base_sic_raw
+      ),
+      has_valid_sic = !is.na(base_sic4),
+      has_valid_soc = !is.na(base_soc4),
+      baseline_group_info_ok = has_valid_sic & has_valid_soc
+    ) %>%
+    dplyr::left_join(key_cells, by = c("base_soc4" = "SOC_4", "base_sic4" = "SIC_4")) %>%
+    dplyr::mutate(
+      # Shutdown sector: determinable from SIC alone.
+      shutdown_sec = dplyr::case_when(
+        has_valid_sic & is_ifs_shutdown_sic(base_sic4) ~ 1,
+        has_valid_sic ~ 0,
+        TRUE ~ NA_real_
+      ),
+
+      # Key worker requires BOTH detailed codes observed (the "combination").
+      # An observed combination not present as key in the crosswalk is a 0.
+      keyworker_my_def = dplyr::case_when(
+        !baseline_group_info_ok ~ NA_real_,
+        !is.na(any_key) & any_key == 1 ~ 1,
+        TRUE ~ 0
+      ),
+
+      # Collapsed detailed key-worker label from the matched ONS group.
+      kw_label_sl = dplyr::if_else(
+        keyworker_my_def == 1 & !is.na(occ_group),
+        unname(KW_ONS_TO_LABEL_SL[occ_group]),
+        NA_character_
+      ),
+
+      group_self_report = dplyr::case_when(
+        shutdown_sec == 1 ~ "shutdown sector",
+        "keyworker" %in% names(.) && "keyworksector" %in% names(.) &&
+          (keyworker == 1 | keyworksector %in% 1:8) ~ "key worker",
+        is.na(shutdown_sec) ~ "missing industry / occupation",
+        TRUE ~ "other"
+      ),
+
+      group_industry_based = dplyr::case_when(
+        shutdown_sec == 1 ~ "shutdown sector",
+        keyworker_my_def == 1 ~ "key worker",
+        is.na(shutdown_sec) | is.na(keyworker_my_def) ~ "missing industry / occupation",
+        TRUE ~ "other"
+      ),
+
+      # Shutdown wins the descriptive categorical (matches EUL precedence).
+      group_industry_based_detailed = dplyr::case_when(
+        shutdown_sec == 1 ~ "shutdown sector",
+        keyworker_my_def == 1 ~ kw_label_sl,
+        is.na(shutdown_sec) | is.na(keyworker_my_def) ~ "missing industry / occupation",
+        TRUE ~ "other"
+      )
+    ) %>%
+    dplyr::select(
+      -base_soc4, -base_sic_raw, -base_sic4,
+      -has_valid_sic, -has_valid_soc,
+      -any_key, -occ_group, -kw_label_sl
+    )
 }
 
 

@@ -28,6 +28,20 @@ suppressPackageStartupMessages({
 })
 
 # -----------------------------------------------------------------------------
+# Wide-layout categories
+# -----------------------------------------------------------------------------
+# Industry / occupation always need the wide (horizontal / extra-large) layout.
+# Under the Special Licence the detailed industry groups do too, because there are
+# six collapsed key-worker types instead of the EUL's three. Returns FALSE for the
+# EUL detailed groups so EUL figures are produced exactly as before.
+.by_is_wide <- function(by) {
+  if (is.null(by)) return(FALSE)
+  by %in% c("industry", "occupation") ||
+    (exists("DATA_LICENSE") && identical(DATA_LICENSE, "SL") &&
+       identical(by, "group_industry_based_detailed"))
+}
+
+# -----------------------------------------------------------------------------
 # Wave label mapping (short for axis, full for titles)
 # -----------------------------------------------------------------------------
 wave_labels <- function() {
@@ -351,7 +365,7 @@ plot_furlough_overtime_facets <- function(df,
       ggplot2::aes(x = wave, y = share, fill = furlough_cat)
     ) +
       ggplot2::geom_col() +
-      ggplot2::facet_wrap(vars(!!by_sym)) +
+      ggplot2::facet_wrap(vars(!!by_sym), labeller = ggplot2::label_wrap_gen(width = 18)) +
       ggplot2::scale_y_continuous(labels = scales::percent_format()) +
       ggplot2::labs(
         x = "Wave",
@@ -360,11 +374,11 @@ plot_furlough_overtime_facets <- function(df,
       ) +
       ggplot2::theme_minimal()
   }
-  
+
   ggplot2::ggsave(
     filename = file.path(fig_path, out_file),
     plot = p,
-    width = 10,
+    width = if (.by_is_wide(by)) 14 else 10,
     height = 6
   )
 }
@@ -587,7 +601,8 @@ plot_covid_categorical_overtime <- function(df,
                         y = share,
                         fill = cat)) +
       geom_col(position = "fill") +
-      facet_wrap(~ facet_group, scales = "fixed") +
+      facet_wrap(~ facet_group, scales = "fixed",
+                 labeller = label_wrap_gen(width = 18)) +
       scale_y_continuous(labels = scales::percent_format()) +
       theme_minimal() +
       labs(x = NULL, y = NULL, fill = fill_lab, title = title) +
@@ -732,9 +747,17 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
       wfh_cat = factor(wfh_cat, levels = c("Always", "Often", "Sometimes", "Never", "Not employed"))
     )
 
+  # With the larger SL category set a single row of facet columns is too cramped,
+  # so wrap onto a grid (and widen the canvas). EUL keeps the single-row layout.
+  facet_layer <- if (.by_is_wide(by)) {
+    facet_wrap(vars(.data[[by]]), labeller = label_wrap_gen(width = 18))
+  } else {
+    facet_grid(cols = vars(.data[[by]]))
+  }
+
   p <- ggplot(dd, aes(x = wave_label_short, fill = wfh_cat)) +
     geom_bar(position = position_fill(reverse = TRUE)) +
-    facet_grid(cols = vars(.data[[by]])) +
+    facet_layer +
     scale_y_continuous(labels = scales::percent_format()) +
     labs(
       fill = "Work from home",
@@ -747,7 +770,11 @@ plot_wfh_overtime_facets <- function(df, by, out_file, fig_path) {
       axis.text.x = element_text(angle = 90, hjust = 1)
     )
 
-  ggsave(out_file, p, path = fig_path, width = 12, height = 8)
+  ggsave(
+    out_file, p, path = fig_path,
+    width = if (.by_is_wide(by)) 16 else 12,
+    height = if (.by_is_wide(by)) 9 else 8
+  )
   p
 }
 
@@ -863,7 +890,7 @@ plot_keyworker_definition_compare <- function(
   }
 
   # Helper: whether this plot should be horizontal
-  is_wide_cat <- by %in% c("industry", "occupation")
+  is_wide_cat <- .by_is_wide(by)
 
   # Put legend at bottom for flipped plots, right otherwise
   legend_pos <- if (is_wide_cat) "bottom" else "right"

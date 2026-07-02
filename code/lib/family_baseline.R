@@ -155,6 +155,11 @@ clean_baseline_wave <- function(path_main, prefix, pidp_filter = NULL) {
     paste0(prefix, "_jboff"),
     paste0(prefix, "_jbsic07_cc"),
     paste0(prefix, "_jbsoc10_cc"),
+    # Detailed 4-digit SIC/SOC: only present in the Special Licence (SN 6931)
+    # edition. any_of() below drops them silently under the EUL edition, so the
+    # baseline gains base_jbsic07 / base_jbsoc10 only in SL mode.
+    paste0(prefix, "_jbsic07"),
+    paste0(prefix, "_jbsoc10"),
     paste0(prefix, "_jbft_dv"),
     paste0(prefix, "_jbhrs"),
     paste0(prefix, "_jbot"),

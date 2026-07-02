@@ -129,13 +129,22 @@ cat("SOC rows: ", nrow(SOC), "\n", sep = "")
 cat("SIC rows: ", nrow(SIC), "\n", sep = "")
 cat("Keyworker crosswalk rows: ", nrow(key_inds), "\n", sep = "")
 
+# Special-Licence only: full-resolution (SOC x SIC) crosswalk used to redefine
+# key-worker status and type from the detailed jbsoc10 / jbsic07 codes. NULL under
+# the EUL edition, where add_baseline_work_groups() uses the condensed-code logic.
+key_inds_detailed <- NULL
+if (DATA_LICENSE == "SL") {
+  key_inds_detailed <- build_keyworker_crosswalk_detailed(KEYWORKER_XLSX)
+  cat("Detailed keyworker crosswalk cells: ", nrow(key_inds_detailed), "\n", sep = "")
+}
+
 # =============================================================================
 # Step 1: Baseline J/K/I composite
 # =============================================================================
 cat("\n--- Step 1: Build baseline (I/J/K composite) ---\n")
 
 df_baseline <- build_baseline(path_main) %>%
-  add_baseline_work_groups()
+  add_baseline_work_groups(license = DATA_LICENSE, key_crosswalk = key_inds_detailed)
 
 saveRDS(df_baseline, file.path(der_path, "baseline.rds"))
 
@@ -511,7 +520,7 @@ df_future_long <- df_future_long %>%
 tmp_wfh <- combine_wfh(df_future_long$jbpl, df_future_long$jbwah)
 
 df_future_long <- df_future_long %>%
-  add_baseline_work_groups() %>%
+  add_baseline_work_groups(license = DATA_LICENSE, key_crosswalk = key_inds_detailed) %>%
   dplyr::mutate(
     base_any_work = make_any_work_future(
       jbhas = base_jbhas

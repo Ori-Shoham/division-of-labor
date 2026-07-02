@@ -327,24 +327,26 @@ add_couple_baseline_treatments <- function(df_couple) {
       ),
       
       # ---- Detailed key-worker groups ---------------------------------------
+      # Detect the education key-worker type by its "education" token so the same
+      # logic works for the EUL label ("key worker - education") and the SL label
+      # ("key worker - education and childcare"). Non-education key worker is then
+      # simply "any key worker and not education" — identical to the historical
+      # health|public-safety list under EUL, and correct for the larger SL set.
       wife_is_keyworker_education = dplyr::case_when(
         !wife_group5_ok ~ NA,
-        group_industry_based_detailed_w == "key worker - education" ~ TRUE,
+        stringr::str_detect(group_industry_based_detailed_w, "education") ~ TRUE,
         TRUE ~ FALSE
       ),
-      
+
       husb_is_keyworker_education = dplyr::case_when(
         !husb_group5_ok ~ NA,
-        group_industry_based_detailed_h == "key worker - education" ~ TRUE,
+        stringr::str_detect(group_industry_based_detailed_h, "education") ~ TRUE,
         TRUE ~ FALSE
       ),
-      
+
       wife_is_keyworker_nonedu = dplyr::case_when(
-        !wife_group5_ok ~ NA,
-        group_industry_based_detailed_w %in% c(
-          "key worker - health\n and social services",
-          "key worker - public safety\n and essential gvt. services"
-        ) ~ TRUE,
+        is.na(wife_is_keyworker_any) | is.na(wife_is_keyworker_education) ~ NA,
+        wife_is_keyworker_any & !wife_is_keyworker_education ~ TRUE,
         TRUE ~ FALSE
       ),
       

@@ -18,7 +18,29 @@
       "Bash(C:/Users/Ori/anaconda3/python.exe -c \"print\\('use ps'\\)\")",
       "Bash(pandoc \"SpecialLicenceProjectApplication_revised.docx\" --to markdown --track-changes=all)",
       "Bash(xargs grep -l \"build_baseline_couple\")",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(python)",
+      "Bash(python3)",
+      "Bash(python3 -c \"import sys; print\\(sys.version\\); import pandas; print\\('pandas OK'\\); import openpyxl; print\\('openpyxl OK'\\)\")",
+      "Bash(ls \"C:\\\\Users\\\\USER\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\21eb83fd-db34-4a7e-85cb-15206ddb9cdd\\\\be6a70b4-9cbf-47a6-a767-4ae56f2af3af\\\\bin\" | head -20)",
+      "Bash(npm --version)",
+      "Bash(unzip -l policies/keyworkersreferencetableupdated2.xlsx)",
+      "Bash(unzip -p policies/keyworkersreferencetableupdated2.xlsx xl/workbook.xml)",
+      "Bash(unzip -p policies/keyworkersreferencetableupdated2.xlsx xl/worksheets/sheet1.xml)",
+      "Bash(unzip -p policies/keyworkersreferencetableupdated2.xlsx xl/sharedStrings.xml)",
+      "Bash(unzip -p policies/keyworkersreferencetableupdated2.xlsx xl/worksheets/sheet5.xml)",
+      "Bash(unzip -p policies/keyworkersreferencetableupdated2.xlsx xl/worksheets/sheet4.xml)",
+      "Bash(cd /tmp)",
+      "Bash(unzip -q \"C:\\\\Users\\\\USER\\\\Dropbox\\\\WFH_covid\\\\UK project\\\\division-of-labor\\\\policies\\\\keyworkersreferencetableupdated2.xlsx\" -d kw_extract)",
+      "Bash(ls -la /tmp/kw_extract/xl/)",
+      "Bash(pip install *)",
+      "Bash(python -c \"import openpyxl, pypdf; print\\('ok'\\)\")",
+      "Bash(python -m pip --version)",
+      "Bash(where python *)",
+      "Bash(where Rscript)",
+      "Bash(python -m pip install openpyxl pypdf -q)",
+      "Bash(cd \"C:/Users/USER/Dropbox/WFH_covid/UK project/division-of-labor\" && rm -f _ifs_dump.txt _xlsx_dump1.txt _xlsx_dump2.txt && echo \"removed\")",
+      "PowerShell($rscript = \"C:\\\\Program Files\\\\R\\\\R-4.5.1\\\\bin\\\\Rscript.exe\"; & $rscript -e \"cat\\(R.version.string,'\\\\n'\\); for \\(p in c\\('dplyr','stringr','tidyr','readxl','tidyverse','haven','forcats','scales'\\)\\) cat\\(p, requireNamespace\\(p, quietly=TRUE\\), '\\\\n'\\)\")"
     ]
   }
 }

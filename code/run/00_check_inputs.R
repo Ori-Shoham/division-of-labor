@@ -175,6 +175,20 @@ print_missing_or_success <- function(checks, label) {
 }
 
 # =============================================================================
+# Active data licence
+# =============================================================================
+if (!exists("DATA_LICENSE")) DATA_LICENSE <- "EUL"
+cat("\n--- Active data licence ---\n")
+cat("DATA_LICENSE: ", DATA_LICENSE,
+    if (DATA_LICENSE == "SL") "  (Special Licence, SN 6931)" else "  (End User Licence, SN 6614)",
+    "\n", sep = "")
+cat("path_main:    ", path_main, "\n", sep = "")
+cat("der_path:     ", der_path, "\n", sep = "")
+cat("samples_path: ", samples_path, "\n", sep = "")
+cat("fig_path:     ", fig_path, "\n", sep = "")
+cat("tab_path:     ", tab_path, "\n", sep = "")
+
+# =============================================================================
 # Step 0: Check local project folders and scripts
 # =============================================================================
 
