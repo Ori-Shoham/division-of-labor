@@ -19,7 +19,8 @@
 
 If you do nothing else, read these in order:
 
-1. This section and **§1 (research design)** — so you know *what* we are doing and *why*.
+1. This section, then **§1 (project overview)** in full — research question, data, and
+   design, in that order — so you know *what* we are doing, on *what data*, and *why*.
 2. **§4 (data & licensing)** and **§5 (paperwork)** — so you understand what you may and
    may not do with the data, and what you must sign **before** touching it.
 3. **§3 (repo tour)** + **§6 (how to run the code)** — so you can orient in the codebase.
@@ -47,12 +48,14 @@ If you do nothing else, read these in order:
 
 ---
 
-## 1. Project overview — research question & design  _[verify with Ori]_
+## 1. Project overview — research question, data, and design  _[verify with Ori]_
 
 *Drafted from the Special Licence project application
-(`data_agreements/submit/SpecialLicenceProjectApplication_revised.pdf`), `CLAUDE.md`,
+(`data_agreements/submit/SpecialLicenceProjectApplication_revised.pdf`), the event-study
+equation and reading guide in `couples_graphs.tex` / `couples_graphs_short.tex`, `CLAUDE.md`,
 `method.tex`, and the two grant proposals under `grants/`.*
 
+### 1.1 Research question and the COVID natural experiment
 
 **The question.** Gender gaps in earnings and careers are tightly linked to how couples
 divide *paid* and *unpaid* work, especially after children arrive. This project asks
@@ -71,6 +74,118 @@ nature of the pandemic, its differential effect on people depending on their
 pre-determined work characteristics, combined with the fact that **local** restrictions
 varied over time and place, gives credible quasi-experimental variation in how much time
 each partner had to spend at home.
+
+### 1.2 Two legs of the project: Israel administrative data and UKHLS
+
+The project currently has **two legs** using the same underlying research
+question, run on different data:
+
+- **An Israel administrative-data leg.** Uses Israeli administrative data form the
+Central Bureau of Statistics (למ"ס).
+- **The UKHLS leg — what this repo implements.** Uses UK Understanding Society survey data with the same underlying logic (pre-pandemic industry/occupation
+  exposure → COVID-era division-of-labour outcomes). While smaller in sample it
+  allows more detailed analysis of time use which is critical to understanding
+  changes in household divison of labor and home production. **Everything else in this guide, and
+  essentially all the code in `code/`, is this leg.**
+
+Some project documents (`method.tex`, the Falk/Sapir proposals under `grants/`) also sketch a
+broader **cross-country** ambition that additionally mentions German survey data. That is
+framing/future work, not implemented anywhere in this repo.
+
+### 1.3 Data: main survey vs. COVID survey (UKHLS)
+
+
+#### What Understanding Society / UKHLS is
+
+**Understanding Society (the UK Household Longitudinal Study, UKHLS)** is a large,
+nationally representative UK household panel study running continuously since 2009. Every
+member of ~40,000 sampled households is (re-)interviewed, so it follows the *same people*
+(and the households they form/leave) over many years, with a rich annual questionnaire
+covering employment, income, education, health, family relationships, housing and *time use*. This is
+what makes it useful here: it lets you observe the **same couples** before, during, and
+after COVID, with detailed pre-pandemic job information for both partners.
+
+#### Two different data collections 
+
+This project draws on **two separate UKHLS instruments** that happen to share the same
+underlying panel members but run on completely different schedules and questionnaires:
+
+| | **Main survey ("main study")** | **COVID-19 Study ("COVID survey")** |
+|---|---|---|
+| What it is | The regular, ongoing UKHLS annual interview — the core survey | A short, separate survey fielded rapidly to the *same* panel members specifically because of the pandemic, mainly online but with a telephone-mode top-up in some waves (see below) |
+| Wave naming | Lettered waves, one fieldwork round per letter: `a, b, c, … o` (each round's fieldwork spans roughly two calendar years, so a wave isn't a single instant) | Lettered `ca`–`ci` (nine rounds) |
+| Cadence | Roughly annual, ongoing since 2009 | Monthly at first (April–July 2020), then roughly every 2 months through September 2021 |
+| Content | Comprehensive: employment, income, education, health, housing, relationships, etc. | Narrow and COVID-specific: work status, working from home, furlough, childcare, health/well-being during the pandemic |
+| Analysis time unit | Primarily **calendar year of interview** (`study = "main"`); a **monthly** version also exists (`study = "main_monthly"`) but suffers from power issues — relatively few people are interviewed in any given month, so monthly event-time estimates are noisy | **Wave** (`study = "covid"`) — each COVID wave is treated as its own period, since waves are irregularly spaced calendar months rather than a regular monthly grid |
+| Study number | SN 6614 (EUL) / SN 6931 (SL) | SN 8644 (same under either licence, see §4.1) |
+
+The **wave-letter ↔ calendar mapping actually used in this repo** (from
+`code/lib/wave_labels.R`, the single source of truth):
+
+- **Main survey:** `a`=Wave 1 … `h`=Wave 8, **`i`=Wave 9, `j`=Wave 10, `k`=Wave 11** (the
+  three candidate **baseline** waves — see below), `l`=Wave 12, `m`=Wave 13, `n`=Wave 14,
+  `o`=Wave 15.
+- **COVID survey:** `ca`=Apr 2020, `cb`=May 2020, `cc`=Jun 2020, `cd`=Jul 2020,
+  `ce`=Sep 2020, `cf`=Nov 2020, `cg`=Jan 2021, `ch`=Mar 2021, `ci`=Sep 2021.
+
+Because these are two different questionnaires on two different schedules, the code always
+tracks which "study" a panel came from (`study = "main"` vs. `"covid"` vs. `"main_monthly"`
+in `code/lib/event_study_regressions.R`) — event time is measured in **calendar years** for
+the main survey but in **irregular calendar months** for the COVID survey, and the two are
+never silently pooled.
+
+#### How this project uses the two together
+
+- **Baseline (pre-COVID) information** — both partners' industry/occupation, age,
+  education, children, region — is built from the **main survey**, using whichever of
+  waves **I/J/K (Waves 9/10/11)** gives each person their most recent interview, prioritizing
+  a **2019** interview date (people are interviewed at different points across a wave's
+  ~2-year fieldwork window, so "2019" isn't the same wave letter for everyone).
+- **Pre-baseline history** (waves `a`–`k`) is used for pre-trend checks and longer-run
+  controls.
+- **What happened *during* the pandemic** — work status, WFH, furlough, childcare, in
+  April 2020 through September 2021 — comes from the **COVID survey** (`ca`–`ci`).
+- **What happened *after* the pandemic** — later employment, pay, family outcomes — comes
+  from **main-survey follow-up waves `j`–`o`**. The main version currently restricts to people/couples
+  also observed in the COVID sample (`code/lib/future_outcomes.R`). We had some troubles with things
+  looking different in the main survey vs. the covid sample results in the periods where they overlap.
+
+
+#### File types per wave (what `00_check_inputs.R` looks for)
+
+Each main-survey wave ships as (at least) three Stata files, and the COVID survey ships one:
+
+- `{w}_indresp.dta` — **individual response**: one row per person interviewed that wave;
+  most substantive variables (job, income, health, attitudes) live here.
+- `{w}_egoalt.dta` — **ego–alter file**: relationship links between household members (who
+  is whose spouse/partner/child) — this is what lets the pipeline pair up wife/husband rows
+  into couple-level records.
+- `{w}_indall.dta` — **individual all**: a fuller household roster (includes people who
+  weren't interviewed that wave but are still household members), used to keep track of
+  household composition.
+- `{cw}_indresp_w.dta` — the COVID survey's individual response file for wave `cw`,
+  **web-mode** respondents. This is the **only** COVID file `00_check_inputs.R` requires and
+  the only one `code/lib/covid_loader.R` loads.
+- `{cw}_indresp_t.dta` — a **telephone-mode** counterpart that also exists on disk for at
+  least some COVID waves (e.g. `ca_indresp_t.dta`). It is a smaller, differently-fielded
+  top-up (respondents interviewed by phone rather than the web questionnaire) and was **not
+  run in every wave**, so it isn't a consistent panel on its own. **`00_check_inputs.R` does
+  not check for it, and the pipeline does not load or merge it** — it is not part of the
+  required-inputs checklist at all, so its absence never blocks the pre-flight check. If you
+  need to check exactly which waves have a `_t` file and whether it's worth incorporating
+  (e.g. for sample size), check the raw data folder directly; this hasn't been
+  systematically verified. _[verify with Ori]_
+
+Person-level records are keyed by `pidp` (a person identifier stable across waves and
+across the main/COVID surveys — the same `pidp` links a person's main-survey and
+COVID-survey rows). Couple-level files are built by joining each person's row to their
+partner's row (via the `egoalt` links) and keeping both spouses' variables side by side,
+usually suffixed `_w` (wife) / `_h` (husband) — you'll see this suffix convention throughout
+`code/lib/`.
+
+---
+
+### 1.4 Empirical design: treatment, instrument, and equations
 
 **Pre-pandemic exposure classification (the shared building block for both designs
 below).** Using each partner's pre-COVID **SIC** (industry) and **SOC** (occupation)
@@ -91,23 +206,88 @@ exposure contrasts are:
 
 **Two empirical steps.**
 
-1. **Descriptive + event-study (the part the code currently implements most fully).** Here
-   the exposure contrasts above are used directly **as the treatment**. A
-   difference-in-differences event study traces how outcomes evolve around the pandemic,
-   by treatment group and by spouse. Most regressions analyze each spouse separately.
-   Time fixed effects; pre-pandemic controls (both
-   partners' age, education, number/age of children, region, baseline employment); optional
-   couple or couple-by-spouse fixed effects; omitted category = the wave just before COVID.
-   Pre-period coefficients double as a pre-trend diagnostic. Outcomes include employment,
-   work hours, wages, work location, housework hours, childcare hours/responsibility, and
-   selected health/well-being, plus family events (divorces, childbirths). Heterogeneity by
-   **age of youngest child** at onset is a key cut.
-2. **Instrumental-variables design (planned / partially scaffolded).** Here the couple's
-   *realised* work-location configuration during COVID (wife home/out × husband home/out)
-   is treated as **endogenous**, and the same pre-pandemic exposure classification is used
-   — not as a treatment, but as (part of) the **excluded instrument** — interacted with
-   **local** COVID restrictions (school closures, workplace restrictions) at Local
-   Authority District level, to instrument for that realised state.
+#### Step 1 — Descriptive + event study (the part the code currently implements most fully)
+
+Here the exposure contrasts above are used directly **as the treatment**. Event studies are
+estimated separately by study sample (COVID waves / main-study waves), treatment definition,
+spouse, outcome, and baseline child-age group (youngest child 0–10 vs. 11–17). This is
+exactly the specification in the slide decks' "Event-study methodology" frame
+(`couples_graphs.tex`, `couples_graphs_short.tex`) and in
+`code/lib/event_study_regressions.R` (`build_event_study_formula()`,
+estimated with `fixest::feols`):
+
+$$
+Y_{ict} \;=\; \alpha_t \;+\; \delta T_c \;+\;
+\sum_{\tau \neq \tau_0} \beta_{\tau}\Big[\mathbf{1}\{t=\tau\}\times T_c\Big]
+\;+\; X_c'\gamma \;+\; \varepsilon_{ict}
+$$
+
+where:
+- $i$ indexes the person (wife or husband, estimated in **separate regressions by spouse**),
+  $c$ the couple, $t$ calendar time (event time in the code).
+- $T_c$ is the **couple-level treatment indicator** (one of the two exposure contrasts above,
+  e.g. wife-key-worker/husband-not).
+- $\alpha_t$ are period fixed effects; $\tau_0$ is the **omitted reference period** — 2019 for
+  main-study event studies, 2019 where available for COVID-study event studies (else
+  Jan–Feb 2020 for WFH/work-outside outcomes).
+- $\beta_\tau$ are the coefficients of interest: the treatment-vs-comparison gap in event
+  time $\tau$, relative to $\tau_0$. Pre-period $\beta_\tau$'s near zero support the
+  pre-trends/parallel-trends assumption.
+- $X_c'\gamma$ are baseline covariates: wife/husband age, wife/husband education category,
+  number of children under 18, number of children under 10, and region.
+- $\delta$ (the level term on $T_c$) is dropped and replaced by **couple fixed effects** in
+  the couple-FE specification (`MAKE_EVENT_STUDIES_COUPLE_FE` in `config.R`); standard errors
+  are clustered at the person level in all specifications.
+
+Outcomes include employment, work hours, wages, work location, housework hours, childcare
+hours/responsibility, selected health/well-being, and family events (divorces, childbirths).
+Heterogeneity by **age of youngest child** at onset is a key cut (run as separate regressions
+by child-age group, not an interaction term, in the current code).
+
+#### Step 2 — Instrumental-variables design (planned / partially scaffolded)
+
+Here the couple's ***realised*** work-location configuration during COVID — the joint state
+of wife's and husband's at-home/working-outside status, e.g. (wife home, husband home),
+(wife home, husband out), (wife out, husband home), (wife out, husband out) — is treated as
+**endogenous** (parents may select into WFH, reduce hours, or leave employment in response to
+household needs). It is instrumented using the **same pre-pandemic exposure classification**
+from Step 1 — not as a treatment here, but as (part of) the **excluded instrument** —
+interacted with **local** COVID restrictions at Local Authority District level. Per the
+Special Licence application (§2.2), the two-stage design is:
+
+**First stage** (one regression per realised state $s$):
+
+$$
+D_{c,s} \;=\; \pi_s' Z_c \;+\; \rho_s R_{\ell(c)} \;+\; \theta_s'\big(Z_c \times R_{\ell(c)}\big)
+\;+\; X_c'\Gamma_s \;+\; \eta_{c,s}
+$$
+
+**Second stage:**
+
+$$
+Y_{ict} \;=\; \sum_{s} \lambda_{s,i}\, \widehat{D}_{c,s} \;+\; \psi_t \;+\; X_c'\kappa
+\;+\; \varepsilon_{ict}
+$$
+
+where:
+- $D_{c,s}$ is an indicator that couple $c$ is in realised state $s$ during the COVID period.
+- $Z_c$ is the vector of **pre-pandemic predicted exposure** for both partners — predicted
+  key-worker status, predicted shutdown-sector exposure, and predicted capacity to work from
+  home, for wife and husband separately. This is the same underlying SIC/SOC-based
+  classification as Step 1, just used here as instrument components rather than as treatment.
+- $R_{\ell(c)}$ is the local-restriction intensity (school closures, workplace/social
+  restrictions) in couple $c$'s Local Authority District $\ell(c)$ at the time of interview —
+  requires the Special-Licence LAD identifiers (§4.1) and the IFS restrictions linkage
+  (see "Data linkage" below).
+- $Z_c \times R_{\ell(c)}$ lets the same pre-pandemic job imply different realised
+  work-location outcomes depending on how binding local restrictions were at the time.
+- $\lambda_{s,i}$ (second stage) is the causal effect of interest: how each realised
+  couple work-location configuration affects spouse $i$'s outcomes.
+- Couple fixed effects can be added to both stages where not collinear with the excluded
+  instruments; $X_c$ denotes the corresponding controls vector in each stage.
+
+This design is **not yet built** in `code/`; the SL Local Authority data (SN 6666) and the
+IFS restrictions linkage need to be wired in first (see §12).
 
 **Data linkage.** Local Authority District identifiers (Special Licence only) link
 households to the **IFS COVID-19 Restrictions Dataset** (school closures, workplace/social
@@ -116,10 +296,6 @@ restrictions over time) — see `policies/` for the in-repo copies and crosswalk
 **Key references** (from the application): Goldin (2014); Kleven, Landais, Posch, Steinhauer
 & Zweimüller (2019); Hupkau & Petrongolo (2020); Sevilla & Smith (2020); ONS key-worker
 reference tables (2020); Joyce & Xu, IFS BN278 (2020).
-
-**Scope note.** Some project documents (`method.tex`, the Falk/Sapir proposals) sketch a
-broader **cross-country** ambition (Israeli administrative data, German survey data). Those
-are framing/future work — **the code in this repo is the UKHLS workflow only.**
 
 ---
 
@@ -179,7 +355,7 @@ switches between the **EUL** and **SL** editions of the main study via one flag 
 |---|---|---|
 | **SN 6614** | Understanding Society, **End User Licence (EUL)** main study | Default edition; condensed (`*_cc`) industry/occupation only |
 | **SN 6931** | Understanding Society, **Special Licence (SL)** main study | Same files **plus** detailed 4/5-digit SIC (`jbsic07`) and SOC (`jbsoc10`) |
-| **SN 6666** | Understanding Society **Special Licence, Local Authority District** | LAD identifiers for linking to local restrictions (IV design; see §1) |
+| **SN 6666** | Understanding Society **Special Licence, Local Authority District** | LAD identifiers for linking to local restrictions (IV design; see §1.4) |
 | **SN 8644** | Understanding Society **COVID-19 Study** | The `ca`–`ci` COVID waves; same under either licence |
 
 > Note: `code/lib/config.R` currently wires up SN 6614, SN 6931, and SN 8644. **SN 6666
@@ -600,7 +776,7 @@ whichever assistant you prefer for code edits; keep both pointed at the committe
      detailed codes, and re-run the pipeline into the `*_SL` output trees.
   2. Wire in **SN 6666 (LAD)** and the **IFS restrictions linkage**, then build the
      **IV design** (realised work-location states instrumented by pre-COVID exposure ×
-     local restrictions) described in §1.
+     local restrictions) described in §1.4.
   3. Expand event-study outcomes (housework/childcare, well-being, family events) and the
      youngest-child heterogeneity cut.
 
