@@ -26,6 +26,7 @@ If you do nothing else, read these in order:
 4. Skim **§7 (conventions)**, **§9–10 (git/Overleaf)**, **§11 (Claude Code)**.
 
 **Do this before touching any licensed data** (details in §5):
+
 - Get added to the Special Licence as an additional researcher and **wait for UK Data
   Service approval**.
 - Sign the Special Licence User Agreement; read the data-handling/security guide.
@@ -33,6 +34,7 @@ If you do nothing else, read these in order:
 
 **The two rules that matter most** — note the two licence tiers are governed differently
 (see §4.5 for the full version):
+
 - **Special Licence (SL) data** — the detailed SIC/SOC and Local Authority data — may
   **only** be stored and processed on the approved secure machine (§6). It never touches a
   personal laptop, Dropbox, email, or an AI tool.
@@ -51,16 +53,10 @@ If you do nothing else, read these in order:
 (`data_agreements/submit/SpecialLicenceProjectApplication_revised.pdf`), `CLAUDE.md`,
 `method.tex`, and the two grant proposals under `grants/`.*
 
-**Administrative identity of the project**
-- UK Data Service project number **282609**, title **"Work from home in the UK"**.
-- Project lead: **Itay Saporta Eksten** (University of Manchester / Tel Aviv University,
-  Eitan Berglas School of Economics).
-- Research team member: **Ori Nahshon Shoham** (the role being handed over).
-- Approved project window: **2026-05-07 → 2029-12-31**.
 
 **The question.** Gender gaps in earnings and careers are tightly linked to how couples
 divide *paid* and *unpaid* work, especially after children arrive. This project asks
-whether a **temporary, externally-imposed shock to household specialization** — caused by
+whether a **temporary, externally-imposed shock to household work allocation** — caused by
 COVID-19 — **durably changed the division of labour within couples**, and whether that fed
 through to gender gaps in labour-market outcomes and career trajectories. The focus is on
 **co-resident couples, especially couples with dependent children** observed before the
@@ -69,36 +65,49 @@ pandemic.
 **Why COVID is the experiment.** The pandemic forced sharp, externally-driven variation
 across households depending on each partner's **pre-pandemic industry and occupation**:
 some parents kept working outside the home (key workers), some shifted to home working,
-others were shut down or furloughed. Because exposure depended on pre-pandemic SIC/SOC
-codes and on **local** restrictions, it gives credible quasi-experimental variation in how
-much time each partner had to spend at home.
+others were shut down or furloughed. Think of a couple where the mother is a nurse who
+keeps working at the hospital while her gym-instructor husband stays home. The unforeseen
+nature of the pandemic, its differential effect on people depending on their
+pre-determined work characteristics, combined with the fact that **local** restrictions
+varied over time and place, gives credible quasi-experimental variation in how much time
+each partner had to spend at home.
 
-**Treatment is built only from pre-pandemic information** (so it is not contaminated by
-post-shock choices). Using each partner's pre-COVID **SIC** (industry) and **SOC**
-(occupation) codes, plus the ONS key-worker classification and the IFS shutdown-sector
-classification (Joyce & Xu 2020), jobs are sorted into exposure groups (key-worker sectors,
-shutdown sectors, high/low capacity to work from home). The two headline couple-level
-treatments are:
+**Pre-pandemic exposure classification (the shared building block for both designs
+below).** Using each partner's pre-COVID **SIC** (industry) and **SOC** (occupation)
+codes, plus the Office of National Statistics (ONS) key-worker classification and the
+IFS shutdown-sector classification (Joyce & Xu 2020), jobs are sorted into exposure groups —
+key-worker sectors, shutdown sectors, and later we may consider classifying high/low capacity to work
+from home. This classification is built only from pre-pandemic information, so it is not
+contaminated by post-shock choices. Importantly, it plays **two different roles** depending
+on the empirical design (§ "Two empirical steps"
+below): it defines the **treatment groups** in the event-study design, and it is part of
+the **excluded instrument** in the IV design. The two headline couple-level
+exposure contrasts are:
+
 1. **Wife is a key worker in a non-education sector**, while the **husband is not a key
    worker (or is education-only)**.
 2. **Husband is in a shutdown sector**, while the **wife is not** (with symmetric
    husband/wife variants).
 
 **Two empirical steps.**
-1. **Descriptive + event-study (the part the code currently implements most fully).** A
+
+1. **Descriptive + event-study (the part the code currently implements most fully).** Here
+   the exposure contrasts above are used directly **as the treatment**. A
    difference-in-differences event study traces how outcomes evolve around the pandemic,
-   by treatment group and by spouse. Time fixed effects; pre-pandemic controls (both
+   by treatment group and by spouse. Most regressions analyze each spouse separately.
+   Time fixed effects; pre-pandemic controls (both
    partners' age, education, number/age of children, region, baseline employment); optional
    couple or couple-by-spouse fixed effects; omitted category = the wave just before COVID.
    Pre-period coefficients double as a pre-trend diagnostic. Outcomes include employment,
    work hours, wages, work location, housework hours, childcare hours/responsibility, and
    selected health/well-being, plus family events (divorces, childbirths). Heterogeneity by
    **age of youngest child** at onset is a key cut.
-2. **Instrumental-variables design (planned / partially scaffolded).** Treats the couple's
+2. **Instrumental-variables design (planned / partially scaffolded).** Here the couple's
    *realised* work-location configuration during COVID (wife home/out × husband home/out)
-   as endogenous, and instruments it with pre-COVID SIC/SOC exposure interacted with
-   **local** COVID restrictions (school closures, workplace restrictions) at Local Authority
-   District level.
+   is treated as **endogenous**, and the same pre-pandemic exposure classification is used
+   — not as a treatment, but as (part of) the **excluded instrument** — interacted with
+   **local** COVID restrictions (school closures, workplace restrictions) at Local
+   Authority District level, to instrument for that realised state.
 
 **Data linkage.** Local Authority District identifiers (Special Licence only) link
 households to the **IFS COVID-19 Restrictions Dataset** (school closures, workplace/social
@@ -178,17 +187,16 @@ switches between the **EUL** and **SL** editions of the main study via one flag 
 > config — adding it is part of building the IV design. _[verify with Ori]_
 
 ### 4.2 Getting the data (UKDS)
-1. Create a **UK Data Service account** (https://ukdataservice.ac.uk) using the email that
-   is/will be registered on the project.
-2. You must be **listed on project 282609** and **approved** before you can download SL
-   data (see §5 — this is gated on paperwork).
-3. Download the relevant studies as **Stata (.dta)** files. The pipeline reads `.dta` via
+
+1. Create your UKDS account and get invited/approved on the project — see §5 for the full
+   account, invitation, and paperwork sequence. **Do this before downloading anything.**
+2. Download the relevant studies as **Stata (.dta)** files. The pipeline reads `.dta` via
    the `haven` package. Expected raw files per wave:
    - Main waves: `{w}_indresp.dta`, `{w}_egoalt.dta`, `{w}_indall.dta`
      (e.g. `j_indresp.dta`). EUL and SL share identical file names and layout — SL just
      adds variables.
    - COVID waves: `{cw}_indresp_w.dta` (e.g. `cd_indresp_w.dta`).
-4. Place the unpacked study folders **outside the git repo** (see §4.4).
+3. Place the unpacked study folders **outside the git repo** (see §4.4).
    - **EUL** (SN 6614, SN 8644): can go in your normal Dropbox project data folder, as long
      as that folder is excluded from sync on any machine that also runs an AI coding tool
      (§11).
@@ -262,26 +270,53 @@ The EUL and SL editions carry **different** handling obligations. Don't conflate
 
 ---
 
-## 5. Onboarding paperwork (do this before any data access)
+## 5. Project administration & onboarding paperwork (do this before any data access)
+
+### 5.1 Project identity  _[verify with Ori]_
+
+- UK Data Service **project number 282609**, title **"Work from home in the UK"**.
+- **Project lead:** Itay Saporta Eksten (University of Manchester / Tel Aviv University,
+  Eitan Berglas School of Economics) — the project lead is the person who must invite you
+  and who submits any changes to the project or team on the UKDS side.
+- Outgoing team member: Ori Nahshon Shoham (the role being handed over).
+- Approved project window: **2026-05-07 → 2029-12-31**.
+
+### 5.2 Get a UK Data Service account and be added to the project
+
+This has to happen **before** any of the paperwork in §5.3, and well before you can
+download or see any data:
+
+1. **Create your own UK Data Service account** at
+   https://ukdataservice.ac.uk/register — use the email you want permanently associated
+   with this project (institutional email is usually expected).
+2. **Send that registered email to the current project lead** (Itay, or whoever holds the
+   role at handover time) and ask them to add you to project **282609**.
+3. **The project lead invites you** as a team member on the project through their UK Data
+   Service account (Section 1.2 of the project application — "Research team" — lists
+   everyone who is allowed to see the raw data; the lead adds new members there and on the
+   UKDS website).
+4. **Accept the invitation** when it arrives at your registered email, then complete the
+   paperwork in §5.3. You are not approved to access SL data until that paperwork is
+   submitted and UKDS confirms approval in writing — don't download anything before that.
+
+### 5.3 Required forms
 
 All forms are in `data_agreements/` (signed/submitted copies in `data_agreements/submit/`).
-Order of operations:
+Order of operations, once you've been invited (§5.2):
 
-1. **Be invited to the project** (project 282609) on the UK Data Service website by the
-   project lead.
-2. **Complete the Special Licence *additional researcher* form** —
+1. **Complete the Special Licence *additional researcher* form** —
    `data_agreements/SpecialLicenceAdditionalResearcher.docx` (see Ori's filed example
    `SpecialLicenceAdditionalResearcher_Ori.docx`).
-3. **Sign the Special Licence User Agreement** —
+2. **Sign the Special Licence User Agreement** —
    `data_agreements/SpecialLicenceUserAgreement.pdf` (filed example:
    `submit/SpecialLicenceUserAgreement_Ori.pdf`). If home-working access is needed, complete
    the agreement's home-working **Appendix**.
-4. **Read** the obligations you are agreeing to:
+3. **Read** the obligations you are agreeing to:
    - `data_agreements/cd171-researchdatahandling.pdf` (Research Data Handling & Security)
    - `data_agreements/cd137-enduserlicence.pdf` (End User Licence terms)
-5. **Email everything to UKDS** (`help@ukdataservice.ac.uk`) and **wait for written
+4. **Email everything to UKDS** (`help@ukdataservice.ac.uk`) and **wait for written
    approval**. Do not download or handle SL data until approved.
-6. **At the end of the engagement:** complete `data_agreements/Data_Destruction_Form.docx`
+5. **At the end of the engagement:** complete `data_agreements/Data_Destruction_Form.docx`
    and securely delete the data per UKDS requirements.
 
 The approved project application itself
@@ -304,6 +339,7 @@ anti-malware. No data may be copied off it. This is the "remote desktop" referre
 throughout this guide.
 
 ### 6.2 Connection & access  _[secrets: obtain from Ori / TAU IT]_
+
 - You will need: a TAU account with VPN access + 2FA, and credentials/permission to the
   specific desktop that hosts the data.
 - The VPN client, the desktop's host/address, and login details are **deliberately not
@@ -312,6 +348,7 @@ throughout this guide.
   session when you are done.
 
 ### 6.3 Environment setup on the secure machine
+
 - **R + RStudio** (RStudio recommended; there is a `.Rproj` for the project).
 - **R packages used by the pipeline** (install once):
   `tidyverse`, `haven`, `readxl`, `scales`, `forcats`, `modelsummary`, `glmnet`,
@@ -501,6 +538,7 @@ side, the safest habit is: **regenerate assets → commit to GitHub → push to 
 ## 11. AI coding tools
 
 ### Claude Code (primary)
+
 - **Install / auth:** Claude Code is Anthropic's CLI (also available as desktop/IDE/web).
   Install per the official docs and sign in with the project's Anthropic account.
 - **How this repo guides the agent:**
@@ -571,10 +609,12 @@ whichever assistant you prefer for code edits; keep both pointed at the committe
 ## 13. Contacts, resources & glossary
 
 **People**
+
 - Project lead: **Itay Saporta Eksten** — `itay.saportaeksten@manchester.ac.uk`.
 - Outgoing RA (handover): **Ori Shoham** — `orishoham@mail.tau.ac.il` / GitHub `Ori-Shoham`.
 
 **Resources**
+
 - UK Data Service: https://ukdataservice.ac.uk · `help@ukdataservice.ac.uk`
 - Understanding Society (study docs/variable search): https://www.understandingsociety.ac.uk
 - GitHub repo: https://github.com/Ori-Shoham/division-of-labor
@@ -583,6 +623,7 @@ whichever assistant you prefer for code edits; keep both pointed at the committe
   crosswalks in `policies/`.
 
 **Glossary**
+
 - **UKHLS / Understanding Society** — the UK Household Longitudinal Study; a large, partner-
   linked household panel survey.
 - **Wave** — one round of data collection. Main waves are letters (`a`, `b`, …); COVID waves

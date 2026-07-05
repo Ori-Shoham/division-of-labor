@@ -388,14 +388,32 @@ code)</strong> — so you can orient in the codebase.</li>
 (git/Overleaf)</strong>, <strong>§11 (Claude Code)</strong>.</li>
 </ol>
 <p><strong>Do this before touching any licensed data</strong> (details
-in §5): - Get added to the Special Licence as an additional researcher
-and <strong>wait for UK Data Service approval</strong>. - Sign the
-Special Licence User Agreement; read the data-handling/security guide. -
-Only then connect to the secure machine and run anything.</p>
-<p><strong>The single most important rule:</strong> licensed micro-data
-never leaves the approved secure environment. Not onto a laptop, not
-into Dropbox, not into an email, and <strong>never pasted into an AI
-tool</strong> (Claude Code, Codex, ChatGPT, etc.). See §4 and §11.</p>
+in §5):</p>
+<ul>
+<li>Get added to the Special Licence as an additional researcher and
+<strong>wait for UK Data Service approval</strong>.</li>
+<li>Sign the Special Licence User Agreement; read the
+data-handling/security guide.</li>
+<li>Only then request access to the Special Licence (SL) secure
+machine.</li>
+</ul>
+<p><strong>The two rules that matter most</strong> — note the two
+licence tiers are governed differently (see §4.5 for the full
+version):</p>
+<ul>
+<li><strong>Special Licence (SL) data</strong> — the detailed SIC/SOC
+and Local Authority data — may <strong>only</strong> be stored and
+processed on the approved secure machine (§6). It never touches a
+personal laptop, Dropbox, email, or an AI tool.</li>
+<li><strong>End User Licence (EUL) data</strong> may live in your normal
+Dropbox-synced project folder and on a personal laptop — that’s allowed
+by the licence. The constraint on EUL data is narrower but still
+absolute: <strong>it must never be readable by an AI coding
+tool</strong> (Claude Code, Codex, ChatGPT, etc.). In practice that
+means keeping the EUL raw/derived data folder <strong>out of the sync
+scope of whatever machine you run AI tools on</strong> — see §11 for how
+this is actually set up.</li>
+</ul>
 <hr />
 </div>
 <div id="project-overview-research-question-design-verify-with-ori" class="section level2">
@@ -405,18 +423,11 @@ with Ori]</em></h2>
 (<code>data_agreements/submit/SpecialLicenceProjectApplication_revised.pdf</code>),
 <code>CLAUDE.md</code>, <code>method.tex</code>, and the two grant
 proposals under <code>grants/</code>.</em></p>
-<p><strong>Administrative identity of the project</strong> - UK Data
-Service project number <strong>282609</strong>, title <strong>“Work from
-home in the UK”</strong>. - Project lead: <strong>Itay Saporta
-Eksten</strong> (University of Manchester / Tel Aviv University, Eitan
-Berglas School of Economics). - Research team member: <strong>Ori
-Nahshon Shoham</strong> (the role being handed over). - Approved project
-window: <strong>2026-05-07 → 2029-12-31</strong>.</p>
 <p><strong>The question.</strong> Gender gaps in earnings and careers
 are tightly linked to how couples divide <em>paid</em> and
 <em>unpaid</em> work, especially after children arrive. This project
 asks whether a <strong>temporary, externally-imposed shock to household
-specialization</strong> — caused by COVID-19 — <strong>durably changed
+work allocation</strong> — caused by COVID-19 — <strong>durably changed
 the division of labour within couples</strong>, and whether that fed
 through to gender gaps in labour-market outcomes and career
 trajectories. The focus is on <strong>co-resident couples, especially
@@ -426,10 +437,14 @@ pandemic.</p>
 sharp, externally-driven variation across households depending on each
 partner’s <strong>pre-pandemic industry and occupation</strong>: some
 parents kept working outside the home (key workers), some shifted to
-home working, others were shut down or furloughed. Because exposure
-depended on pre-pandemic SIC/SOC codes and on <strong>local</strong>
-restrictions, it gives credible quasi-experimental variation in how much
-time each partner had to spend at home.</p>
+home working, others were shut down or furloughed. Think about a couple
+where the mother is a nurse who keeps working at the hospital while here
+gym instructor husband stays at home. The unforeseen nature of the
+pandemic, its differential effect on people based on their
+pre-determined work features in combination with the fact many
+<strong>local</strong> were restrictions, gives credible
+quasi-experimental variation in how much time each partner had to spend
+at home.</p>
 <p><strong>Treatment is built only from pre-pandemic
 information</strong> (so it is not contaminated by post-shock choices).
 Using each partner’s pre-COVID <strong>SIC</strong> (industry) and
@@ -437,30 +452,37 @@ Using each partner’s pre-COVID <strong>SIC</strong> (industry) and
 classification and the IFS shutdown-sector classification (Joyce &amp;
 Xu 2020), jobs are sorted into exposure groups (key-worker sectors,
 shutdown sectors, high/low capacity to work from home). The two headline
-couple-level treatments are: 1. <strong>Wife is a key worker in a
-non-education sector</strong>, while the <strong>husband is not a key
-worker (or is education-only)</strong>. 2. <strong>Husband is in a
-shutdown sector</strong>, while the <strong>wife is not</strong> (with
-symmetric husband/wife variants).</p>
-<p><strong>Two empirical steps.</strong> 1. <strong>Descriptive +
-event-study (the part the code currently implements most
-fully).</strong> A difference-in-differences event study traces how
-outcomes evolve around the pandemic, by treatment group and by spouse.
-Time fixed effects; pre-pandemic controls (both partners’ age,
-education, number/age of children, region, baseline employment);
+couple-level treatments are:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Wife is a key worker in a non-education sector</strong>,
+while the <strong>husband is not a key worker (or is
+education-only)</strong>.</li>
+<li><strong>Husband is in a shutdown sector</strong>, while the
+<strong>wife is not</strong> (with symmetric husband/wife
+variants).</li>
+</ol>
+<p><strong>Two empirical steps.</strong></p>
+<ol style="list-style-type: decimal">
+<li><strong>Descriptive + event-study (the part the code currently
+implements most fully).</strong> A difference-in-differences event study
+traces how outcomes evolve around the pandemic, by treatment group and
+by spouse. Time fixed effects; pre-pandemic controls (both partners’
+age, education, number/age of children, region, baseline employment);
 optional couple or couple-by-spouse fixed effects; omitted category =
 the wave just before COVID. Pre-period coefficients double as a
 pre-trend diagnostic. Outcomes include employment, work hours, wages,
 work location, housework hours, childcare hours/responsibility, and
 selected health/well-being, plus family events (divorces, childbirths).
 Heterogeneity by <strong>age of youngest child</strong> at onset is a
-key cut. 2. <strong>Instrumental-variables design (planned / partially
+key cut.</li>
+<li><strong>Instrumental-variables design (planned / partially
 scaffolded).</strong> Treats the couple’s <em>realised</em>
 work-location configuration during COVID (wife home/out × husband
 home/out) as endogenous, and instruments it with pre-COVID SIC/SOC
 exposure interacted with <strong>local</strong> COVID restrictions
 (school closures, workplace restrictions) at Local Authority District
-level.</p>
+level.</li>
+</ol>
 <p><strong>Data linkage.</strong> Local Authority District identifiers
 (Special Licence only) link households to the <strong>IFS COVID-19
 Restrictions Dataset</strong> (school closures, workplace/social
@@ -635,11 +657,9 @@ Ori]</em></p>
 <div id="getting-the-data-ukds" class="section level3">
 <h3>4.2 Getting the data (UKDS)</h3>
 <ol style="list-style-type: decimal">
-<li>Create a <strong>UK Data Service account</strong> (<a href="https://ukdataservice.ac.uk" class="uri">https://ukdataservice.ac.uk</a>) using the email that
-is/will be registered on the project.</li>
-<li>You must be <strong>listed on project 282609</strong> and
-<strong>approved</strong> before you can download SL data (see §5 — this
-is gated on paperwork).</li>
+<li>Create your UKDS account and get invited/approved on the project —
+see §5 for the full account, invitation, and paperwork sequence.
+<strong>Do this before downloading anything.</strong></li>
 <li>Download the relevant studies as <strong>Stata (.dta)</strong>
 files. The pipeline reads <code>.dta</code> via the <code>haven</code>
 package. Expected raw files per wave:
@@ -652,8 +672,15 @@ and layout — SL just adds variables.</li>
 (e.g. <code>cd_indresp_w.dta</code>).</li>
 </ul></li>
 <li>Place the unpacked study folders <strong>outside the git
-repo</strong> (see §4.4). On the secure machine they must live inside
-the approved encrypted location only.</li>
+repo</strong> (see §4.4).
+<ul>
+<li><strong>EUL</strong> (SN 6614, SN 8644): can go in your normal
+Dropbox project data folder, as long as that folder is excluded from
+sync on any machine that also runs an AI coding tool (§11).</li>
+<li><strong>SL</strong> (SN 6931, SN 6666): must go
+<strong>only</strong> inside the approved encrypted location on the SL
+secure machine (§6) — never in Dropbox, never anywhere else.</li>
+</ul></li>
 </ol>
 </div>
 <div id="eul-vs-sl-the-data_license-switch" class="section level3">
@@ -714,35 +741,92 @@ everything under <code>data_out_root</code>:
 <strong>outside</strong> the git/Dropbox-tracked repo.</p>
 </blockquote>
 </div>
-<div id="privacy-constraints-non-negotiable" class="section level3">
-<h3>4.5 Privacy constraints (non-negotiable)</h3>
+<div id="privacy-constraints-non-negotiable-the-two-tiers-are-different" class="section level3">
+<h3>4.5 Privacy constraints (non-negotiable) — the two tiers are
+different</h3>
+<p>The EUL and SL editions carry <strong>different</strong> handling
+obligations. Don’t conflate them:</p>
 <ul>
-<li>Raw micro-data and most <code>.rds</code> derived files
-<strong>never</strong> go in the repo, never in Dropbox-tracked folders,
-never on a laptop/USB/cloud.</li>
-<li>On this machine the licensed data are intentionally
-<strong>absent</strong> — that is deliberate, so that code/AI tooling
-here cannot inadvertently inspect restricted data. Do
+<li><strong>SL data (SN 6931, SN 6666 — detailed SIC/SOC, Local
+Authority District)</strong> is the more restricted tier: it may
+<strong>only</strong> be stored and processed on the approved secure
+machine (§6.1 — currently the TAU-managed desktop named in the licence
+application). It never goes onto a personal laptop, USB drive, personal
+cloud, or Dropbox folder, and never into an AI tool. This is a hard
+requirement of the Special Licence User Agreement.</li>
+<li><strong>EUL data (SN 6614, SN 8644)</strong> is less restricted: the
+licence permits storing and processing it on an ordinary researcher
+machine, and in practice it lives in a Dropbox folder like any other
+project file. The binding constraint on EUL data is narrower but still
+absolute: <strong>no AI tool may ever have read access to it.</strong>
+See §11 for how this is enforced in practice (the short version: the
+folder holding EUL raw/derived data is kept out of the Dropbox sync
+scope on whichever machine is used for AI-assisted coding).</li>
+<li>Raw micro-data and derived <code>.rds</code> files (either tier)
+<strong>never go in the git repo</strong> — they live outside the repo
+per §4.4, regardless of which machine holds them.</li>
+<li>On <strong>this</strong> checkout (the one Claude Code/Codex work
+in) the licensed data are intentionally <strong>absent for both
+tiers</strong> — that’s the point of the sync-exclusion setup in §11. Do
 <strong>not</strong> try to run the full pipeline or probe data paths
-here; this checkout is for code/docs only.</li>
-<li>Only <strong>repo-safe artifacts</strong> may leave the secure
-environment: scripts, <code>figures/</code>, <code>tables/</code>
-fragments, <code>.tex</code>. Anything you export must be
-<strong>aggregated and disclosure-safe</strong> (no small cells, no raw
-SIC/SOC or fine geography) per the application’s §2.7 and the UKDS
-Research Data Handling guide.</li>
+from here; this checkout is for code/docs only.</li>
+<li>Only <strong>repo-safe artifacts</strong> may leave the secure/EUL
+environment into shared or public places: scripts,
+<code>figures/</code>, <code>tables/</code> fragments,
+<code>.tex</code>. Anything you export must be <strong>aggregated and
+disclosure-safe</strong> (no small cells, no raw SIC/SOC or fine
+geography) per the application’s §2.7 and the UKDS Research Data
+Handling guide.</li>
 </ul>
 <hr />
 </div>
 </div>
-<div id="onboarding-paperwork-do-this-before-any-data-access" class="section level2">
-<h2>5. Onboarding paperwork (do this before any data access)</h2>
-<p>All forms are in <code>data_agreements/</code> (signed/submitted
-copies in <code>data_agreements/submit/</code>). Order of
-operations:</p>
+<div id="project-administration-onboarding-paperwork-do-this-before-any-data-access" class="section level2">
+<h2>5. Project administration &amp; onboarding paperwork (do this before
+any data access)</h2>
+<div id="project-identity-verify-with-ori" class="section level3">
+<h3>5.1 Project identity <em>[verify with Ori]</em></h3>
+<ul>
+<li>UK Data Service <strong>project number 282609</strong>, title
+<strong>“Work from home in the UK”</strong>.</li>
+<li><strong>Project lead:</strong> Itay Saporta Eksten (University of
+Manchester / Tel Aviv University, Eitan Berglas School of Economics) —
+the project lead is the person who must invite you and who submits any
+changes to the project or team on the UKDS side.</li>
+<li>Outgoing team member: Ori Nahshon Shoham (the role being handed
+over).</li>
+<li>Approved project window: <strong>2026-05-07 →
+2029-12-31</strong>.</li>
+</ul>
+</div>
+<div id="get-a-uk-data-service-account-and-be-added-to-the-project" class="section level3">
+<h3>5.2 Get a UK Data Service account and be added to the project</h3>
+<p>This has to happen <strong>before</strong> any of the paperwork in
+§5.3, and well before you can download or see any data:</p>
 <ol style="list-style-type: decimal">
-<li><strong>Be invited to the project</strong> (project 282609) on the
-UK Data Service website by the project lead.</li>
+<li><strong>Create your own UK Data Service account</strong> at <a href="https://ukdataservice.ac.uk/register" class="uri">https://ukdataservice.ac.uk/register</a> — use the email you
+want permanently associated with this project (institutional email is
+usually expected).</li>
+<li><strong>Send that registered email to the current project
+lead</strong> (Itay, or whoever holds the role at handover time) and ask
+them to add you to project <strong>282609</strong>.</li>
+<li><strong>The project lead invites you</strong> as a team member on
+the project through their UK Data Service account (Section 1.2 of the
+project application — “Research team” — lists everyone who is allowed to
+see the raw data; the lead adds new members there and on the UKDS
+website).</li>
+<li><strong>Accept the invitation</strong> when it arrives at your
+registered email, then complete the paperwork in §5.3. You are not
+approved to access SL data until that paperwork is submitted and UKDS
+confirms approval in writing — don’t download anything before that.</li>
+</ol>
+</div>
+<div id="required-forms" class="section level3">
+<h3>5.3 Required forms</h3>
+<p>All forms are in <code>data_agreements/</code> (signed/submitted
+copies in <code>data_agreements/submit/</code>). Order of operations,
+once you’ve been invited (§5.2):</p>
+<ol style="list-style-type: decimal">
 <li><strong>Complete the Special Licence <em>additional researcher</em>
 form</strong> —
 <code>data_agreements/SpecialLicenceAdditionalResearcher.docx</code>
@@ -774,16 +858,21 @@ is the canonical description of what the project is permitted to do —
 read §2.1–2.7 of it.</p>
 <hr />
 </div>
-<div id="running-the-code-the-secure-remote-desktop" class="section level2">
-<h2>6. Running the code (the secure remote desktop)</h2>
+</div>
+<div id="running-the-code-the-secure-remote-desktop-for-sl-work" class="section level2">
+<h2>6. Running the code (the secure remote desktop for SL work)</h2>
+<p>This section covers the <strong>Special Licence (SL)</strong> secure
+machine. EUL-only work does not require this — it can run on a normal
+Dropbox-synced machine (see §4.5 and §11 for the one constraint that
+still applies: no AI tool may read the data folder).</p>
 <div id="what-the-environment-is" class="section level3">
 <h3>6.1 What the environment is</h3>
-<p>Per the approved application, the licensed data are <strong>hosted on
-a Tel Aviv University-managed desktop in a locked office</strong> and
-accessed <strong>remotely via TAU’s secure VPN</strong> (two-factor
-auth, personal accounts). The machine is BitLocker-encrypted, auto-locks
-on idle, and runs anti-malware. No data may be copied off it. This is
-the “remote desktop” referred to throughout this guide.</p>
+<p>Per the approved application, the SL data are <strong>hosted on a Tel
+Aviv University-managed desktop in a locked office</strong> and accessed
+<strong>remotely via TAU’s secure VPN</strong> (two-factor auth,
+personal accounts). The machine is BitLocker-encrypted, auto-locks on
+idle, and runs anti-malware. No data may be copied off it. This is the
+“remote desktop” referred to throughout this guide.</p>
 </div>
 <div id="connection-access-secrets-obtain-from-ori-tau-it" class="section level3">
 <h3>6.2 Connection &amp; access <em>[secrets: obtain from Ori / TAU
@@ -1143,16 +1232,40 @@ plan” rule. The agent reads/writes these across sessions.</li>
 plan before editing — use it for anything non-trivial; approve the plan
 before it writes code.</li>
 </ul></li>
-<li><strong>Project guardrails for any AI tool here (critical):</strong>
+<li><strong>Project guardrails for any AI tool here (critical) — how
+this is actually set up:</strong>
 <ul>
-<li><strong>Never paste licensed micro-data, raw variable extracts, or
-anything from the secure machine into an AI tool.</strong> Treat all
-model input as if it leaves the secure environment — because it
-does.</li>
-<li>On this code/docs checkout, the data is intentionally absent;
-<strong>do not ask the agent to run the pipeline or probe data
-paths</strong> to “see” the data. Use code inspection and the committed
-figures/tables instead.</li>
+<li><strong>SL data</strong> never touches a machine that runs AI tools
+at all — it only exists on the TAU secure desktop (§6), which has no
+Claude Code / Codex on it. That tier is enforced by physical/network
+isolation, not by discipline.</li>
+<li><strong>EUL data</strong> <em>is</em> allowed on an ordinary laptop,
+and that laptop may also run AI coding tools — but the two must not have
+access to each other. The way this project does that: the EUL
+raw/derived data folder is <strong>excluded from the Dropbox
+sync</strong> on the machine used for AI-assisted coding. Concretely:
+the project Dropbox folder syncs normally, but the specific
+“understanding society uk all data” subfolder (the
+<code>path_main_*</code> / <code>path_covid</code> /
+<code>data_out_root</code> targets from §4.4) is set to <strong>not
+sync</strong> to this machine, so it simply doesn’t exist on disk here —
+an AI tool has no path to read even if asked. That’s why this checkout
+has no data present, and why <code>00_check_inputs.R</code> will report
+the data roots missing if you run it here (expected — don’t “fix”
+it).</li>
+<li>If you set up a new machine for AI-assisted coding, replicate this:
+let the repo folder sync, but exclude/unsync the external data folder(s)
+before installing or running any AI tool there. Do this <em>before</em>
+pointing an agent at the repo, not after.</li>
+<li><strong>Never paste licensed data (SL or EUL), raw variable
+extracts, or file contents from the data folders into an AI tool’s
+chat</strong>, even from a machine that does have access (e.g. while
+debugging on the SL desktop, don’t copy data into a browser-based AI
+tool).</li>
+<li>On this checkout, since the data is absent, <strong>do not ask the
+agent to run the pipeline or probe data paths</strong> to “see” the data
+— it can’t, and shouldn’t be made able to. Use code inspection and the
+committed figures/tables instead.</li>
 <li>The agent must follow §7 (“stick to the approved plan”) — it should
 not introduce unrequested design changes.</li>
 </ul></li>
@@ -1204,34 +1317,48 @@ events) and the youngest-child heterogeneity cut.</li>
 </div>
 <div id="contacts-resources-glossary" class="section level2">
 <h2>13. Contacts, resources &amp; glossary</h2>
-<p><strong>People</strong> - Project lead: <strong>Itay Saporta
-Eksten</strong> — <code>itay.saportaeksten@manchester.ac.uk</code>. -
-Outgoing RA (handover): <strong>Ori Shoham</strong> —
+<p><strong>People</strong></p>
+<ul>
+<li>Project lead: <strong>Itay Saporta Eksten</strong> —
+<code>itay.saportaeksten@manchester.ac.uk</code>.</li>
+<li>Outgoing RA (handover): <strong>Ori Shoham</strong> —
 <code>orishoham@mail.tau.ac.il</code> / GitHub
-<code>Ori-Shoham</code>.</p>
-<p><strong>Resources</strong> - UK Data Service: <a href="https://ukdataservice.ac.uk" class="uri">https://ukdataservice.ac.uk</a> ·
-<code>help@ukdataservice.ac.uk</code> - Understanding Society (study
-docs/variable search): <a href="https://www.understandingsociety.ac.uk" class="uri">https://www.understandingsociety.ac.uk</a> - GitHub repo: <a href="https://github.com/Ori-Shoham/division-of-labor" class="uri">https://github.com/Ori-Shoham/division-of-labor</a> -
-Overleaf: the <code>overleaf</code> git remote’s project (ask Ori for
-the share link). - ONS key-worker reference tables; IFS BN278 shutdown
-sectors (Joyce &amp; Xu 2020) — copies and crosswalks in
-<code>policies/</code>.</p>
-<p><strong>Glossary</strong> - <strong>UKHLS / Understanding
-Society</strong> — the UK Household Longitudinal Study; a large,
-partner- linked household panel survey. - <strong>Wave</strong> — one
-round of data collection. Main waves are letters (<code>a</code>,
-<code>b</code>, …); COVID waves are <code>ca</code>–<code>ci</code>. -
-<strong>EUL / SL</strong> — End User Licence (coarser, SN 6614) vs
+<code>Ori-Shoham</code>.</li>
+</ul>
+<p><strong>Resources</strong></p>
+<ul>
+<li>UK Data Service: <a href="https://ukdataservice.ac.uk" class="uri">https://ukdataservice.ac.uk</a> ·
+<code>help@ukdataservice.ac.uk</code></li>
+<li>Understanding Society (study docs/variable search): <a href="https://www.understandingsociety.ac.uk" class="uri">https://www.understandingsociety.ac.uk</a></li>
+<li>GitHub repo: <a href="https://github.com/Ori-Shoham/division-of-labor" class="uri">https://github.com/Ori-Shoham/division-of-labor</a></li>
+<li>Overleaf: the <code>overleaf</code> git remote’s project (ask Ori
+for the share link).</li>
+<li>ONS key-worker reference tables; IFS BN278 shutdown sectors (Joyce
+&amp; Xu 2020) — copies and crosswalks in <code>policies/</code>.</li>
+</ul>
+<p><strong>Glossary</strong></p>
+<ul>
+<li><strong>UKHLS / Understanding Society</strong> — the UK Household
+Longitudinal Study; a large, partner- linked household panel
+survey.</li>
+<li><strong>Wave</strong> — one round of data collection. Main waves are
+letters (<code>a</code>, <code>b</code>, …); COVID waves are
+<code>ca</code>–<code>ci</code>.</li>
+<li><strong>EUL / SL</strong> — End User Licence (coarser, SN 6614) vs
 Special Licence (detailed SIC/SOC and LAD, SN 6931/6666). Selected by
-<code>DATA_LICENSE</code>. - <strong>SIC / SOC</strong> — Standard
-Industrial / Occupational Classification codes (industry / job). -
-<strong>Key worker</strong> — ONS-defined essential-sector worker
-expected to work outside the home. - <strong>Shutdown sector</strong> —
-IFS-defined sector forced to close in early COVID. -
-<strong>Baseline</strong> — each person’s most recent pre-COVID
-interview (main waves I/J/K, 2019-first). - <strong>Event study</strong>
-— DiD specification tracing outcome differences by event time relative
-to COVID onset, treated vs comparison couples.</p>
+<code>DATA_LICENSE</code>.</li>
+<li><strong>SIC / SOC</strong> — Standard Industrial / Occupational
+Classification codes (industry / job).</li>
+<li><strong>Key worker</strong> — ONS-defined essential-sector worker
+expected to work outside the home.</li>
+<li><strong>Shutdown sector</strong> — IFS-defined sector forced to
+close in early COVID.</li>
+<li><strong>Baseline</strong> — each person’s most recent pre-COVID
+interview (main waves I/J/K, 2019-first).</li>
+<li><strong>Event study</strong> — DiD specification tracing outcome
+differences by event time relative to COVID onset, treated vs comparison
+couples.</li>
+</ul>
 <hr />
 <p><em>Maintenance: when you change the pipeline, update this file
 together with <code>CLAUDE.md</code> and <code>AGENTS.md</code>. Keep
