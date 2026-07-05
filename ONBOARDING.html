@@ -380,17 +380,17 @@ them during the handover.</p>
 research question, data, and design, in that order — so you know
 <em>what</em> we are doing, on <em>what data</em>, and
 <em>why</em>.</li>
-<li><strong>§4 (data &amp; licensing)</strong> and <strong>§5
+<li><strong>§5 (data &amp; licensing)</strong> and <strong>§6
 (paperwork)</strong> — so you understand what you may and may not do
 with the data, and what you must sign <strong>before</strong> touching
 it.</li>
-<li><strong>§3 (repo tour)</strong> + <strong>§6 (how to run the
+<li><strong>§4 (repo tour)</strong> + <strong>§7 (how to run the
 code)</strong> — so you can orient in the codebase.</li>
-<li>Skim <strong>§7 (conventions)</strong>, <strong>§9–10
-(git/Overleaf)</strong>, <strong>§11 (Claude Code)</strong>.</li>
+<li>Skim <strong>§8 (conventions)</strong>, <strong>§10–11
+(git/Overleaf)</strong>, <strong>§12 (Claude Code)</strong>.</li>
 </ol>
 <p><strong>Do this before touching any licensed data</strong> (details
-in §5):</p>
+in §6):</p>
 <ul>
 <li>Get added to the Special Licence as an additional researcher and
 <strong>wait for UK Data Service approval</strong>.</li>
@@ -400,12 +400,12 @@ data-handling/security guide.</li>
 machine.</li>
 </ul>
 <p><strong>The two rules that matter most</strong> — note the two
-licence tiers are governed differently (see §4.5 for the full
+licence tiers are governed differently (see §5.5 for the full
 version):</p>
 <ul>
 <li><strong>Special Licence (SL) data</strong> — the detailed SIC/SOC
 and Local Authority data — may <strong>only</strong> be stored and
-processed on the approved secure machine (§6). It never touches a
+processed on the approved secure machine (§7). It never touches a
 personal laptop, Dropbox, email, or an AI tool.</li>
 <li><strong>End User Licence (EUL) data</strong> may live in your normal
 Dropbox-synced project folder and on a personal laptop — that’s allowed
@@ -413,7 +413,7 @@ by the licence. The constraint on EUL data is narrower but still
 absolute: <strong>it must never be readable by an AI coding
 tool</strong> (Claude Code, Codex, ChatGPT, etc.). In practice that
 means keeping the EUL raw/derived data folder <strong>out of the sync
-scope of whatever machine you run AI tools on</strong> — see §11 for how
+scope of whatever machine you run AI tools on</strong> — see §12 for how
 this is actually set up.</li>
 </ul>
 <hr />
@@ -475,179 +475,34 @@ proposals under <code>grants/</code>) also sketch a broader
 German survey data. That is framing/future work, not implemented
 anywhere in this repo.</p>
 </div>
-<div id="data-main-survey-vs.-covid-survey-ukhls" class="section level3">
-<h3>1.3 Data: main survey vs. COVID survey (UKHLS)</h3>
-<div id="what-understanding-society-ukhls-is" class="section level4">
-<h4>What Understanding Society / UKHLS is</h4>
-<p><strong>Understanding Society (the UK Household Longitudinal Study,
-UKHLS)</strong> is a large, nationally representative UK household panel
-study running continuously since 2009. Every member of ~40,000 sampled
-households is (re-)interviewed, so it follows the <em>same people</em>
-(and the households they form/leave) over many years, with a rich annual
-questionnaire covering employment, income, education, health, family
-relationships, housing and <em>time use</em>. This is what makes it
-useful here: it lets you observe the <strong>same couples</strong>
-before, during, and after COVID, with detailed pre-pandemic job
-information for both partners.</p>
-</div>
-<div id="two-different-data-collections" class="section level4">
-<h4>Two different data collections</h4>
-<p>This project draws on <strong>two separate UKHLS instruments</strong>
-that happen to share the same underlying panel members but run on
-completely different schedules and questionnaires:</p>
-<table>
-<colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th><strong>Main survey (“main study”)</strong></th>
-<th><strong>COVID-19 Study (“COVID survey”)</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>What it is</td>
-<td>The regular, ongoing UKHLS annual interview — the core survey</td>
-<td>A short, separate survey fielded rapidly to the <em>same</em> panel
-members specifically because of the pandemic, mainly online but with a
-telephone-mode top-up in some waves (see below)</td>
-</tr>
-<tr class="even">
-<td>Wave naming</td>
-<td>Lettered waves, one fieldwork round per letter:
-<code>a, b, c, … o</code> (each round’s fieldwork spans roughly two
-calendar years, so a wave isn’t a single instant)</td>
-<td>Lettered <code>ca</code>–<code>ci</code> (nine rounds)</td>
-</tr>
-<tr class="odd">
-<td>Cadence</td>
-<td>Roughly annual, ongoing since 2009</td>
-<td>Monthly at first (April–July 2020), then roughly every 2 months
-through September 2021</td>
-</tr>
-<tr class="even">
-<td>Content</td>
-<td>Comprehensive: employment, income, education, health, housing,
-relationships, etc.</td>
-<td>Narrow and COVID-specific: work status, working from home, furlough,
-childcare, health/well-being during the pandemic</td>
-</tr>
-<tr class="odd">
-<td>Analysis time unit</td>
-<td>Primarily <strong>calendar year of interview</strong>
-(<code>study = &quot;main&quot;</code>); a <strong>monthly</strong> version also
-exists (<code>study = &quot;main_monthly&quot;</code>) but suffers from power
-issues — relatively few people are interviewed in any given month, so
-monthly event-time estimates are noisy</td>
-<td><strong>Wave</strong> (<code>study = &quot;covid&quot;</code>) — each COVID
-wave is treated as its own period, since waves are irregularly spaced
-calendar months rather than a regular monthly grid</td>
-</tr>
-<tr class="even">
-<td>Study number</td>
-<td>SN 6614 (EUL) / SN 6931 (SL)</td>
-<td>SN 8644 (same under either licence, see §4.1)</td>
-</tr>
-</tbody>
-</table>
-<p>The <strong>wave-letter ↔︎ calendar mapping actually used in this
-repo</strong> (from <code>code/lib/wave_labels.R</code>, the single
-source of truth):</p>
-<ul>
-<li><strong>Main survey:</strong> <code>a</code>=Wave 1 …
-<code>h</code>=Wave 8, <strong><code>i</code>=Wave 9,
-<code>j</code>=Wave 10, <code>k</code>=Wave 11</strong> (the three
-candidate <strong>baseline</strong> waves — see below),
-<code>l</code>=Wave 12, <code>m</code>=Wave 13, <code>n</code>=Wave 14,
-<code>o</code>=Wave 15.</li>
-<li><strong>COVID survey:</strong> <code>ca</code>=Apr 2020,
-<code>cb</code>=May 2020, <code>cc</code>=Jun 2020, <code>cd</code>=Jul
-2020, <code>ce</code>=Sep 2020, <code>cf</code>=Nov 2020,
-<code>cg</code>=Jan 2021, <code>ch</code>=Mar 2021, <code>ci</code>=Sep
-2021.</li>
-</ul>
-<p>Because these are two different questionnaires on two different
-schedules, the code always tracks which “study” a panel came from
-(<code>study = &quot;main&quot;</code> vs. <code>&quot;covid&quot;</code>
-vs. <code>&quot;main_monthly&quot;</code> in
-<code>code/lib/event_study_regressions.R</code>) — event time is
-measured in <strong>calendar years</strong> for the main survey but in
-<strong>irregular calendar months</strong> for the COVID survey, and the
-two are never silently pooled.</p>
-</div>
-<div id="how-this-project-uses-the-two-together" class="section level4">
-<h4>How this project uses the two together</h4>
-<ul>
-<li><strong>Baseline (pre-COVID) information</strong> — both partners’
-industry/occupation, age, education, children, region — is built from
-the <strong>main survey</strong>, using whichever of waves <strong>I/J/K
-(Waves 9/10/11)</strong> gives each person their most recent interview,
-prioritizing a <strong>2019</strong> interview date (people are
-interviewed at different points across a wave’s ~2-year fieldwork
-window, so “2019” isn’t the same wave letter for everyone).</li>
-<li><strong>Pre-baseline history</strong> (waves
-<code>a</code>–<code>k</code>) is used for pre-trend checks and
-longer-run controls.</li>
-<li><strong>What happened <em>during</em> the pandemic</strong> — work
-status, WFH, furlough, childcare, in April 2020 through September 2021 —
-comes from the <strong>COVID survey</strong>
-(<code>ca</code>–<code>ci</code>).</li>
-<li><strong>What happened <em>after</em> the pandemic</strong> — later
-employment, pay, family outcomes — comes from <strong>main-survey
-follow-up waves <code>j</code>–<code>o</code></strong>. The main version
-currently restricts to people/couples also observed in the COVID sample
-(<code>code/lib/future_outcomes.R</code>). We had some troubles with
-things looking different in the main survey vs. the covid sample
-results.</li>
-</ul>
-</div>
-<div id="file-types-per-wave-what-00_check_inputs.r-looks-for" class="section level4">
-<h4>File types per wave (what <code>00_check_inputs.R</code> looks
-for)</h4>
-<p>Each main-survey wave ships as (at least) three Stata files, and the
-COVID survey ships one:</p>
-<ul>
-<li><code>{w}_indresp.dta</code> — <strong>individual response</strong>:
-one row per person interviewed that wave; most substantive variables
-(job, income, health, attitudes) live here.</li>
-<li><code>{w}_egoalt.dta</code> — <strong>ego–alter file</strong>:
-relationship links between household members (who is whose
-spouse/partner/child) — this is what lets the pipeline pair up
-wife/husband rows into couple-level records.</li>
-<li><code>{w}_indall.dta</code> — <strong>individual all</strong>: a
-fuller household roster (includes people who weren’t interviewed that
-wave but are still household members), used to keep track of household
-composition.</li>
-<li><code>{cw}_indresp_w.dta</code> — the COVID survey’s individual
-response file for wave <code>cw</code>, <strong>web-mode</strong>
-respondents (this is the only file the pipeline currently loads, in
-<code>code/lib/covid_loader.R</code>).</li>
-<li><code>{cw}_indresp_t.dta</code> — a <strong>telephone-mode</strong>
-counterpart that also exists on disk for at least some COVID waves
-(e.g. <code>ca_indresp_t.dta</code>). It is a smaller,
-differently-fielded top-up (respondents interviewed by phone rather than
-the web questionnaire) and was <strong>not run in every wave</strong>,
-so it isn’t a consistent panel on its own. It is <strong>not currently
-loaded or merged into the analysis</strong> — the pipeline only reads
-the web-mode file. If you need to check exactly which waves have a
-<code>_t</code> file and whether it’s worth incorporating (e.g. for
-sample size), check the raw data folder directly; this hasn’t been
-systematically verified. <em>[verify with Ori]</em></li>
-</ul>
-<p>Person-level records are keyed by <code>pidp</code> (a person
-identifier stable across waves and across the main/COVID surveys — the
-same <code>pidp</code> links a person’s main-survey and COVID-survey
-rows). Couple-level files are built by joining each person’s row to
-their partner’s row (via the <code>egoalt</code> links) and keeping both
-spouses’ variables side by side, usually suffixed <code>_w</code> (wife)
-/ <code>_h</code> (husband) — you’ll see this suffix convention
-throughout <code>code/lib/</code>.</p>
+<div id="data-understanding-society-ukhls" class="section level3">
+<h3>1.3 Data: Understanding Society (UKHLS)</h3>
+<p>This project uses the UK Household Longitudinal Study
+(<strong>Understanding Society</strong>, UKHLS), a large, nationally
+representative panel that has followed the same UK households annually
+since 2009, collecting detailed employment, income, education, health,
+and family information for every household member.</p>
+<p>We draw on <strong>two linked UKHLS instruments</strong>: the regular
+<strong>main survey</strong> — the core, ongoing annual interview — and
+a short, separate <strong>COVID-19 Study</strong> fielded to the same
+panel members at a much higher frequency specifically during the
+pandemic (2020–2021). Because both instruments follow the same
+individuals, and link partners within a household to one another, we can
+observe the same couples before, during, and after COVID.</p>
+<p>Concretely, we use the person/household identifiers that link spouses
+to each other to construct a <strong>panel of couples</strong>: for each
+couple we require both partners to be observed, employed, and assigned a
+known <strong>pre-pandemic industry and occupation</strong> in the main
+survey before COVID, and we then follow that couple through the COVID
+survey and into later main-survey waves. This pre-pandemic
+industry/occupation pairing is exactly what feeds the exposure
+classification and treatment/instrument construction in §1.4 below.</p>
+<p>The operational detail behind this — wave letters, calendar mapping,
+file types, and how the identifiers and variable naming actually work in
+the code — is covered separately in §2 (“UKHLS data in detail”). You
+don’t need it to follow the design in §1.4, but read it before touching
+the data pipeline.</p>
 <hr />
-</div>
 </div>
 <div id="empirical-design-treatment-instrument-and-equations" class="section level3">
 <h3>1.4 Empirical design: treatment, instrument, and equations</h3>
@@ -755,7 +610,7 @@ underlying SIC/SOC-based classification as Step 1, just used here as
 instrument components rather than as treatment. - <span class="math inline">\(R_{\ell(c)}\)</span> is the local-restriction
 intensity (school closures, workplace/social restrictions) in couple
 <span class="math inline">\(c\)</span>’s Local Authority District <span class="math inline">\(\ell(c)\)</span> at the time of interview —
-requires the Special-Licence LAD identifiers (§4.1) and the IFS
+requires the Special-Licence LAD identifiers (§5.1) and the IFS
 restrictions linkage (see “Data linkage” below). - <span class="math inline">\(Z_c \times R_{\ell(c)}\)</span> lets the same
 pre-pandemic job imply different realised work-location outcomes
 depending on how binding local restrictions were at the time. - <span class="math inline">\(\lambda_{s,i}\)</span> (second stage) is the
@@ -766,7 +621,7 @@ collinear with the excluded instruments; <span class="math inline">\(X_c\)</span
 vector in each stage.</p>
 <p>This design is <strong>not yet built</strong> in <code>code/</code>;
 the SL Local Authority data (SN 6666) and the IFS restrictions linkage
-need to be wired in first (see §12).</p>
+need to be wired in first (see §13).</p>
 <p><strong>Data linkage.</strong> Local Authority District identifiers
 (Special Licence only) link households to the <strong>IFS COVID-19
 Restrictions Dataset</strong> (school closures, workplace/social
@@ -781,8 +636,191 @@ key-worker reference tables (2020); Joyce &amp; Xu, IFS BN278
 </div>
 </div>
 </div>
+<div id="ukhls-data-in-detail" class="section level2">
+<h2>2. UKHLS data in detail</h2>
+<p>This section covers the operational details behind the two UKHLS
+instruments introduced in §1.3 — waves, files, identifiers, and how the
+analytic panel is actually threaded together in the code. None of this
+is required to follow the research design in §1.4; come back to it once
+you start working with the data pipeline.</p>
+<div id="the-two-data-collections-in-detail" class="section level3">
+<h3>2.1 The two data collections, in detail</h3>
+<p>This project draws on <strong>two separate UKHLS instruments</strong>
+that happen to share the same underlying panel members but run on
+completely different schedules and questionnaires:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Main survey (“main study”)</strong></th>
+<th><strong>COVID-19 Study (“COVID survey”)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>What it is</td>
+<td>The regular, ongoing UKHLS annual interview — the core survey</td>
+<td>A short, separate survey fielded rapidly to the <em>same</em> panel
+members specifically because of the pandemic, mainly online but with a
+telephone-mode top-up in some waves (see §2.3)</td>
+</tr>
+<tr class="even">
+<td>Wave naming</td>
+<td>Lettered waves, one fieldwork round per letter:
+<code>a, b, c, … o</code> (each round’s fieldwork spans roughly two
+calendar years, so a wave isn’t a single instant)</td>
+<td>Lettered <code>ca</code>–<code>ci</code> (nine rounds)</td>
+</tr>
+<tr class="odd">
+<td>Cadence</td>
+<td>Roughly annual, ongoing since 2009</td>
+<td>Monthly at first (April–July 2020), then roughly every 2 months
+through September 2021</td>
+</tr>
+<tr class="even">
+<td>Content</td>
+<td>Comprehensive: employment, income, education, health, housing,
+relationships, time use, etc.</td>
+<td>Narrow and COVID-specific: work status, working from home, furlough,
+childcare, health/well-being during the pandemic</td>
+</tr>
+<tr class="odd">
+<td>Analysis time unit</td>
+<td>Primarily <strong>calendar year of interview</strong>
+(<code>study = &quot;main&quot;</code>); a <strong>monthly</strong> version also
+exists (<code>study = &quot;main_monthly&quot;</code>) but suffers from power
+issues — relatively few people are interviewed in any given month, so
+monthly event-time estimates are noisy</td>
+<td><strong>Wave</strong> (<code>study = &quot;covid&quot;</code>) — each COVID
+wave is treated as its own period, since waves are irregularly spaced
+calendar months rather than a regular monthly grid</td>
+</tr>
+<tr class="even">
+<td>Study number</td>
+<td>SN 6614 (EUL) / SN 6931 (SL)</td>
+<td>SN 8644 (same under either licence, see §5.1)</td>
+</tr>
+<tr class="odd">
+<td>Relevant code</td>
+<td><code>code/lib/family_baseline.R</code>,
+<code>code/lib/history.R</code>,
+<code>code/lib/future_outcomes.R</code></td>
+<td><code>code/lib/covid_loader.R</code>,
+<code>code/lib/covid_panel.R</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>wave-letter ↔︎ calendar mapping actually used in this
+repo</strong> (from <code>code/lib/wave_labels.R</code>, the single
+source of truth):</p>
+<ul>
+<li><strong>Main survey:</strong> <code>a</code>=Wave 1 …
+<code>h</code>=Wave 8, <strong><code>i</code>=Wave 9,
+<code>j</code>=Wave 10, <code>k</code>=Wave 11</strong> (the three
+candidate <strong>baseline</strong> waves — see §2.2),
+<code>l</code>=Wave 12, <code>m</code>=Wave 13, <code>n</code>=Wave 14,
+<code>o</code>=Wave 15.</li>
+<li><strong>COVID survey:</strong> <code>ca</code>=Apr 2020,
+<code>cb</code>=May 2020, <code>cc</code>=Jun 2020, <code>cd</code>=Jul
+2020, <code>ce</code>=Sep 2020, <code>cf</code>=Nov 2020,
+<code>cg</code>=Jan 2021, <code>ch</code>=Mar 2021, <code>ci</code>=Sep
+2021.</li>
+</ul>
+<p>Because these are two different questionnaires on two different
+schedules, the code always tracks which “study” a panel came from
+(<code>study = &quot;main&quot;</code> vs. <code>&quot;covid&quot;</code>
+vs. <code>&quot;main_monthly&quot;</code> in
+<code>code/lib/event_study_regressions.R</code>) — event time is
+measured in <strong>calendar years</strong> for the main survey but in
+<strong>irregular calendar months</strong> for the COVID survey, and the
+two are never silently pooled.</p>
+</div>
+<div id="how-this-project-threads-the-two-together" class="section level3">
+<h3>2.2 How this project threads the two together</h3>
+<ul>
+<li><strong>Baseline (pre-COVID) information</strong> — both partners’
+industry/occupation, age, education, children, region — is built from
+the <strong>main survey</strong>, using whichever of waves <strong>I/J/K
+(Waves 9/10/11)</strong> gives each person their most recent interview,
+prioritizing a <strong>2019</strong> interview date (people are
+interviewed at different points across a wave’s ~2-year fieldwork
+window, so “2019” isn’t the same wave letter for everyone).</li>
+<li><strong>Pre-baseline history</strong> (waves
+<code>a</code>–<code>k</code>) is used for pre-trend checks and
+longer-run controls.</li>
+<li><strong>What happened <em>during</em> the pandemic</strong> — work
+status, WFH, furlough, childcare, in April 2020 through September 2021 —
+comes from the <strong>COVID survey</strong>
+(<code>ca</code>–<code>ci</code>).</li>
+<li><strong>What happened <em>after</em> the pandemic</strong> — later
+employment, pay, family outcomes — comes from <strong>main-survey
+follow-up waves <code>j</code>–<code>o</code></strong>. The main version
+currently restricts to people/couples also observed in the COVID sample
+(<code>code/lib/future_outcomes.R</code>). We had some troubles with
+things looking different in the main survey vs. the COVID sample results
+in the periods where they overlap.</li>
+</ul>
+<p>So a single couple’s story in this pipeline typically threads
+through: main-survey history (<code>a</code>–<code>h</code>) →
+main-survey <strong>baseline</strong>
+(<code>i</code>/<code>j</code>/<code>k</code>, 2019) → COVID survey
+(<code>ca</code>–<code>ci</code>, 2020–2021) → main-survey follow-up
+(<code>l</code>–<code>o</code>).</p>
+</div>
+<div id="file-types-per-wave-and-identifiers" class="section level3">
+<h3>2.3 File types per wave and identifiers</h3>
+<p>Each main-survey wave ships as (at least) three Stata files, and the
+COVID survey ships one required file (<code>00_check_inputs.R</code>
+looks for exactly these):</p>
+<ul>
+<li><code>{w}_indresp.dta</code> — <strong>individual response</strong>:
+one row per person interviewed that wave; most substantive variables
+(job, income, health, attitudes) live here.</li>
+<li><code>{w}_egoalt.dta</code> — <strong>ego–alter file</strong>:
+relationship links between household members (who is whose
+spouse/partner/child) — this is what lets the pipeline pair up
+wife/husband rows into couple-level records.</li>
+<li><code>{w}_indall.dta</code> — <strong>individual all</strong>: a
+fuller household roster (includes people who weren’t interviewed that
+wave but are still household members), used to keep track of household
+composition.</li>
+<li><code>{cw}_indresp_w.dta</code> — the COVID survey’s individual
+response file for wave <code>cw</code>, <strong>web-mode</strong>
+respondents. This is the <strong>only</strong> COVID file
+<code>00_check_inputs.R</code> requires and the only one
+<code>code/lib/covid_loader.R</code> loads.</li>
+<li><code>{cw}_indresp_t.dta</code> — a <strong>telephone-mode</strong>
+counterpart that also exists on disk for at least some COVID waves
+(e.g. <code>ca_indresp_t.dta</code>). It is a smaller,
+differently-fielded top-up (respondents interviewed by phone rather than
+the web questionnaire) and was <strong>not run in every wave</strong>,
+so it isn’t a consistent panel on its own.
+<strong><code>00_check_inputs.R</code> does not check for it, and the
+pipeline does not load or merge it</strong> — it is not part of the
+required-inputs checklist at all, so its absence never blocks the
+pre-flight check. If you need to check exactly which waves have a
+<code>_t</code> file and whether it’s worth incorporating (e.g. for
+sample size), check the raw data folder directly; this hasn’t been
+systematically verified. <em>[verify with Ori]</em></li>
+</ul>
+<p>Person-level records are keyed by <code>pidp</code> (a person
+identifier stable across waves and across the main/COVID surveys — the
+same <code>pidp</code> links a person’s main-survey and COVID-survey
+rows). Couple-level files are built by joining each person’s row to
+their partner’s row (via the <code>egoalt</code> links) and keeping both
+spouses’ variables side by side, usually suffixed <code>_w</code> (wife)
+/ <code>_h</code> (husband) — you’ll see this suffix convention
+throughout <code>code/lib/</code>.</p>
+<hr />
+</div>
+</div>
 <div id="the-codebase-in-one-paragraph" class="section level2">
-<h2>2. The codebase in one paragraph</h2>
+<h2>3. The codebase in one paragraph</h2>
 <p>An R pipeline turns raw Understanding Society (UKHLS) survey files
 into a pre-COVID <strong>baseline</strong>, then person-level and
 couple-level <strong>panels</strong> spanning pre-COVID history, the
@@ -796,7 +834,7 @@ repo holds scripts, generated figures/tables, and TeX.</p>
 <hr />
 </div>
 <div id="repository-tour" class="section level2">
-<h2>3. Repository tour</h2>
+<h2>4. Repository tour</h2>
 <pre><code>code/
   run/      staged pipeline entrypoints (00_… → 99_…); run these
   lib/      reusable loaders, harmonizers, sample builders, plot/table/event-study helpers
@@ -878,12 +916,12 @@ CLAUDE.md, AGENTS.md   agent guidance; ONBOARDING.md   this file</code></pre>
 <hr />
 </div>
 <div id="data-licensing-full-walkthrough" class="section level2">
-<h2>4. Data &amp; licensing (full walkthrough)</h2>
+<h2>5. Data &amp; licensing (full walkthrough)</h2>
 <div id="the-datasets" class="section level3">
-<h3>4.1 The datasets</h3>
+<h3>5.1 The datasets</h3>
 <p>This project uses three UK Data Service (UKDS) study families. The
 pipeline currently switches between the <strong>EUL</strong> and
-<strong>SL</strong> editions of the main study via one flag (§4.3).</p>
+<strong>SL</strong> editions of the main study via one flag (§5.3).</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -936,10 +974,10 @@ Ori]</em></p>
 </blockquote>
 </div>
 <div id="getting-the-data-ukds" class="section level3">
-<h3>4.2 Getting the data (UKDS)</h3>
+<h3>5.2 Getting the data (UKDS)</h3>
 <ol style="list-style-type: decimal">
 <li>Create your UKDS account and get invited/approved on the project —
-see §5 for the full account, invitation, and paperwork sequence.
+see §6 for the full account, invitation, and paperwork sequence.
 <strong>Do this before downloading anything.</strong></li>
 <li>Download the relevant studies as <strong>Stata (.dta)</strong>
 files. The pipeline reads <code>.dta</code> via the <code>haven</code>
@@ -953,19 +991,19 @@ and layout — SL just adds variables.</li>
 (e.g. <code>cd_indresp_w.dta</code>).</li>
 </ul></li>
 <li>Place the unpacked study folders <strong>outside the git
-repo</strong> (see §4.4).
+repo</strong> (see §5.4).
 <ul>
 <li><strong>EUL</strong> (SN 6614, SN 8644): can go in your normal
 Dropbox project data folder, as long as that folder is excluded from
-sync on any machine that also runs an AI coding tool (§11).</li>
+sync on any machine that also runs an AI coding tool (§12).</li>
 <li><strong>SL</strong> (SN 6931, SN 6666): must go
 <strong>only</strong> inside the approved encrypted location on the SL
-secure machine (§6) — never in Dropbox, never anywhere else.</li>
+secure machine (§7) — never in Dropbox, never anywhere else.</li>
 </ul></li>
 </ol>
 </div>
 <div id="eul-vs-sl-the-data_license-switch" class="section level3">
-<h3>4.3 EUL vs SL — the <code>DATA_LICENSE</code> switch</h3>
+<h3>5.3 EUL vs SL — the <code>DATA_LICENSE</code> switch</h3>
 <p>A single flag in <code>code/lib/config.R</code> selects the edition
 and rewires everything:</p>
 <pre class="r"><code>DATA_LICENSE &lt;- &quot;EUL&quot;   # or &quot;SL&quot;</code></pre>
@@ -988,7 +1026,7 @@ the project memory note on EUL vs SL for the detailed mapping, and
 data</strong> when you first get it.</p>
 </div>
 <div id="where-things-live-on-disk-paths" class="section level3">
-<h3>4.4 Where things live on disk (paths)</h3>
+<h3>5.4 Where things live on disk (paths)</h3>
 <p>All path logic is centralized in <code>code/lib/config.R</code>.
 <strong>Do not hardcode machine-specific paths anywhere else.</strong>
 The config resolves paths per machine using the OS username
@@ -1023,7 +1061,7 @@ everything under <code>data_out_root</code>:
 </blockquote>
 </div>
 <div id="privacy-constraints-non-negotiable-the-two-tiers-are-different" class="section level3">
-<h3>4.5 Privacy constraints (non-negotiable) — the two tiers are
+<h3>5.5 Privacy constraints (non-negotiable) — the two tiers are
 different</h3>
 <p>The EUL and SL editions carry <strong>different</strong> handling
 obligations. Don’t conflate them:</p>
@@ -1031,7 +1069,7 @@ obligations. Don’t conflate them:</p>
 <li><strong>SL data (SN 6931, SN 6666 — detailed SIC/SOC, Local
 Authority District)</strong> is the more restricted tier: it may
 <strong>only</strong> be stored and processed on the approved secure
-machine (§6.1 — currently the TAU-managed desktop named in the licence
+machine (§7.1 — currently the TAU-managed desktop named in the licence
 application). It never goes onto a personal laptop, USB drive, personal
 cloud, or Dropbox folder, and never into an AI tool. This is a hard
 requirement of the Special Licence User Agreement.</li>
@@ -1040,15 +1078,15 @@ licence permits storing and processing it on an ordinary researcher
 machine, and in practice it lives in a Dropbox folder like any other
 project file. The binding constraint on EUL data is narrower but still
 absolute: <strong>no AI tool may ever have read access to it.</strong>
-See §11 for how this is enforced in practice (the short version: the
+See §12 for how this is enforced in practice (the short version: the
 folder holding EUL raw/derived data is kept out of the Dropbox sync
 scope on whichever machine is used for AI-assisted coding).</li>
 <li>Raw micro-data and derived <code>.rds</code> files (either tier)
 <strong>never go in the git repo</strong> — they live outside the repo
-per §4.4, regardless of which machine holds them.</li>
+per §5.4, regardless of which machine holds them.</li>
 <li>On <strong>this</strong> checkout (the one Claude Code/Codex work
 in) the licensed data are intentionally <strong>absent for both
-tiers</strong> — that’s the point of the sync-exclusion setup in §11. Do
+tiers</strong> — that’s the point of the sync-exclusion setup in §12. Do
 <strong>not</strong> try to run the full pipeline or probe data paths
 from here; this checkout is for code/docs only.</li>
 <li>Only <strong>repo-safe artifacts</strong> may leave the secure/EUL
@@ -1063,10 +1101,10 @@ Handling guide.</li>
 </div>
 </div>
 <div id="project-administration-onboarding-paperwork-do-this-before-any-data-access" class="section level2">
-<h2>5. Project administration &amp; onboarding paperwork (do this before
+<h2>6. Project administration &amp; onboarding paperwork (do this before
 any data access)</h2>
 <div id="project-identity-verify-with-ori" class="section level3">
-<h3>5.1 Project identity <em>[verify with Ori]</em></h3>
+<h3>6.1 Project identity <em>[verify with Ori]</em></h3>
 <ul>
 <li>UK Data Service <strong>project number 282609</strong>, title
 <strong>“Work from home in the UK”</strong>.</li>
@@ -1081,9 +1119,9 @@ over).</li>
 </ul>
 </div>
 <div id="get-a-uk-data-service-account-and-be-added-to-the-project" class="section level3">
-<h3>5.2 Get a UK Data Service account and be added to the project</h3>
+<h3>6.2 Get a UK Data Service account and be added to the project</h3>
 <p>This has to happen <strong>before</strong> any of the paperwork in
-§5.3, and well before you can download or see any data:</p>
+§6.3, and well before you can download or see any data:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Create your own UK Data Service account</strong> at <a href="https://ukdataservice.ac.uk/register" class="uri">https://ukdataservice.ac.uk/register</a> — use the email you
 want permanently associated with this project (institutional email is
@@ -1097,16 +1135,16 @@ project application — “Research team” — lists everyone who is allowed to
 see the raw data; the lead adds new members there and on the UKDS
 website).</li>
 <li><strong>Accept the invitation</strong> when it arrives at your
-registered email, then complete the paperwork in §5.3. You are not
+registered email, then complete the paperwork in §6.3. You are not
 approved to access SL data until that paperwork is submitted and UKDS
 confirms approval in writing — don’t download anything before that.</li>
 </ol>
 </div>
 <div id="required-forms" class="section level3">
-<h3>5.3 Required forms</h3>
+<h3>6.3 Required forms</h3>
 <p>All forms are in <code>data_agreements/</code> (signed/submitted
 copies in <code>data_agreements/submit/</code>). Order of operations,
-once you’ve been invited (§5.2):</p>
+once you’ve been invited (§6.2):</p>
 <ol style="list-style-type: decimal">
 <li><strong>Complete the Special Licence <em>additional researcher</em>
 form</strong> —
@@ -1141,13 +1179,13 @@ read §2.1–2.7 of it.</p>
 </div>
 </div>
 <div id="running-the-code-the-secure-remote-desktop-for-sl-work" class="section level2">
-<h2>6. Running the code (the secure remote desktop for SL work)</h2>
+<h2>7. Running the code (the secure remote desktop for SL work)</h2>
 <p>This section covers the <strong>Special Licence (SL)</strong> secure
 machine. EUL-only work does not require this — it can run on a normal
-Dropbox-synced machine (see §4.5 and §11 for the one constraint that
+Dropbox-synced machine (see §5.5 and §12 for the one constraint that
 still applies: no AI tool may read the data folder).</p>
 <div id="what-the-environment-is" class="section level3">
-<h3>6.1 What the environment is</h3>
+<h3>7.1 What the environment is</h3>
 <p>Per the approved application, the SL data are <strong>hosted on a Tel
 Aviv University-managed desktop in a locked office</strong> and accessed
 <strong>remotely via TAU’s secure VPN</strong> (two-factor auth,
@@ -1156,7 +1194,7 @@ idle, and runs anti-malware. No data may be copied off it. This is the
 “remote desktop” referred to throughout this guide.</p>
 </div>
 <div id="connection-access-secrets-obtain-from-ori-tau-it" class="section level3">
-<h3>6.2 Connection &amp; access <em>[secrets: obtain from Ori / TAU
+<h3>7.2 Connection &amp; access <em>[secrets: obtain from Ori / TAU
 IT]</em></h3>
 <ul>
 <li>You will need: a TAU account with VPN access + 2FA, and
@@ -1169,7 +1207,7 @@ host. Close the session when you are done.</li>
 </ul>
 </div>
 <div id="environment-setup-on-the-secure-machine" class="section level3">
-<h3>6.3 Environment setup on the secure machine</h3>
+<h3>7.3 Environment setup on the secure machine</h3>
 <ul>
 <li><p><strong>R + RStudio</strong> (RStudio recommended; there is a
 <code>.Rproj</code> for the project).</p></li>
@@ -1181,17 +1219,17 @@ host. Close the session when you are done.</li>
 <pre class="r"><code>install.packages(c(&quot;tidyverse&quot;,&quot;haven&quot;,&quot;readxl&quot;,&quot;scales&quot;,&quot;forcats&quot;,
                    &quot;modelsummary&quot;,&quot;glmnet&quot;,&quot;knitr&quot;,&quot;kableExtra&quot;))</code></pre></li>
 <li><p><strong>Get the code onto the machine:</strong> clone from GitHub
-and <code>git pull</code> to update (see §9). The <em>code</em> may live
-on the secure machine; the <em>data</em> lives only in the approved
+and <code>git pull</code> to update (see §10). The <em>code</em> may
+live on the secure machine; the <em>data</em> lives only in the approved
 location.</p></li>
 <li><p><strong>Set paths:</strong> add/confirm your machine’s branch in
-<code>code/lib/config.R</code> (§4.4) so <code>path_main_*</code>,
+<code>code/lib/config.R</code> (§5.4) so <code>path_main_*</code>,
 <code>path_covid</code>, and <code>data_out_root</code> point at the
 right places.</p></li>
 </ul>
 </div>
 <div id="run-workflow" class="section level3">
-<h3>6.4 Run workflow</h3>
+<h3>7.4 Run workflow</h3>
 <p>Always start from the repo root (so relative paths like
 <code>code/lib/config.R</code> resolve).</p>
 <ol style="list-style-type: decimal">
@@ -1304,7 +1342,7 @@ only those files), never the data.</p></li>
 </div>
 </div>
 <div id="code-coding-conventions" class="section level2">
-<h2>7. Code &amp; coding conventions</h2>
+<h2>8. Code &amp; coding conventions</h2>
 <ul>
 <li><strong>Staged pipeline, isolated environments.</strong> Stages
 communicate <strong>through disk</strong>, not memory. If a stage needs
@@ -1348,7 +1386,7 @@ files.</li>
 <hr />
 </div>
 <div id="current-outputs-where-theyre-consumed" class="section level2">
-<h2>8. Current outputs &amp; where they’re consumed</h2>
+<h2>9. Current outputs &amp; where they’re consumed</h2>
 <p><strong>Figures</strong> are written under <code>figures/</code> in
 organized subfolders defined by the <code>fig_path_*</code> variables in
 <code>config.R</code> (e.g. <code>figures/descriptives/covid/</code>,
@@ -1419,9 +1457,9 @@ baseline-distribution slide</td>
 <hr />
 </div>
 <div id="git-workflow-from-scratch" class="section level2">
-<h2>9. Git workflow (from scratch)</h2>
+<h2>10. Git workflow (from scratch)</h2>
 <p>This repo has <strong>two remotes</strong>: <code>origin</code>
-(GitHub) and <code>overleaf</code> (Overleaf — see §10).</p>
+(GitHub) and <code>overleaf</code> (Overleaf — see §11).</p>
 <p><strong>One-time setup</strong></p>
 <pre class="bash"><code>git clone https://github.com/Ori-Shoham/division-of-labor.git
 cd division-of-labor
@@ -1447,11 +1485,11 @@ everything” — check whether Dropbox or a cleanup moved it first.</p>
 <p><strong>Branches.</strong> <code>main</code> is the working branch.
 There is an <code>overleaf-backup</code> branch and dated
 <code>overleaf-YYYY-MM-DD-…</code> branches that exist only for Overleaf
-syncing (§10) — don’t develop on those.</p>
+syncing (§11) — don’t develop on those.</p>
 <hr />
 </div>
 <div id="overleaf-workflow-writing-git" class="section level2">
-<h2>10. Overleaf workflow (writing ↔︎ git)</h2>
+<h2>11. Overleaf workflow (writing ↔︎ git)</h2>
 <p>The <code>.tex</code> writing is mirrored to
 <strong>Overleaf</strong> via Overleaf’s <strong>git bridge</strong>.
 The Overleaf project is wired in as the <code>overleaf</code>
@@ -1491,7 +1529,7 @@ clobbering co-author edits.</p>
 <hr />
 </div>
 <div id="ai-coding-tools" class="section level2">
-<h2>11. AI coding tools</h2>
+<h2>12. AI coding tools</h2>
 <div id="claude-code-primary" class="section level3">
 <h3>Claude Code (primary)</h3>
 <ul>
@@ -1517,7 +1555,7 @@ before it writes code.</li>
 this is actually set up:</strong>
 <ul>
 <li><strong>SL data</strong> never touches a machine that runs AI tools
-at all — it only exists on the TAU secure desktop (§6), which has no
+at all — it only exists on the TAU secure desktop (§7), which has no
 Claude Code / Codex on it. That tier is enforced by physical/network
 isolation, not by discipline.</li>
 <li><strong>EUL data</strong> <em>is</em> allowed on an ordinary laptop,
@@ -1528,7 +1566,7 @@ sync</strong> on the machine used for AI-assisted coding. Concretely:
 the project Dropbox folder syncs normally, but the specific
 “understanding society uk all data” subfolder (the
 <code>path_main_*</code> / <code>path_covid</code> /
-<code>data_out_root</code> targets from §4.4) is set to <strong>not
+<code>data_out_root</code> targets from §5.4) is set to <strong>not
 sync</strong> to this machine, so it simply doesn’t exist on disk here —
 an AI tool has no path to read even if asked. That’s why this checkout
 has no data present, and why <code>00_check_inputs.R</code> will report
@@ -1547,7 +1585,7 @@ tool).</li>
 agent to run the pipeline or probe data paths</strong> to “see” the data
 — it can’t, and shouldn’t be made able to. Use code inspection and the
 committed figures/tables instead.</li>
-<li>The agent must follow §7 (“stick to the approved plan”) — it should
+<li>The agent must follow §8 (“stick to the approved plan”) — it should
 not introduce unrequested design changes.</li>
 </ul></li>
 </ul>
@@ -1564,7 +1602,7 @@ edits; keep both pointed at the committed code only.</p>
 </div>
 </div>
 <div id="where-things-stand-first-tasks-draft-ori-to-edit" class="section level2">
-<h2>12. Where things stand &amp; first tasks <em>[draft — Ori to
+<h2>13. Where things stand &amp; first tasks <em>[draft — Ori to
 edit]</em></h2>
 <p><em>Inferred from recent git history and the current outputs; Ori
 should correct/replace this.</em></p>
@@ -1597,7 +1635,7 @@ events) and the youngest-child heterogeneity cut.</li>
 <hr />
 </div>
 <div id="contacts-resources-glossary" class="section level2">
-<h2>13. Contacts, resources &amp; glossary</h2>
+<h2>14. Contacts, resources &amp; glossary</h2>
 <p><strong>People</strong></p>
 <ul>
 <li>Project lead: <strong>Itay Saporta Eksten</strong> —
