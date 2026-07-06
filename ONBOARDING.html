@@ -399,6 +399,18 @@ data-handling/security guide.</li>
 <li>Only then request access to the Special Licence (SL) secure
 machine.</li>
 </ul>
+<p><strong>For EUL work — the only tier we currently have access to
+(§5.1) — once you’re an approved project member:</strong></p>
+<ul>
+<li>You do <strong>not</strong> need to download anything from UKDS
+yourself. The EUL data (SN 6614 main study, SN 8644 COVID study) already
+lives in the team’s shared Dropbox project folder — get added to that
+Dropbox folder and it will sync to your machine (§5.2).</li>
+<li><strong>Before running any code</strong>, add your own username
+branch to <code>code/lib/config.R</code> so the pipeline can find your
+local synced copy — full steps in §5.4. Then confirm it worked with
+<code>source(&quot;code/run/00_check_inputs.R&quot;)</code>.</li>
+</ul>
 <p><strong>The two rules that matter most</strong> — note the two
 licence tiers are governed differently (see §5.5 for the full
 version):</p>
@@ -573,9 +585,9 @@ Heterogeneity by <strong>age of youngest child</strong> at onset is a
 key cut (run as separate regressions by child-age group, not an
 interaction term, in the current code).</p>
 </div>
-<div id="step-2-instrumental-variables-design-planned-partially-scaffolded" class="section level4">
-<h4>Step 2 — Instrumental-variables design (planned / partially
-scaffolded)</h4>
+<div id="step-2-instrumental-variables-design-planned-for-future-work" class="section level4">
+<h4>Step 2 — Instrumental-variables design (planned for future
+work)</h4>
 <p>Here the couple’s <strong><em>realised</em></strong> work-location
 configuration during COVID — the joint state of wife’s and husband’s
 at-home/working-outside status, e.g. (wife home, husband home), (wife
@@ -765,12 +777,6 @@ currently restricts to people/couples also observed in the COVID sample
 things looking different in the main survey vs. the COVID sample results
 in the periods where they overlap.</li>
 </ul>
-<p>So a single couple’s story in this pipeline typically threads
-through: main-survey history (<code>a</code>–<code>h</code>) →
-main-survey <strong>baseline</strong>
-(<code>i</code>/<code>j</code>/<code>k</code>, 2019) → COVID survey
-(<code>ca</code>–<code>ci</code>, 2020–2021) → main-survey follow-up
-(<code>l</code>–<code>o</code>).</p>
 </div>
 <div id="file-types-per-wave-and-identifiers" class="section level3">
 <h3>2.3 File types per wave and identifiers</h3>
@@ -816,7 +822,203 @@ their partner’s row (via the <code>egoalt</code> links) and keeping both
 spouses’ variables side by side, usually suffixed <code>_w</code> (wife)
 / <code>_h</code> (husband) — you’ll see this suffix convention
 throughout <code>code/lib/</code>.</p>
+</div>
+<div id="datasets-and-samples-built-by-the-pipeline" class="section level3">
+<h3>2.4 Datasets and samples built by the pipeline</h3>
+<p><code>code/run/01_build_data.R</code> is the single script that turns
+the raw wave files into everything downstream. It writes to two separate
+output roots (§5.4), and the distinction between them matters:</p>
+<ul>
+<li><strong><code>derived/</code></strong> (<code>der_path</code>) —
+every intermediate and full-population dataset the pipeline produces
+along the way. Not restricted to any particular analytic sample; other
+scripts read from here when they need a fuller population than the
+curated samples provide.</li>
+<li><strong><code>samples/</code></strong> (<code>samples_path</code>) —
+the curated, ready-to-analyze <strong>analytic samples</strong>
+(prefixed <code>s2019_*</code>) that downstream
+figures/tables/regressions actually use. These are built <em>from</em>
+the <code>derived/</code> files by applying the sample restrictions
+described below.</li>
+</ul>
+<div id="the-baseline-restriction-that-underlies-almost-everything" class="section level4">
+<h4>The baseline restriction that underlies (almost) everything</h4>
+<p><code>build_baseline()</code>
+(<code>code/lib/family_baseline.R</code>) builds one row per person from
+the I/J/K main-survey waves, preferring wave K restricted to 2019 and
+back-filling from J then I for anyone missing at K — this is
+<code>baseline.rds</code> in <code>derived/</code>. Every downstream
+dataset then starts from the <strong>analytic baseline
+restriction</strong>: baseline <code>jbstat</code> (labour-market
+status) in <code>{1, 2}</code>, i.e. <strong>employed or self-employed
+at baseline</strong>. This restriction is applied once
+(<code>df_baseline_analytic</code> in the build script) and threaded
+through nearly every dataset described below — it is <em>not</em>
+re-derived independently in each one. Baseline SIC/SOC are
+<strong>not</strong> required to be non-missing at this stage;
+missing/invalid codes are flagged by
+<code>add_baseline_work_groups()</code> and only excluded where a
+specific analysis needs it.</p>
+</div>
+<div id="person-level-datasets-and-samples" class="section level4">
+<h4>Person-level datasets and samples</h4>
+<ul>
+<li><code>prebaseline_history_long.rds</code> /
+<code>_summary.rds</code> — each baseline-analytic person’s observations
+in <strong>main-survey waves before their own baseline wave</strong>
+(long panel + a compact per-person summary), used for pre-trend checks
+and history-based controls.</li>
+<li><code>df_sample_long_covid.rds</code> — the full <strong>person ×
+COVID-wave</strong> panel (<code>ca</code>–<code>ci</code>) for
+baseline-analytic people, built from the merged COVID waves
+(<code>covid_all_wide.rds</code>).</li>
+<li><code>future_outcomes_long_lmo.rds</code> (+ <code>_monthly</code>
+variant) — the <strong>person × main-survey follow-up wave</strong>
+panel (waves <code>l</code>–<code>o</code>), restricted to the
+baseline-analytic sample. The default version starts March 2020; the
+<code>_monthly</code> variant additionally keeps Jan–Feb 2020 for
+monthly-resolution plots/event studies (see the power caveat in
+§2.1).</li>
+<li><code>person_history_future_long.rds</code> — a single
+<strong>ready-to-plot stacked panel</strong> per person: pre-baseline
+history → baseline row → COVID-study rows → main-survey follow-up. A
+<code>_mainonly</code> variant exists that drops the COVID-study rows,
+for comparisons using only the regular main-survey cadence.</li>
+<li>The four <strong>analytic samples</strong> built by
+<code>build_samples_2019()</code> (<code>code/lib/samples.R</code>),
+each nested inside the previous one:
+<ol style="list-style-type: decimal">
+<li><code>s2019_all</code> — all baseline-analytic workers.</li>
+<li><code>s2019_couples</code> — (1) restricted to people with a valid
+baseline partner link (<code>base_partner_rel</code> indicating
+spouse/cohabiting/civil partner).</li>
+<li><code>s2019_covid</code> — (1) restricted to people also observed in
+the COVID study.</li>
+<li><code>s2019_covid_couples</code> — (2) ∩ (3): baseline couples also
+observed in the COVID study.</li>
+</ol>
+<ul>
+<li><code>_plus_lmo</code> suffixed versions of all four
+(e.g. <code>s2019_all_plus_lmo.rds</code>) have the wide future-outcomes
+file merged in.</li>
+</ul></li>
+</ul>
+</div>
+<div id="couple-level-datasets" class="section level4">
+<h4>Couple-level datasets</h4>
+<ul>
+<li><strong>Couple roster</strong>
+(<code>baseline_couple_roster.rds</code>,
+<code>code/lib/samples.R:build_baseline_couple_roster()</code>) — one
+row per couple, built by self-joining baseline-analytic people to their
+baseline partner, keeping only <strong>reciprocal</strong> partner links
+where one partner is male and the other female (the heterosexual-couple
+restriction used throughout). A <code>..._both_in_covid.rds</code>
+variant keeps only couples where both spouses are observed in the COVID
+study.</li>
+<li><strong>Baseline couple-level dataset</strong>
+(<code>s2019_baseline_couplelevel.rds</code>,
+<code>build_baseline_couple_dataset()</code>) — one row per couple, both
+partners’ baseline variables side by side (<code>_h</code> /
+<code>_w</code> suffixes), plus couple-level <strong>treatment and
+child-age variables</strong> added by
+<code>add_couple_baseline_treatments()</code>:
+<code>treat_wife_key_notedu_husb_not_or_edu</code>,
+<code>treat_wife_key_notedu_any</code>,
+<code>treat_husb_shutdown_wife_not</code>,
+<code>sample_husb_notkey_or_edu</code>, and
+<code>child_age_group_2019</code> / <code>has_child_u10_2019</code> /
+<code>has_child_11_17_2019</code>. A <code>_both_in_covid</code> variant
+restricts to the COVID-observed roster. Pre-baseline couple history is
+merged in afterward.</li>
+<li><strong>COVID couple-wave panel</strong>
+(<code>df_sample_long_covid_couplelevel.rds</code>,
+<code>build_covid_couple_long()</code>) — one row per <strong>couple ×
+COVID wave</strong>, keeping only waves where <em>both</em> spouses are
+observed that wave, with couple treatment/child-group variables
+attached.</li>
+<li><strong>Future-outcomes couple panels</strong>
+(<code>future_outcomes_couple_long_lmo.rds</code> /
+<code>_wide_lmo.rds</code>, <code>build_future_couple_long()</code> /
+<code>build_future_couple_wide()</code>) — the couple-level analogue of
+the person-level future-outcomes files, again in both <code>_long</code>
+(couple × wave) and <code>_wide</code> (one row per couple) shapes, each
+with <code>_both_in_covid</code> and <code>_monthly</code>
+variants.</li>
+<li><strong>Couple-level stacked panel</strong>
+(<code>couple_history_future_long.rds</code>,
+<code>build_couple_history_future_long()</code>) — the couple-level
+analogue of <code>person_history_future_long.rds</code>: pre-baseline
+couple history → baseline couple row → COVID couple-wave rows → future
+couple-wave rows, one ready-to-plot long file. A <code>_mainonly</code>
+variant (and its <code>_both_in_covid</code> / <code>_monthly</code>
+combinations) drops the COVID-study rows.</li>
+</ul>
+</div>
+<div id="naming-conventions" class="section level4">
+<h4>Naming conventions</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pattern</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>s2019_*</code></td>
+<td>A curated analytic <strong>sample</strong> (lives in
+<code>samples/</code>, not <code>derived/</code>)</td>
+</tr>
+<tr class="even">
+<td><code>_couplelevel</code> / <code>_couple_*</code></td>
+<td>One row per <strong>couple</strong>, spouse variables suffixed
+<code>_h</code> / <code>_w</code></td>
+</tr>
+<tr class="odd">
+<td><code>_long</code></td>
+<td>Panel shape: one row per person/couple <strong>× time
+period</strong></td>
+</tr>
+<tr class="even">
+<td><code>_wide</code></td>
+<td>One row per person/couple, outcomes spread across columns by
+period</td>
+</tr>
+<tr class="odd">
+<td><code>_both_in_covid</code></td>
+<td>Restricted to couples where <strong>both</strong> spouses are
+observed in the COVID study</td>
+</tr>
+<tr class="even">
+<td><code>_plus_lmo</code></td>
+<td>The dataset with wide future outcomes (waves
+<strong>L/M/N/O</strong>) merged in</td>
+</tr>
+<tr class="odd">
+<td><code>_mainonly</code></td>
+<td>Excludes COVID-study rows; regular main-survey cadence only</td>
+</tr>
+<tr class="even">
+<td><code>_monthly</code></td>
+<td>Keeps Jan–Feb 2020 for monthly-resolution use (see the power caveat
+in §2.1)</td>
+</tr>
+</tbody>
+</table>
+<p>If you need to trace exactly how a given <code>.rds</code> is built,
+<code>code/run/01_build_data.R</code> is staged and commented
+step-by-step in this same order — read it alongside
+<code>code/lib/samples.R</code>,
+<code>code/lib/family_baseline.R</code>,
+<code>code/lib/history.R</code>, <code>code/lib/covid_panel.R</code>,
+and <code>code/lib/future_outcomes.R</code>.</p>
 <hr />
+</div>
 </div>
 </div>
 <div id="the-codebase-in-one-paragraph" class="section level2">
@@ -919,9 +1121,11 @@ CLAUDE.md, AGENTS.md   agent guidance; ONBOARDING.md   this file</code></pre>
 <h2>5. Data &amp; licensing (full walkthrough)</h2>
 <div id="the-datasets" class="section level3">
 <h3>5.1 The datasets</h3>
-<p>This project uses three UK Data Service (UKDS) study families. The
-pipeline currently switches between the <strong>EUL</strong> and
-<strong>SL</strong> editions of the main study via one flag (§5.3).</p>
+<p>This project uses three UK Data Service (UKDS) study families. We
+currently don’t have access to the special license data (SL) yet.
+However, the pipeline is ready for switching between the
+<strong>EUL</strong> and <strong>SL</strong> editions of the main study
+via one flag (§5.3).</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -960,8 +1164,8 @@ District</strong></td>
 <tr class="even">
 <td><strong>SN 8644</strong></td>
 <td>Understanding Society <strong>COVID-19 Study</strong></td>
-<td>The <code>ca</code>–<code>ci</code> COVID waves; same under either
-licence</td>
+<td>The <code>ca</code>–<code>ci</code> COVID waves; available under
+<strong>EUL</strong></td>
 </tr>
 </tbody>
 </table>
@@ -969,19 +1173,34 @@ licence</td>
 <p>Note: <code>code/lib/config.R</code> currently wires up SN 6614, SN
 6931, and SN 8644. <strong>SN 6666 (LAD)</strong> is part of the
 approved Special Licence application but is not yet wired into the
-config — adding it is part of building the IV design. <em>[verify with
-Ori]</em></p>
+config — adding it will be part of building the IV design.</p>
 </blockquote>
 </div>
 <div id="getting-the-data-ukds" class="section level3">
 <h3>5.2 Getting the data (UKDS)</h3>
 <ol style="list-style-type: decimal">
-<li>Create your UKDS account and get invited/approved on the project —
-see §6 for the full account, invitation, and paperwork sequence.
-<strong>Do this before downloading anything.</strong></li>
-<li>Download the relevant studies as <strong>Stata (.dta)</strong>
-files. The pipeline reads <code>.dta</code> via the <code>haven</code>
-package. Expected raw files per wave:
+<li><p>Create your UKDS account and get invited/approved on the project
+— see §6 for the full account, invitation, and paperwork sequence.
+<strong>Do this before touching any data at all</strong>, regardless of
+how the files themselves reach you. UKDS project approval is what makes
+you a licensed user of the data; that’s required whether you get a fresh
+download or a teammate’s already-synced Dropbox copy.</p></li>
+<li><p><strong>In practice, for EUL data, join the shared Dropbox —
+don’t download.</strong> The EUL data we currently use (SN 6614 main
+study, SN 8644 COVID study — see §5.1; we don’t have SL yet) is already
+sitting in the team’s shared Dropbox project folder, under
+<code>.../Dropbox/WFH_covid/UK project/understanding society uk all data/</code>.
+Once you’re an approved project member (step 1), ask the project lead to
+add you to that shared Dropbox folder and let it sync locally —
+<strong>you do not need to download anything from UKDS
+yourself.</strong> Once it’s synced, skip to §5.4 to point
+<code>code/lib/config.R</code> at your local copy before running any
+code.</p></li>
+<li><p><strong>From scratch — only if you don’t have Dropbox access, or
+once SL is granted:</strong> download the relevant studies as
+<strong>Stata (.dta)</strong> files directly from UKDS. The pipeline
+reads <code>.dta</code> via the <code>haven</code> package. Expected raw
+files per wave:</p>
 <ul>
 <li>Main waves: <code>{w}_indresp.dta</code>,
 <code>{w}_egoalt.dta</code>, <code>{w}_indall.dta</code>
@@ -990,15 +1209,17 @@ and layout — SL just adds variables.</li>
 <li>COVID waves: <code>{cw}_indresp_w.dta</code>
 (e.g. <code>cd_indresp_w.dta</code>).</li>
 </ul></li>
-<li>Place the unpacked study folders <strong>outside the git
-repo</strong> (see §5.4).
+<li><p>Place the unpacked study folders <strong>outside the git
+repo</strong> (see §5.4).</p>
 <ul>
 <li><strong>EUL</strong> (SN 6614, SN 8644): can go in your normal
 Dropbox project data folder, as long as that folder is excluded from
 sync on any machine that also runs an AI coding tool (§12).</li>
 <li><strong>SL</strong> (SN 6931, SN 6666): must go
 <strong>only</strong> inside the approved encrypted location on the SL
-secure machine (§7) — never in Dropbox, never anywhere else.</li>
+secure machine (§7) — never in Dropbox, never anywhere else. There is no
+shared-Dropbox shortcut for SL data; it only ever reaches you through
+the secure-machine process in §7, once approved.</li>
 </ul></li>
 </ol>
 </div>
@@ -1053,11 +1274,54 @@ everything under <code>data_out_root</code>:
 <code>policies/</code>.</li>
 </ul>
 <blockquote>
-<p><strong>To onboard a new machine:</strong> add a username branch in
-<code>config.R</code> setting <code>path_main_*</code>,
-<code>path_covid</code>, and <code>data_out_root</code> for that machine
-— following the existing pattern. Keep <code>data_out_root</code>
-<strong>outside</strong> the git/Dropbox-tracked repo.</p>
+<p><strong>Before you start working with the code, edit
+<code>config.R</code> for your machine.</strong> The config resolves
+these paths by matching your OS username
+(<code>Sys.info()[[&quot;user&quot;]]</code>), so each new person/machine needs
+its own branch — the file already has one worked example (the
+<code>orishoham</code> block) to copy. Steps:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Confirm the data actually synced</strong> (§5.2): check
+that
+<code>.../Dropbox/WFH_covid/UK project/understanding society uk all data/</code>
+exists on your machine and contains <code>UKDA-6614-stata/</code> and
+<code>UKDA-8644-stata/</code> (and, once you have SL access,
+<code>UKDA-6931-stata/</code>). If Dropbox hasn’t finished syncing yet,
+wait for it before editing anything.</p></li>
+<li><p><strong>Find your OS username</strong> — in R:
+<code>Sys.info()[[&quot;user&quot;]]</code>.</p></li>
+<li><p><strong>Add a branch to <code>code/lib/config.R</code></strong>,
+mirroring the existing <code>orishoham</code> block exactly, just with
+your username and Dropbox path. There are <strong>two</strong> places to
+add it (both already exist for <code>orishoham</code> — search the file
+for that name to find them):</p>
+<ul>
+<li><p>Near the top, right after <code>path_covid</code> is first
+set:</p>
+<pre class="r"><code>if (user == &quot;&lt;your-username&gt;&quot;) {
+  dropbox_path &lt;- &quot;C:/Users/&lt;your-username&gt;/Dropbox/&quot;
+  path_main_eul &lt;- paste0(dropbox_path, &quot;WFH_covid/UK project/understanding society uk all data/UKDA-6614-stata/stata/stata14_se/ukhls&quot;)
+  path_main_sl  &lt;- paste0(dropbox_path, &quot;WFH_covid/UK project/understanding society uk all data/UKDA-6931-stata/stata/stata14_se/ukhls&quot;)
+  path_covid    &lt;- paste0(dropbox_path, &quot;WFH_covid/UK project/understanding society uk all data/UKDA-8644-stata/stata/stata13_se/&quot;)
+}</code></pre></li>
+<li><p>Further down, next to the existing <code>data_out_root</code>
+default:</p>
+<pre class="r"><code>if (user == &quot;&lt;your-username&gt;&quot;) {
+  data_out_root &lt;- paste0(dropbox_path, &quot;WFH_covid/UK project/understanding society uk all data&quot;)
+}</code></pre>
+<p>Only change the <code>C:/Users/&lt;your-username&gt;/Dropbox/</code>
+prefix if your Dropbox is installed somewhere non-default.</p></li>
+</ul></li>
+<li><p><strong>Verify</strong> by running, from the repo root:</p>
+<pre class="r"><code>source(&quot;code/run/00_check_inputs.R&quot;)</code></pre>
+<p>Fix anything it flags and re-run until it prints
+<code>--- CHECK PASSED ---</code> before running any other
+script.</p></li>
+</ol>
+<p>Keep <code>data_out_root</code> <strong>outside</strong> the
+git-tracked part of the repo (it already is — it lives under the Dropbox
+data folder, not under
+<code>code/</code>/<code>figures/</code>/<code>tables/</code>).</p>
 </blockquote>
 </div>
 <div id="privacy-constraints-non-negotiable-the-two-tiers-are-different" class="section level3">

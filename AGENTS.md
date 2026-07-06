@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> **Note:** This file is the canonical source of project instructions for Codex and other `AGENTS.md`-reading tools. `CLAUDE.md` in this repo is a duplicate maintained for Claude specifically — Codex should ignore `CLAUDE.md` and rely on this file instead. Claude should ignore this file and treat `CLAUDE.md` as canonical. When updating project instructions, edit both files together to keep them in sync.
+
 This repository studies how COVID-era work arrangements changed the division of labor within households, especially for couples with children. The current implemented pipeline is centered on UKHLS data and produces descriptive figures, sample tables, and couple-treatment event-study outputs used in slides and proposals. Some project documents also describe related or future extensions using Israeli administrative data and German survey data, but the code in this repo is primarily the UKHLS workflow.
 
 ## What this repo does
@@ -8,7 +10,7 @@ This repository studies how COVID-era work arrangements changed the division of 
 - Loads UKHLS COVID-study waves `ca`-`ci` and future main-study follow-up waves `j`-`o`.
 - Constructs person-level and couple-level analytic panels.
 - Defines treatment and comparison groups using baseline SIC/SOC logic.
-- Generates descriptive figures, sample-composition tables, couple-treatment plots, and event-study analogs.
+- Generates descriptive figures (including baseline distributions and categorical work-status figures), sample-composition tables, couple-treatment plots, and event-study analogs.
 - Feeds generated figures and `tables/*.tex` fragments into Beamer slide decks and proposal documents.
 
 ## Repo layout
@@ -38,14 +40,16 @@ The intended run order is:
 6. `code/run/02c_sample_tables.R`
    - Produces sample-composition tables and couple composition figures.
 7. `code/run/02d_make_couple_treatment_descriptives.R`
-   - Produces couple-treatment descriptive figures.
-8. `code/run/03a_make_couple_treatment_event_studies.R`
+   - Produces couple-treatment descriptive figures, including the new `work_last_week_status` stacked-bar over-time figures.
+8. `code/run/02e_make_couple_baseline_descriptives.R`
+   - Produces baseline distribution figures (2019 or COVID wave 1) for `couples_graphs_short.tex`. Saves to `figures/couple_treatment/baseline_distributions/`.
+9. `code/run/03a_make_couple_treatment_event_studies.R`
    - Produces regression/event-study analogs, figures, and saved results.
-9. `code/run/03_models_workoutside.R`
-   - Produces the April 2020 regression table `tables/workoutside_industry_comparison.tex`.
-10. `code/run/04_lasso_workoutside.R`
+10. `code/run/03_models_workoutside.R`
+    - Produces the April 2020 regression table `tables/workoutside_industry_comparison.tex`.
+11. `code/run/04_lasso_workoutside.R`
     - Produces exploratory lasso outputs.
-11. `code/run/99_session_info.R`
+12. `code/run/99_session_info.R`
     - Saves reproducibility metadata.
 
 ## Data locations and privacy constraints
@@ -94,7 +98,9 @@ The intended run order is:
   - Main descriptive slide deck.
   - Designed to tolerate missing generated assets with placeholders.
 - `couples_graphs.tex`
-  - Main couple-treatment slide deck with event-study figures and balance tables.
+  - Main couple-treatment slide deck with event-study figures and balance tables. Covers both treatments.
+- `couples_graphs_short.tex`
+  - Shortened couple-treatment deck: wife-key treatment only, prefixes each outcome with a baseline distribution slide. Requires figures from `02e_make_couple_baseline_descriptives.R`.
 - `meeting_slides.tex`
   - Older, lighter slide deck for earlier descriptive updates.
 - `main.tex`
@@ -117,6 +123,7 @@ The intended run order is:
 - If a TeX file references a missing or incorrect figure, trace the referenced filename back to the generating run script and helper module before editing the TeX.
 - Avoid manual edits to generated `tables/*.tex` fragments except for unusual debugging or one-off emergency inspection.
 - Be conservative around output naming because slide decks and proposals often reference files by exact path.
+- **Do not add design choices that are not in the approved plan.** Any deviation — even seemingly minor ones like trimming data, filtering observations, or changing plot defaults — must be raised with the user before implementing. Implement exactly what was agreed, nothing more.
 
 ## Common starting points
 
@@ -128,6 +135,7 @@ The intended run order is:
 - If the problem is about treatment definitions or work-outside logic: start with `code/lib/work_groups.R`.
 - If the problem is about couple sample tables or composition figures: start with `code/lib/sample_tables.R` and `code/run/02c_sample_tables.R`.
 - If the problem is about event-study outputs: start with `code/lib/event_study_regressions.R` and `code/run/03a_make_couple_treatment_event_studies.R`.
+- If the problem is about baseline distribution or work-status figures in `couples_graphs_short.tex`: start with `code/lib/couple_baseline_dist_plots.R` and `code/run/02e_make_couple_baseline_descriptives.R`.
 
 ## Known rough edges and caveats
 

@@ -40,7 +40,8 @@
       "Bash(where Rscript)",
       "Bash(python -m pip install openpyxl pypdf -q)",
       "Bash(cd \"C:/Users/USER/Dropbox/WFH_covid/UK project/division-of-labor\" && rm -f _ifs_dump.txt _xlsx_dump1.txt _xlsx_dump2.txt && echo \"removed\")",
-      "PowerShell($rscript = \"C:\\\\Program Files\\\\R\\\\R-4.5.1\\\\bin\\\\Rscript.exe\"; & $rscript -e \"cat\\(R.version.string,'\\\\n'\\); for \\(p in c\\('dplyr','stringr','tidyr','readxl','tidyverse','haven','forcats','scales'\\)\\) cat\\(p, requireNamespace\\(p, quietly=TRUE\\), '\\\\n'\\)\")"
+      "PowerShell($rscript = \"C:\\\\Program Files\\\\R\\\\R-4.5.1\\\\bin\\\\Rscript.exe\"; & $rscript -e \"cat\\(R.version.string,'\\\\n'\\); for \\(p in c\\('dplyr','stringr','tidyr','readxl','tidyverse','haven','forcats','scales'\\)\\) cat\\(p, requireNamespace\\(p, quietly=TRUE\\), '\\\\n'\\)\")",
+      "Bash(git -C \"/c/Users/USER/Dropbox/WFH_covid/UK project/division-of-labor\" log --oneline -- ONBOARDING.html ONBOARDING.md)"
     ]
   }
 }

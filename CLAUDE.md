@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **Note:** `AGENTS.md` in this repo is a duplicate of this file, kept only for tools (e.g. Codex) that read `AGENTS.md` instead of `CLAUDE.md`. Claude should treat this file (`CLAUDE.md`) as the canonical source of project instructions and ignore `AGENTS.md`. When updating project instructions, edit this file and mirror the change into `AGENTS.md`.
+
 This repository studies how COVID-era work arrangements changed the division of labor within households, especially for couples with children. The current implemented pipeline is centered on UKHLS data and produces descriptive figures, sample tables, and couple-treatment event-study outputs used in slides and proposals. Some project documents also describe related or future extensions using Israeli administrative data and German survey data, but the code in this repo is primarily the UKHLS workflow.
 
 ## What this repo does
